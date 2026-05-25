@@ -1,0 +1,191 @@
+{
+  "project_info": {
+    "project_number": "1051986614887",
+    "firebase_url": "https://doordelights-423407-default-rtdb.firebaseio.com",
+    "project_id": "doordelights-423407",
+    "storage_bucket": "doordelights-423407.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051986614887:android:af3bb3cb7a25256cea92c2",
+        "android_client_info": {
+          "package_name": "com.doordelights.customer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1051986614887-87gr414k0b7s7s9lep81jmiejvdtm3hc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCe1Wg8c8RnE5DQS-3N9-1V2Kf695q5xN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1051986614887-87gr414k0b7s7s9lep81jmiejvdtm3hc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1051986614887-4b3lecj05kbjtsku1blu5d2099mfe8l8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.doordelights.store"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051986614887:android:59aa75aca035cae0ea92c2",
+        "android_client_info": {
+          "package_name": "com.doordelights.driver"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1051986614887-87gr414k0b7s7s9lep81jmiejvdtm3hc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCe1Wg8c8RnE5DQS-3N9-1V2Kf695q5xN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1051986614887-87gr414k0b7s7s9lep81jmiejvdtm3hc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1051986614887-4b3lecj05kbjtsku1blu5d2099mfe8l8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.doordelights.store"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051986614887:android:a2eee54e1542c59fea92c2",
+        "android_client_info": {
+          "package_name": "com.doordelights.rider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1051986614887-87gr414k0b7s7s9lep81jmiejvdtm3hc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCe1Wg8c8RnE5DQS-3N9-1V2Kf695q5xN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1051986614887-87gr414k0b7s7s9lep81jmiejvdtm3hc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1051986614887-4b3lecj05kbjtsku1blu5d2099mfe8l8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.doordelights.store"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051986614887:android:0c05e5982231eb99ea92c2",
+        "android_client_info": {
+          "package_name": "com.doordelights.seller"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1051986614887-87gr414k0b7s7s9lep81jmiejvdtm3hc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCe1Wg8c8RnE5DQS-3N9-1V2Kf695q5xN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1051986614887-87gr414k0b7s7s9lep81jmiejvdtm3hc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1051986614887-4b3lecj05kbjtsku1blu5d2099mfe8l8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.doordelights.store"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1051986614887:android:2a69c459545ddb9fea92c2",
+        "android_client_info": {
+          "package_name": "com.doordelights.store"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1051986614887-87gr414k0b7s7s9lep81jmiejvdtm3hc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCe1Wg8c8RnE5DQS-3N9-1V2Kf695q5xN4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1051986614887-87gr414k0b7s7s9lep81jmiejvdtm3hc.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1051986614887-4b3lecj05kbjtsku1blu5d2099mfe8l8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.doordelights.store"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

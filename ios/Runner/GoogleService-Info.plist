@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>1051986614887-us68hv5jta3norsk1gkhvtgk4d7sa15k.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.1051986614887-us68hv5jta3norsk1gkhvtgk4d7sa15k</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>1051986614887-0lf0081kkm0499fue47cmnlb7e27d2vq.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCw8gRiCsJDWaFy314uDa31V9vYh-8X2kY</string>
+	<key>GCM_SENDER_ID</key>
+	<string>1051986614887</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.doordelights.driver</string>
+	<key>PROJECT_ID</key>
+	<string>doordelights-423407</string>
+	<key>STORAGE_BUCKET</key>
+	<string>doordelights-423407.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:1051986614887:ios:e07c3f318db0a292ea92c2</string>
+	<key>DATABASE_URL</key>
+	<string>https://doordelights-423407-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
