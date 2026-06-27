@@ -4,18 +4,16 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:door_delights_driver/Parcel_service/parcel_order_model.dart';
 import 'package:door_delights_driver/constants.dart';
-import 'package:door_delights_driver/model/CabOrderModel.dart';
-import 'package:door_delights_driver/model/OrderModel.dart';
 import 'package:door_delights_driver/model/withdrawHistoryModel.dart';
-import 'package:door_delights_driver/rental_service/model/rental_order_model.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:location/location.dart';
 import 'package:progress_dialog_null_safe/progress_dialog_null_safe.dart';
+
+import '../models/cab_order_model.dart';
 
 String? validateName(String? value) {
   String pattern = r'(^[a-zA-Z ]*$)';
@@ -427,67 +425,67 @@ String orderDate(Timestamp timestamp) {
       DateTime.fromMillisecondsSinceEpoch(timestamp.millisecondsSinceEpoch));
 }
 
-Future<void> updateWallateAmount(OrderModel orderModel,
-    {int maxRetries = 3, int retryDelay = 2}) async {
-  try {
-    double total = 0.0;
-    double discount = 0.0;
-    double specialDiscount = 0.0;
-    double taxAmount = 0.0;
-    orderModel.products.forEach((element) {
-      if (element.extras_price != null &&
-          element.extras_price!.isNotEmpty &&
-          double.parse(element.extras_price!) != 0.0) {
-        total += element.quantity * double.parse(element.extras_price!);
-      }
-      total += element.quantity * double.parse(element.price);
-    });
+// Future<void> updateWallateAmount(OrderModel orderModel,
+//     {int maxRetries = 3, int retryDelay = 2}) async {
+//   try {
+//     double total = 0.0;
+//     double discount = 0.0;
+//     double specialDiscount = 0.0;
+//     double taxAmount = 0.0;
+//     orderModel.products?.forEach((element) {
+//       if (element.extrasPrice != null &&
+//           element.extrasPrice!.isNotEmpty &&
+//           double.parse(element.extrasPrice!) != 0.0) {
+//         total += (element.quantity ?? 0) * double.parse(element.extrasPrice!);
+//       }
+//       total += (element.quantity ?? 0) * double.parse(element.price ?? '0');
+//     });
 
-    if (orderModel.specialDiscount != null ||
-        orderModel.specialDiscount!['special_discount'] != null) {
-      specialDiscount = double.parse(
-          orderModel.specialDiscount!['special_discount'].toString());
-    }
+//     if (orderModel.specialDiscount != null ||
+//         orderModel.specialDiscount!['special_discount'] != null) {
+//       specialDiscount = double.parse(
+//           orderModel.specialDiscount!['special_discount'].toString());
+//     }
 
-    if (orderModel.discount != null) {
-      discount = double.parse(orderModel.discount.toString());
-    }
+//     if (orderModel.discount != null) {
+//       discount = double.parse(orderModel.discount.toString());
+//     }
 
-    var totalamount = total - discount - specialDiscount;
+//     var totalamount = total - discount - specialDiscount;
 
-    if (orderModel.taxModel != null) {
-      for (var element in orderModel.taxModel!) {
-        taxAmount = taxAmount +
-            calculateTax(amount: totalamount.toString(), taxModel: element);
-      }
-    }
+//     if (orderModel.taxModel != null) {
+//       for (var element in orderModel.taxModel!) {
+//         taxAmount = taxAmount +
+//             calculateTax(amount: totalamount.toString(), taxModel: element);
+//       }
+//     }
 
-    double driverAmount = 0;
-    if (orderModel.payment_method.toLowerCase() != "cod") {
-      driverAmount += (double.parse(orderModel.deliveryCharge!) +
-          double.parse(orderModel.tipValue ?? '0.0'));
-    } else {
-      driverAmount += (-totalamount - taxAmount);
-    }
+//     double driverAmount = 0;
+//     if (orderModel.payment_method.toLowerCase() != "cod") {
+//       driverAmount += (double.parse(orderModel.deliveryCharge!) +
+//           double.parse(orderModel.tipValue ?? '0.0'));
+//     } else {
+//       driverAmount += (-totalamount - taxAmount);
+//     }
 
-    if (orderModel.payment_method.toLowerCase() == "cod") {
-      driverAmount = driverAmount -
-          orderModel.serviceCharges! +
-          orderModel.deliveryDiscount!;
-    }
+//     if (orderModel.payment_method.toLowerCase() == "cod") {
+//       driverAmount = driverAmount -
+//           orderModel.serviceCharges! +
+//           orderModel.deliveryDiscount!;
+//     }
 
-    await FireStoreUtils.updateWalletAmount(
-        userId: orderModel.driverID!,
-        amount: double.parse(driverAmount.toStringAsFixed(2)));
-  } catch (e) {
-    if (maxRetries > 0) {
-      await Future.delayed(Duration(seconds: retryDelay));
-      await updateWallateAmount(orderModel, maxRetries: maxRetries - 1);
-    } else {
-      log("Failed to update wallet after 3 attempts: $e");
-    }
-  }
-}
+//     await FireStoreUtils.updateWalletAmount(
+//         userId: orderModel.driverID!,
+//         amount: double.parse(driverAmount.toStringAsFixed(2)));
+//   } catch (e) {
+//     if (maxRetries > 0) {
+//       await Future.delayed(Duration(seconds: retryDelay));
+//       await updateWallateAmount(orderModel, maxRetries: maxRetries - 1);
+//     } else {
+//       log("Failed to update wallet after 3 attempts: $e");
+//     }
+//   }
+// }
 
 /*updateWallateAmount(OrderModel orderModel) {
   double total = 0.0;
@@ -565,12 +563,12 @@ updateCabWalletAmount(CabOrderModel orderModel) async {
       ? 0.0
       : double.parse(orderModel.tipValue.toString());
   double driverAmount = 0;
-  if (orderModel.paymentMethod.toLowerCase() != "cod") {
+  if (orderModel.paymentMethod?.toLowerCase() != "cod") {
     driverAmount = (subTotal + totalTax + tipValue) - adminComm;
   } else {
     driverAmount = -(subTotal + totalTax + tipValue + adminComm);
   }
-  if (orderModel.paymentMethod.toLowerCase() != "cod") {
+  if (orderModel.paymentMethod?.toLowerCase() != "cod") {
     driverAmount = (subTotal + totalTax + tipValue) - adminComm;
   } else {
     //driverAmount = -(subTotal + totalTax + tipValue + adminComm);
@@ -583,15 +581,15 @@ updateCabWalletAmount(CabOrderModel orderModel) async {
   //   FireStoreUtils.updateCompanyWalletAmount(companyId: orderModel.driver!.companyId, amount: num.parse(driverAmount.toStringAsFixed(currencyData!.decimal)));
   // } else {
   await FireStoreUtils.updateCurrentUserWallet(
-    userId: orderModel.driverID!,
+    userId: orderModel.driverId!,
     amount: num.parse(driverAmount.toStringAsFixed(currencyData!.decimal)),
   );
 
-  if (orderModel.paymentMethod.toLowerCase() == "cod") {
+  if (orderModel.paymentMethod?.toLowerCase() == "cod") {
     double discountAmount = double.parse(orderModel.discount.toString());
     if (discountAmount > 0) {
       FireStoreUtils.updateCurrentUserWallet(
-        userId: orderModel.driverID!,
+        userId: orderModel.driverId!,
         amount:
             num.parse(discountAmount.toStringAsFixed(currencyData!.decimal)),
       );
@@ -603,124 +601,65 @@ updateCabWalletAmount(CabOrderModel orderModel) async {
   // FireStoreUtils.cabOrderTransaction(orderModel: orderModel, driveramount: double.parse(driverAmount.toStringAsFixed(currencyData!.decimal)));
 }
 
-updateParcelWalletAmount(ParcelOrderModel orderModel) async {
-  double totalTax = 0.0;
+// updateRentalWalletAmount(RentalOrderModel orderModel) async {
+//   double totalTax = 0.0;
 
-/*  if (orderModel.taxType!.isNotEmpty) {
-    if (orderModel.taxType == "percent") {
-      totalTax = (double.parse(orderModel.subTotal.toString()) - double.parse(orderModel.discount.toString())) * double.parse(orderModel.tax.toString()) / 100;
-    } else {
-      totalTax = double.parse(orderModel.tax.toString());
-    }
-  }*/
+//   double subTotal = (double.parse(orderModel.subTotal.toString()) +
+//       double.parse(orderModel.driverRate.toString()));
+//   //      -
+//   // double.parse(orderModel.discount.toString());
 
-  double subTotal = double.parse(orderModel.subTotal.toString());
-  //  -
-  //     double.parse(orderModel.discount.toString());
+//   if (orderModel.taxModel != null) {
+//     for (var element in orderModel.taxModel!) {
+//       totalTax = totalTax +
+//           calculateTax(amount: subTotal.toString(), taxModel: element);
+//     }
+//   }
 
-  if (orderModel.taxModel != null) {
-    for (var element in orderModel.taxModel!) {
-      totalTax = totalTax +
-          calculateTax(amount: subTotal.toString(), taxModel: element);
-    }
-  }
+//   double adminComm = 0.0;
+//   if (orderModel.adminCommission!.isNotEmpty) {
+//     adminComm = (orderModel.adminCommissionType!.toLowerCase() ==
+//                 'Percent'.toLowerCase() ||
+//             orderModel.adminCommissionType!.toLowerCase() ==
+//                 'percentage'.toLowerCase())
+//         ? (subTotal * double.parse(orderModel.adminCommission!)) / 100
+//         : double.parse(orderModel.adminCommission!);
+//   }
 
-  double adminComm = 0.0;
-  if (orderModel.adminCommission!.isNotEmpty) {
-    adminComm = (orderModel.adminCommissionType!.toLowerCase() ==
-                'Percent'.toLowerCase() ||
-            orderModel.adminCommissionType!.toLowerCase() ==
-                'percentage'.toLowerCase())
-        ? (subTotal * double.parse(orderModel.adminCommission!)) / 100
-        : double.parse(orderModel.adminCommission!);
-  }
+//   print("--->finalAmount---- $subTotal");
+//   print("--->admin commison---- $adminComm");
+//   print("--->Tax---- $totalTax");
+//   double driverAmount = 0;
 
-  double driverAmount = 0;
-  if (orderModel.paymentMethod.toLowerCase() != "cod") {
-    driverAmount = (subTotal + totalTax) - adminComm;
-  } else {
-    driverAmount = -(adminComm + totalTax);
-  }
+//   if (orderModel.paymentMethod.toLowerCase() != "cod") {
+//     driverAmount = (subTotal + totalTax) - adminComm;
+//   } else {
+//     // driverAmount = -(subTotal + totalTax + adminComm);
+//     driverAmount = -((subTotal + totalTax) - adminComm);
+//   }
+//   print("--->driverAmount---- $driverAmount");
 
-  log("--->driverAmount---- $driverAmount");
+//   // if (orderModel.driver!.companyId.isNotEmpty) {
+//   //   FireStoreUtils.updateCompanyWalletAmount(companyId: Constant.userModel!.companyId, amount: num.parse(driverAmount.toStringAsFixed(currencyData!.decimal)));
+//   // } else {
+//   await FireStoreUtils.updateCurrentUserWallet(
+//     userId: orderModel.driverID!,
+//     amount: num.parse(driverAmount.toStringAsFixed(currencyData!.decimal)),
+//   );
 
-  await FireStoreUtils.updateCurrentUserWallet(
-    userId: orderModel.driverID!,
-    amount: num.parse(driverAmount.toStringAsFixed(currencyData!.decimal)),
-  );
-
-  if (orderModel.paymentMethod.toLowerCase() == "cod") {
-    double discountAmount = double.parse(orderModel.discount.toString());
-    if (discountAmount > 0) {
-      FireStoreUtils.updateCurrentUserWallet(
-        userId: orderModel.driverID!,
-        amount:
-            num.parse(discountAmount.toStringAsFixed(currencyData!.decimal)),
-      );
-    }
-  }
-//  FireStoreUtils.parcelOrderTransaction(orderModel: orderModel, driveramount: double.parse(driverAmount.toStringAsFixed(currencyData!.decimal)));
-}
-
-updateRentalWalletAmount(RentalOrderModel orderModel) async {
-  double totalTax = 0.0;
-
-  double subTotal = (double.parse(orderModel.subTotal.toString()) +
-      double.parse(orderModel.driverRate.toString()));
-  //      -
-  // double.parse(orderModel.discount.toString());
-
-  if (orderModel.taxModel != null) {
-    for (var element in orderModel.taxModel!) {
-      totalTax = totalTax +
-          calculateTax(amount: subTotal.toString(), taxModel: element);
-    }
-  }
-
-  double adminComm = 0.0;
-  if (orderModel.adminCommission!.isNotEmpty) {
-    adminComm = (orderModel.adminCommissionType!.toLowerCase() ==
-                'Percent'.toLowerCase() ||
-            orderModel.adminCommissionType!.toLowerCase() ==
-                'percentage'.toLowerCase())
-        ? (subTotal * double.parse(orderModel.adminCommission!)) / 100
-        : double.parse(orderModel.adminCommission!);
-  }
-
-  print("--->finalAmount---- $subTotal");
-  print("--->admin commison---- $adminComm");
-  print("--->Tax---- $totalTax");
-  double driverAmount = 0;
-
-  if (orderModel.paymentMethod.toLowerCase() != "cod") {
-    driverAmount = (subTotal + totalTax) - adminComm;
-  } else {
-    // driverAmount = -(subTotal + totalTax + adminComm);
-    driverAmount = -((subTotal + totalTax) - adminComm);
-  }
-  print("--->driverAmount---- $driverAmount");
-
-  // if (orderModel.driver!.companyId.isNotEmpty) {
-  //   FireStoreUtils.updateCompanyWalletAmount(companyId: MyAppState.currentUser!.companyId, amount: num.parse(driverAmount.toStringAsFixed(currencyData!.decimal)));
-  // } else {
-  await FireStoreUtils.updateCurrentUserWallet(
-    userId: orderModel.driverID!,
-    amount: num.parse(driverAmount.toStringAsFixed(currencyData!.decimal)),
-  );
-
-  if (orderModel.paymentMethod.toLowerCase() == "cod") {
-    double discountAmount = double.parse(orderModel.discount.toString());
-    if (discountAmount > 0) {
-      FireStoreUtils.updateCurrentUserWallet(
-        userId: orderModel.driverID!,
-        amount:
-            num.parse(discountAmount.toStringAsFixed(currencyData!.decimal)),
-      );
-    }
-  }
-  // }
-  //FireStoreUtils.rentalOrderTransaction(orderModel: orderModel, driveramount: double.parse(driverAmount.toStringAsFixed(currencyData!.decimal)));
-}
+//   if (orderModel.paymentMethod.toLowerCase() == "cod") {
+//     double discountAmount = double.parse(orderModel.discount.toString());
+//     if (discountAmount > 0) {
+//       FireStoreUtils.updateCurrentUserWallet(
+//         userId: orderModel.driverID!,
+//         amount:
+//             num.parse(discountAmount.toStringAsFixed(currencyData!.decimal)),
+//       );
+//     }
+//   }
+//   // }
+//   //FireStoreUtils.rentalOrderTransaction(orderModel: orderModel, driveramount: double.parse(driverAmount.toStringAsFixed(currencyData!.decimal)));
+// }
 
 /*double getTaxValue(TaxModel? taxModel, double amount) {
   double taxVal = 0;

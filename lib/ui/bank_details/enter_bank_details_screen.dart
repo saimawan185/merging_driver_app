@@ -1,21 +1,24 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/main.dart';
-import 'package:door_delights_driver/model/User.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:flutter/material.dart';
 
+import '../../constant/constant.dart';
+import '../../models/user_model.dart';
+
 class EnterBankDetailScreen extends StatefulWidget {
   final bool isNewAccount;
-  const EnterBankDetailScreen({Key? key, required this.isNewAccount}) : super(key: key);
+  const EnterBankDetailScreen({Key? key, required this.isNewAccount})
+      : super(key: key);
 
   @override
   State<EnterBankDetailScreen> createState() => _EnterBankDetailScreenState();
 }
 
 class _EnterBankDetailScreenState extends State<EnterBankDetailScreen> {
-  User? user;
+  UserModel? user;
 
   GlobalKey<FormState> _bankDetailFormKey = GlobalKey();
   TextEditingController bankNameController = TextEditingController();
@@ -28,16 +31,21 @@ class _EnterBankDetailScreenState extends State<EnterBankDetailScreen> {
   void initState() {
     super.initState();
 
-    FireStoreUtils.getCurrentUser(MyAppState.currentUser!.userID).then((value) {
+    FireStoreUtils.getCurrentUser(Constant.userModel!.id!).then((value) {
       setState(() {
         user = value!;
-        MyAppState.currentUser = value;
+        Constant.userModel = value;
 
-        bankNameController = TextEditingController(text: user!.userBankDetails.bankName);
-        branchNameController = TextEditingController(text: user!.userBankDetails.branchName);
-        holderNameController = TextEditingController(text: user!.userBankDetails.holderName);
-        accountNoController = TextEditingController(text: user!.userBankDetails.accountNumber);
-        otherInfoController = TextEditingController(text: user!.userBankDetails.otherDetails);
+        bankNameController =
+            TextEditingController(text: user!.userBankDetails?.bankName);
+        branchNameController =
+            TextEditingController(text: user!.userBankDetails?.branchName);
+        holderNameController =
+            TextEditingController(text: user!.userBankDetails?.holderName);
+        accountNoController =
+            TextEditingController(text: user!.userBankDetails?.accountNumber);
+        otherInfoController =
+            TextEditingController(text: user!.userBankDetails?.otherDetails);
       });
     });
     //user = widget.user;
@@ -56,7 +64,8 @@ class _EnterBankDetailScreenState extends State<EnterBankDetailScreen> {
         ),
         title: Text(
           widget.isNewAccount ? "Add Bank".tr() : "Edit Bank".tr(),
-          style: TextStyle(color: isDarkMode(context) ? Colors.white : Color(DARK_COLOR)),
+          style: TextStyle(
+              color: isDarkMode(context) ? Colors.white : Color(DARK_COLOR)),
         ),
       ),
       body: Container(
@@ -72,10 +81,22 @@ class _EnterBankDetailScreenState extends State<EnterBankDetailScreen> {
                 SizedBox(
                   height: 30,
                 ),
-                buildTextFiled(validator: validateName, title: "Bank Name".tr(), controller: bankNameController),
-                buildTextFiled(validator: validateOthers, title: "Branch Name".tr(), controller: branchNameController),
-                buildTextFiled(validator: validateOthers, title: "Holder Name".tr(), controller: holderNameController),
-                buildTextFiled(validator: validateOthers, title: "Account Number".tr(), controller: accountNoController),
+                buildTextFiled(
+                    validator: validateName,
+                    title: "Bank Name".tr(),
+                    controller: bankNameController),
+                buildTextFiled(
+                    validator: validateOthers,
+                    title: "Branch Name".tr(),
+                    controller: branchNameController),
+                buildTextFiled(
+                    validator: validateOthers,
+                    title: "Holder Name".tr(),
+                    controller: holderNameController),
+                buildTextFiled(
+                    validator: validateOthers,
+                    title: "Account Number".tr(),
+                    controller: accountNoController),
                 buildTextFiled(
                     validator: (String? value) {
                       return null;
@@ -84,20 +105,28 @@ class _EnterBankDetailScreenState extends State<EnterBankDetailScreen> {
                     controller: otherInfoController),
                 Padding(
                   padding: const EdgeInsets.only(top: 45.0, bottom: 25),
-                  child: buildButton(context, title: widget.isNewAccount ? "Add Bank".tr() : "Edit Bank".tr(), onPress: () async {
+                  child: buildButton(context,
+                      title: widget.isNewAccount
+                          ? "Add Bank".tr()
+                          : "Edit Bank".tr(), onPress: () async {
                     if (_bankDetailFormKey.currentState!.validate()) {
                       print("----<");
-                      user!.userBankDetails.accountNumber = accountNoController.text;
+                      user!.userBankDetails?.accountNumber =
+                          accountNoController.text;
                       print("----<");
-                      print(user!.userBankDetails.accountNumber);
-                      user!.userBankDetails.bankName = bankNameController.text;
-                      user!.userBankDetails.branchName = branchNameController.text;
-                      user!.userBankDetails.holderName = holderNameController.text;
-                      user!.userBankDetails.otherDetails = otherInfoController.text;
+                      print(user!.userBankDetails?.accountNumber);
+                      user!.userBankDetails?.bankName = bankNameController.text;
+                      user!.userBankDetails?.branchName =
+                          branchNameController.text;
+                      user!.userBankDetails?.holderName =
+                          holderNameController.text;
+                      user!.userBankDetails?.otherDetails =
+                          otherInfoController.text;
 
-                      var updatedUser = await FireStoreUtils.updateCurrentUser(user!);
+                      var updatedUser =
+                          await FireStoreUtils.updateCurrentUser(user!);
                       if (updatedUser != null) {
-                        MyAppState.currentUser = updatedUser;
+                        Constant.userModel = updatedUser;
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                             content: Text(
                           'Bank Details saved successfully',
@@ -123,7 +152,10 @@ class _EnterBankDetailScreenState extends State<EnterBankDetailScreen> {
     );
   }
 
-  Widget buildTextFiled({required title, required String? Function(String?)? validator, required TextEditingController controller}) {
+  Widget buildTextFiled(
+      {required title,
+      required String? Function(String?)? validator,
+      required TextEditingController controller}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 25),
       child: Column(
@@ -133,23 +165,33 @@ class _EnterBankDetailScreenState extends State<EnterBankDetailScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 8.0),
             child: TextFormField(
-              style: TextStyle(color: isDarkMode(context) ? Colors.white : Color(DARK_COLOR)),
+              style: TextStyle(
+                  color:
+                      isDarkMode(context) ? Colors.white : Color(DARK_COLOR)),
               cursorColor: Color(COLOR_PRIMARY),
               textAlignVertical: TextAlignVertical.center,
               validator: validator,
               controller: controller,
               textInputAction: TextInputAction.next,
               decoration: InputDecoration(
-                contentPadding: new EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                fillColor: isDarkMode(context) ? Colors.white.withOpacity(0.3) : Color(DARK_COLOR).withOpacity(0.06),
+                contentPadding:
+                    new EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                fillColor: isDarkMode(context)
+                    ? Colors.white.withOpacity(0.3)
+                    : Color(DARK_COLOR).withOpacity(0.06),
                 filled: true,
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(5.0), borderSide: BorderSide(color: Color(COLOR_PRIMARY), width: 1.50)),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                    borderSide:
+                        BorderSide(color: Color(COLOR_PRIMARY), width: 1.50)),
                 errorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
+                  borderSide:
+                      BorderSide(color: Theme.of(context).colorScheme.error),
                   borderRadius: BorderRadius.circular(5.0),
                 ),
                 focusedErrorBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
+                  borderSide:
+                      BorderSide(color: Theme.of(context).colorScheme.error),
                   borderRadius: BorderRadius.circular(5.0),
                 ),
                 enabledBorder: OutlineInputBorder(

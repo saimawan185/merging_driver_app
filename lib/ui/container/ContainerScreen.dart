@@ -1,10 +1,12 @@
+import 'dart:developer';
+
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:door_delights_driver/models/user_model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/main.dart';
 import 'package:door_delights_driver/model/CurrencyModel.dart';
-import 'package:door_delights_driver/model/User.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/ui/Language/language_choose_screen.dart';
@@ -22,6 +24,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
+
+import '../../constant/constant.dart';
 
 enum DrawerSelection {
   Home,
@@ -42,7 +46,7 @@ enum DrawerSelection {
 }
 
 class ContainerScreen extends StatefulWidget {
-  final User user;
+  final UserModel user;
 
   ContainerScreen({
     Key? key,
@@ -66,7 +70,9 @@ class _ContainerScreen extends State<ContainerScreen> {
   void initState() {
     super.initState();
     checkForUpdate(context: context);
-    _currentWidget = HomeScreen();
+    _currentWidget = HomeScreen(
+      isAppBarShow: false,
+    );
     setCurrency();
     updateCurrentLocation();
     FireStoreUtils.firebaseMessaging.requestPermission(
@@ -134,10 +140,10 @@ class _ContainerScreen extends State<ContainerScreen> {
       location.onLocationChanged.listen((locationData) async {
         locationDataFinal = locationData;
 
-        await FireStoreUtils.getCurrentUser(MyAppState.currentUser!.userID)
+        await FireStoreUtils.getCurrentUser(Constant.userModel!.id!)
             .then((value) {
           if (value != null) {
-            User driverUserModel = value;
+            UserModel driverUserModel = value;
             if (driverUserModel.isActive == true) {
               driverUserModel.location = UserLocation(
                   latitude: locationData.latitude ?? 0.0,
@@ -156,7 +162,7 @@ class _ContainerScreen extends State<ContainerScreen> {
       //         accuracy: LocationAccuracy.navigation, distanceFilter: 50);
       //     location.onLocationChanged.listen((locationData) async {
       //       locationDataFinal = locationData;
-      //       await FireStoreUtils.getCurrentUser(MyAppState.currentUser!.userID)
+      //       await FireStoreUtils.getCurrentUser(Constant.userModel!.id)
       //           .then((value) {
       //         if (value != null) {
       //           User driverUserModel = value;
@@ -226,10 +232,10 @@ class _ContainerScreen extends State<ContainerScreen> {
                               .listen((locationData) async {
                             locationDataFinal = locationData;
                             FireStoreUtils.getCurrentUser(
-                                    MyAppState.currentUser!.userID)
+                                    Constant.userModel!.id!)
                                 .then((value) {
                               if (value != null) {
-                                User driverUserModel = value;
+                                UserModel driverUserModel = value;
                                 if (driverUserModel.isActive == true) {
                                   driverUserModel.location = UserLocation(
                                       latitude: locationData.latitude ?? 0.0,
@@ -313,18 +319,18 @@ class _ContainerScreen extends State<ContainerScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           displayCircleImage(
-                              MyAppState.currentUser!.profilePictureURL,
+                              Constant.userModel!.profilePictureURL ?? '',
                               60,
                               false),
                           Padding(
                             padding: const EdgeInsets.only(top: 4.0),
                             child: Text(
-                              MyAppState.currentUser!.fullName(),
+                              Constant.userModel!.fullName(),
                               style: TextStyle(color: Colors.white),
                             ),
                           ),
                           Text(
-                            MyAppState.currentUser!.email,
+                            Constant.userModel!.email ?? '',
                             style: TextStyle(color: Colors.white),
                           ),
                           SwitchListTile(
@@ -335,16 +341,16 @@ class _ContainerScreen extends State<ContainerScreen> {
                               "Online".tr(),
                               style: TextStyle(color: Colors.white),
                             ),
-                            value: MyAppState.currentUser!.isActive,
+                            value: Constant.userModel!.isActive ?? false,
                             onChanged: (value) {
                               setState(() {
-                                MyAppState.currentUser!.isActive = value;
+                                Constant.userModel!.isActive = value;
                               });
-                              if (MyAppState.currentUser!.isActive == true) {
+                              if (Constant.userModel!.isActive == true) {
                                 updateCurrentLocation();
                               }
                               FireStoreUtils.updateCurrentUser(
-                                  MyAppState.currentUser!);
+                                  Constant.userModel!);
                             },
                           ),
                         ],
@@ -364,7 +370,9 @@ class _ContainerScreen extends State<ContainerScreen> {
                           setState(() {
                             _drawerSelection = DrawerSelection.Home;
                             _appBarTitle = 'Home'.tr();
-                            _currentWidget = HomeScreen();
+                            _currentWidget = HomeScreen(
+                              isAppBarShow: true,
+                            );
                           });
                         },
                         leading: Icon(CupertinoIcons.home),
@@ -443,7 +451,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                             _drawerSelection = DrawerSelection.Profile;
                             _appBarTitle = 'My Profile'.tr();
                             _currentWidget = ProfileScreen(
-                              user: MyAppState.currentUser!,
+                              user: Constant.userModel!,
                             );
                           });
                         },
@@ -511,7 +519,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                     //     leading: Icon(CupertinoIcons.chat_bubble_2_fill),
                     //     title: Text('Inbox').tr(),
                     //     onTap: () {
-                    //       if (MyAppState.currentUser == null) {
+                    //       if (Constant.userModel == null) {
                     //         Navigator.pop(context);
                     //         push(context, AuthScreen());
                     //       } else {
@@ -537,24 +545,23 @@ class _ContainerScreen extends State<ContainerScreen> {
                             audioPlayer.stop();
                             Navigator.pop(context);
                             await FireStoreUtils.getCurrentUser(
-                                    MyAppState.currentUser!.userID)
+                                    Constant.userModel!.id!)
                                 .then((value) {
-                              MyAppState.currentUser = value;
+                              Constant.userModel = value;
                             });
-                            MyAppState.currentUser!.isActive = false;
-                            MyAppState.currentUser!.lastOnlineTimestamp =
-                                Timestamp.now();
+                            Constant.userModel!.isActive = false;
+
                             await FireStoreUtils.updateCurrentUser(
-                                MyAppState.currentUser!);
+                                Constant.userModel!);
                             await FirebaseMessaging.instance.deleteToken();
                             await auth.FirebaseAuth.instance.signOut();
-                            MyAppState.currentUser = null;
+                            Constant.userModel = null;
                             location.enableBackgroundMode(enable: false);
                             pushAndRemoveUntil(context, AuthScreen(), false);
                           } catch (e) {
                             await FirebaseMessaging.instance.deleteToken();
                             await auth.FirebaseAuth.instance.signOut();
-                            MyAppState.currentUser = null;
+                            Constant.userModel = null;
                             location.enableBackgroundMode(enable: false);
                             pushAndRemoveUntil(context, AuthScreen(), false);
                           }

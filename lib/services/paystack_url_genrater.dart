@@ -1,16 +1,19 @@
 import 'dart:convert';
-
-import 'package:door_delights_driver/main.dart';
 import 'package:door_delights_driver/model/PayFastSettingData.dart';
 import 'package:door_delights_driver/model/payStackURLModel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
+import '../constant/constant.dart';
+
 class PayStackURLGen {
-  static Future payStackURLGen({required String amount, required String secretKey, required String currency}) async {
+  static Future payStackURLGen(
+      {required String amount,
+      required String secretKey,
+      required String currency}) async {
     final url = "https://api.paystack.co/transaction/initialize";
     final response = await http.post(Uri.parse(url), body: {
-      "email": MyAppState.currentUser?.email,
+      "email": Constant.userModel?.email,
       "amount": amount,
       "currency": currency,
     }, headers: {
@@ -50,8 +53,12 @@ class PayStackURLGen {
     //PayPalClientSettleModel.fromJson(data);
   }
 
-  static Future<String> getPayHTML({required String amount, required PayFastSettingData payFastSettingData, String itemName = "wallet Topup"}) async {
-    String newUrl = 'https://${!payFastSettingData.isSandbox ? "www" : "sandbox"}.payfast.co.za/eng/process';
+  static Future<String> getPayHTML(
+      {required String amount,
+      required PayFastSettingData payFastSettingData,
+      String itemName = "wallet Topup"}) async {
+    String newUrl =
+        'https://${!payFastSettingData.isSandbox ? "www" : "sandbox"}.payfast.co.za/eng/process';
     Map body = {
       'merchant_id': payFastSettingData.merchantId,
       'merchant_key': payFastSettingData.merchantKey,
@@ -60,9 +67,9 @@ class PayStackURLGen {
       'return_url': payFastSettingData.returnUrl,
       'cancel_url': payFastSettingData.cancelUrl,
       'notify_url': payFastSettingData.notifyUrl,
-      'name_first': MyAppState.currentUser!.firstName,
-      'name_last': MyAppState.currentUser!.lastName,
-      'email_address': MyAppState.currentUser!.email,
+      'name_first': Constant.userModel!.firstName,
+      'name_last': Constant.userModel!.lastName,
+      'email_address': Constant.userModel!.email,
     };
 
     final response = await http.post(

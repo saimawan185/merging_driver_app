@@ -1,14 +1,16 @@
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
-import 'package:door_delights_driver/main.dart';
-import 'package:door_delights_driver/model/OrderModel.dart';
 import 'package:door_delights_driver/model/ProductModel.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
+import '../../constant/constant.dart';
+import '../../models/order_model.dart';
 
 class OrdersScreen extends StatefulWidget {
   @override
@@ -24,8 +26,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
   void initState() {
     super.initState();
     print("------>${ordersList.length}");
-    ordersFuture =
-        _fireStoreUtils.getDriverOrders(MyAppState.currentUser!.userID);
+    ordersFuture = _fireStoreUtils.getDriverOrders(Constant.userModel!.id!);
   }
 
   @override
@@ -66,12 +67,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
     double total = 0.0;
     total = 0.0;
     String extrasDisVal = '';
-    orderModel.products.forEach((element) {
-      total += element.quantity * double.parse(element.price);
+    orderModel.products?.forEach((element) {
+      total += (element.quantity ?? 0) * double.parse(element.price ?? '0');
 
-      for (int i = 0; i < element.extras.length; i++) {
+      for (int i = 0; i < (element.extras?.length ?? 0); i++) {
         extrasDisVal +=
-            '${element.extras[i].toString().replaceAll("\"", "")} ${(i == element.extras.length - 1) ? "" : ","}';
+            '${element.extras?[i].toString().replaceAll("\"", "")} ${(i == (element.extras?.length ?? 0) - 1) ? "" : ","}';
       }
     });
 
@@ -98,7 +99,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 height: 140,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: NetworkImage(orderModel.products.first.photo),
+                    image: NetworkImage(orderModel.products?.first.photo ?? ''),
                     fit: BoxFit.cover,
                     colorFilter: ColorFilter.mode(
                         Colors.black.withOpacity(0.5), BlendMode.darken),
@@ -106,7 +107,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    '${orderDate(orderModel.createdAt)} - ${orderModel.status}',
+                    '${orderDate(orderModel.createdAt ?? Timestamp.now())} - ${orderModel.status}',
                     style: TextStyle(color: Colors.white, fontSize: 17),
                   ),
                 ),
@@ -114,11 +115,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
             ),
             ListView.builder(
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: orderModel.products.length,
+                itemCount: orderModel.products?.length,
                 padding: EdgeInsets.only(),
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
-                  ProductModel product = orderModel.products[index];
+                  ProductModel product = orderModel.products![index];
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -210,10 +211,10 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 }),
             ListView.builder(
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: orderModel.products.length,
+                itemCount: orderModel.products?.length,
                 shrinkWrap: true,
                 itemBuilder: (context, index) {
-                  ProductModel product = orderModel.products[index];
+                  ProductModel product = orderModel.products![index];
                   return ListTile(
                     leading: Container(
                       padding: const EdgeInsets.symmetric(
@@ -249,7 +250,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
               ),
               trailing: Text(
-                orderModel.payment_method.toUpperCase().toString(),
+                orderModel.paymentMethod?.toUpperCase().toString() ?? '',
                 style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.black,

@@ -6,12 +6,10 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:door_delights_driver/model/onePaySettingsModel.dart';
+import 'package:door_delights_driver/models/user_model.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:door_delights_driver/Parcel_service/parcel_order_model.dart';
 import 'package:door_delights_driver/constants.dart';
-import 'package:door_delights_driver/main.dart';
 import 'package:door_delights_driver/model/BlockUserModel.dart';
-import 'package:door_delights_driver/model/CabOrderModel.dart';
 import 'package:door_delights_driver/model/CarMakes.dart';
 import 'package:door_delights_driver/model/CarModel.dart';
 import 'package:door_delights_driver/model/ChatVideoContainer.dart';
@@ -19,13 +17,10 @@ import 'package:door_delights_driver/model/CurrencyModel.dart';
 import 'package:door_delights_driver/model/DeliveryChargeModel.dart';
 import 'package:door_delights_driver/model/FlutterWaveSettingDataModel.dart';
 import 'package:door_delights_driver/model/MercadoPagoSettingsModel.dart';
-import 'package:door_delights_driver/model/OrderModel.dart';
 import 'package:door_delights_driver/model/PayFastSettingData.dart';
 import 'package:door_delights_driver/model/PayStackSettingsModel.dart';
 import 'package:door_delights_driver/model/Ratingmodel.dart';
 import 'package:door_delights_driver/model/SectionModel.dart';
-import 'package:door_delights_driver/model/User.dart';
-import 'package:door_delights_driver/model/VehicleType.dart';
 import 'package:door_delights_driver/model/VendorModel.dart';
 import 'package:door_delights_driver/model/conversation_model.dart';
 import 'package:door_delights_driver/model/email_template_model.dart';
@@ -36,11 +31,11 @@ import 'package:door_delights_driver/model/paytmSettingData.dart';
 import 'package:door_delights_driver/model/razorpayKeyModel.dart';
 import 'package:door_delights_driver/model/referral_model.dart';
 import 'package:door_delights_driver/model/withdrawHistoryModel.dart';
-import 'package:door_delights_driver/rental_service/model/rental_order_model.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/ui/reauthScreen/reauth_user_screen.dart';
 import 'package:door_delights_driver/userPrefrence.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -55,6 +50,14 @@ import 'package:video_compress/video_compress.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:googleapis_auth/auth_io.dart' as auth;
 
+import '../constant/collection_name.dart';
+import '../constant/constant.dart';
+import '../models/cab_order_model.dart';
+import '../models/order_model.dart';
+import '../models/parcel_order_model.dart';
+import '../models/rental_order_model.dart';
+import '../models/vehicle_type.dart';
+
 class FireStoreUtils {
   static FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
   static FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -67,8 +70,71 @@ class FireStoreUtils {
         .doc(inboxModel.orderId)
         .set(inboxModel.toJson())
         .then((document) {
-          return inboxModel;
-        });
+      return inboxModel;
+    });
+  }
+
+  static Map<String, dynamic> removeNulls(Map<String, dynamic> map) {
+    map.removeWhere((key, value) => value == null);
+
+    map.forEach((key, value) {
+      if (value is Map<String, dynamic>) {
+        removeNulls(value);
+        if (value.isEmpty) {
+          map.remove(key);
+        }
+      }
+    });
+
+    return map;
+  }
+
+  static Future<bool> updateUser(UserModel userModel) async {
+    try {
+      final docRef =
+          firestore.collection(CollectionName.users).doc(userModel.id);
+
+      final Map<String, dynamic> data = removeNulls(userModel.toJson());
+
+      await docRef.set(data, SetOptions(merge: true));
+
+      // Clean up legacy / deprecated top-level fields via a separate update()
+      // call. Sentinels (FieldValue.delete) can only appear at the top level
+      // of an update, and must not appear inside nested maps written via set().
+      final Map<String, dynamic> deletes = {
+        //   'sectionId': FieldValue.delete(),
+        //   'serviceType': FieldValue.delete(),
+        //   'serviceDetails': FieldValue.delete(),
+      };
+      // if (userModel.role == Constant.userRoleDriver) {
+      //   deletes.addAll({
+      //     'vehicleType': FieldValue.delete(),
+      //     'vehicleId': FieldValue.delete(),
+      //     'carName': FieldValue.delete(),
+      //     'carNumber': FieldValue.delete(),
+      //     'carMakes': FieldValue.delete(),
+      //     'rideType': FieldValue.delete(),
+      //   });
+      // }
+      if (userModel.orderCabRequestData == null) {
+        deletes['ordercabRequestData'] = FieldValue.delete();
+      }
+      await docRef.update(deletes);
+
+      if (userModel.id == getCurrentUid()) {
+        Constant.userModel = userModel;
+      }
+
+      return true;
+    } catch (error, stack) {
+      log("Failed to update user 1: $error");
+      log('Error: ' + stack.toString());
+      return false;
+    }
+  }
+
+  static String getCurrentUid() {
+    return FirebaseAuth.instance.currentUser!.uid;
   }
 
   static Future addDriverChat(ConversationModel conversationModel) async {
@@ -79,8 +145,8 @@ class FireStoreUtils {
         .doc(conversationModel.id)
         .set(conversationModel.toJson())
         .then((document) {
-          return conversationModel;
-        });
+      return conversationModel;
+    });
   }
 
   Future<List<RatingModel>> getReviewByDriverId(String driverId) async {
@@ -105,10 +171,8 @@ class FireStoreUtils {
   }
 
   static Future getDriverOrderSetting() async {
-    DocumentSnapshot<Map<String, dynamic>> codQuery = await firestore
-        .collection(Setting)
-        .doc('DriverNearBy')
-        .get();
+    DocumentSnapshot<Map<String, dynamic>> codQuery =
+        await firestore.collection(Setting).doc('DriverNearBy').get();
     if (codQuery.data() != null) {
       minimumDepositToRideAccept = codQuery['minimumDepositToRideAccept'];
       minimumAmountToWithdrawal = codQuery['minimumAmountToWithdrawal'];
@@ -274,28 +338,26 @@ class FireStoreUtils {
     return orders;
   }
 
-  late StreamController<User> driverStreamController;
+  late StreamController<UserModel> driverStreamController;
   late StreamSubscription? driverStreamSub;
 
-  Stream<User> getDriver(String userId) {
+  Stream<UserModel> getDriver(String userId) {
     driverStreamController = StreamController();
     // driverStreamSub =
     return firestore.collection(USERS).doc(userId).snapshots().map((onData) {
       if (onData.data() != null) {
-        User? user = User.fromJson(onData.data()!);
+        UserModel? user = UserModel.fromJson(onData.data()!);
         driverStreamController.sink.add(user);
         return user;
       }
-      return MyAppState.currentUser!;
+      return Constant.userModel!;
     });
     // yield* driverStreamController.stream;
   }
 
   static Future<VehicleType> getVehicle(String? vehicleId) async {
-    DocumentSnapshot<Map<String, dynamic>> vehicleType = await firestore
-        .collection(VEHICLETYPE)
-        .doc(vehicleId)
-        .get();
+    DocumentSnapshot<Map<String, dynamic>> vehicleType =
+        await firestore.collection(VEHICLETYPE).doc(vehicleId).get();
 
     return VehicleType.fromJson(vehicleType.data()!);
   }
@@ -408,25 +470,21 @@ class FireStoreUtils {
     return carMakesList;
   }
 
-  static Future<User?> getCurrentUser(String uid) async {
-    DocumentSnapshot<Map<String, dynamic>> userDocument = await firestore
-        .collection(USERS)
-        .doc(uid)
-        .get();
+  static Future<UserModel?> getCurrentUser(String uid) async {
+    DocumentSnapshot<Map<String, dynamic>> userDocument =
+        await firestore.collection(USERS).doc(uid).get();
     if (userDocument.data() != null && userDocument.exists) {
       // print('milaa');
 
-      return User.fromJson(userDocument.data()!);
+      return UserModel.fromJson(userDocument.data()!);
     } else {
       return null;
     }
   }
 
   static Future<CabOrderModel?> getCabOrderByOrderId(String orderID) async {
-    DocumentSnapshot<Map<String, dynamic>> userDocument = await firestore
-        .collection(RIDESORDER)
-        .doc(orderID)
-        .get();
+    DocumentSnapshot<Map<String, dynamic>> userDocument =
+        await firestore.collection(RIDESORDER).doc(orderID).get();
     if (userDocument.data() != null && userDocument.exists) {
       return CabOrderModel.fromJson(userDocument.data()!);
     } else {
@@ -448,17 +506,22 @@ class FireStoreUtils {
     return currency;
   }*/
   Future<CurrencyModel?> getCurrency() async {
-    CurrencyModel? currency;
-    await firestore
-        .collection(Currency)
-        .where("isActive", isEqualTo: true)
-        .get()
-        .then((value) {
-          if (value.docs.isNotEmpty) {
-            currency = CurrencyModel.fromJson(value.docs.first.data());
-          }
-        });
-    return currency;
+    try {
+      CurrencyModel? currency;
+      await firestore
+          .collection(Currency)
+          .where("isActive", isEqualTo: true)
+          .get()
+          .then((value) {
+        if (value.docs.isNotEmpty) {
+          currency = CurrencyModel.fromJson(value.docs.first.data());
+        }
+      });
+      return currency;
+    } catch (e) {
+      log("Currency error: $e");
+      return null;
+    }
   }
 
   Future<VendorModel> getVendorByVendorID(String vendorID) async {
@@ -479,10 +542,8 @@ class FireStoreUtils {
   }
 
   Future<DeliveryChargeModel?> getDeliveryCharges() async {
-    DocumentSnapshot<Map<String, dynamic>> codQuery = await firestore
-        .collection(Setting)
-        .doc('DeliveryCharge')
-        .get();
+    DocumentSnapshot<Map<String, dynamic>> codQuery =
+        await firestore.collection(Setting).doc('DeliveryCharge').get();
     if (codQuery.data() != null) {
       return DeliveryChargeModel.fromJson(codQuery.data()!);
     } else {
@@ -490,20 +551,20 @@ class FireStoreUtils {
     }
   }
 
-  static Future<User?> updateCurrentUser(User user) async {
+  static Future<UserModel?> updateCurrentUser(UserModel user) async {
     return await firestore
         .collection(USERS)
-        .doc(user.userID)
+        .doc(user.id)
         .set(user.toJson())
         .then((document) {
-          return user;
-        });
+      return user;
+    });
   }
 
-  static Future<void> updateUserLocation(User user) async {
-    await firestore.collection(USERS).doc(user.userID).update({
+  static Future<void> updateUserLocation(UserModel user) async {
+    await firestore.collection(USERS).doc(user.id).update({
       'rotation': user.rotation,
-      'location': user.location.toJson(),
+      'location': user.location?.toJson(),
     });
   }
 
@@ -531,9 +592,8 @@ class FireStoreUtils {
     required num amount,
     required num driveramount,
   }) async {
-    DocumentReference documentReference = firestore
-        .collection(OrderTransaction)
-        .doc();
+    DocumentReference documentReference =
+        firestore.collection(OrderTransaction).doc();
     Map<String, dynamic> data = {
       "order_id": orderModel.id,
       "id": documentReference.id,
@@ -563,9 +623,8 @@ class FireStoreUtils {
     required CabOrderModel orderModel,
     required num driveramount,
   }) async {
-    DocumentReference documentReference = firestore
-        .collection(OrderTransaction)
-        .doc();
+    DocumentReference documentReference =
+        firestore.collection(OrderTransaction).doc();
     Map<String, dynamic> data = {
       "order_id": orderModel.id,
       "id": documentReference.id,
@@ -575,7 +634,7 @@ class FireStoreUtils {
     data.addAll({
       "vendorId": "",
       "vendorAmount": "",
-      "driverId": orderModel.driverID,
+      "driverId": orderModel.driverId,
       "driverAmount": driveramount,
     });
 
@@ -591,9 +650,8 @@ class FireStoreUtils {
     required ParcelOrderModel orderModel,
     required num driveramount,
   }) async {
-    DocumentReference documentReference = firestore
-        .collection(OrderTransaction)
-        .doc();
+    DocumentReference documentReference =
+        firestore.collection(OrderTransaction).doc();
 
     Map<String, dynamic> data = {
       "order_id": orderModel.id,
@@ -604,7 +662,7 @@ class FireStoreUtils {
     data.addAll({
       "vendorId": "",
       "vendorAmount": "",
-      "driverId": orderModel.driverID,
+      "driverId": orderModel.driverId,
       "driverAmount": driveramount,
     });
 
@@ -620,9 +678,8 @@ class FireStoreUtils {
     required RentalOrderModel orderModel,
     required num driveramount,
   }) async {
-    DocumentReference documentReference = firestore
-        .collection(OrderTransaction)
-        .doc();
+    DocumentReference documentReference =
+        firestore.collection(OrderTransaction).doc();
     Map<String, dynamic> data = {
       "order_id": orderModel.id,
       "id": documentReference.id,
@@ -630,13 +687,13 @@ class FireStoreUtils {
     };
     print("Error is false called transaction");
 
-    // if (MyAppState.currentUser!.isCompany == false) {
-    //   data.addAll({"vendorId": "", "vendorAmount": "", "driverId": MyAppState.currentUser!.companyId, "driverAmount": driveramount});
+    // if (Constant.userModel!.isCompany == false) {
+    //   data.addAll({"vendorId": "", "vendorAmount": "", "driverId": Constant.userModel!.companyId, "driverAmount": driveramount});
     // } else {
     data.addAll({
       "vendorId": "",
       "vendorAmount": "",
-      "driverId": orderModel.driverID,
+      "driverId": orderModel.driverId,
       "driverAmount": driveramount,
     });
     // }
@@ -649,9 +706,8 @@ class FireStoreUtils {
   }
 
   static Future createPaymentId({collectionName = "wallet"}) async {
-    DocumentReference documentReference = firestore
-        .collection(collectionName)
-        .doc();
+    DocumentReference documentReference =
+        firestore.collection(collectionName).doc();
     final paymentId = documentReference.id;
     //UserPreference.setPaymentId(paymentId: paymentId);
     return paymentId;
@@ -669,27 +725,23 @@ class FireStoreUtils {
     print("this is te payment id");
     print(id);
 
-    await firestore
-        .collection(Wallet)
-        .doc(id)
-        .set({
-          "serviceType": serviceType,
-          "user_id": userID,
-          "payment_method": paymentMethod,
-          "amount": amount,
-          "id": id,
-          "order_id": orderId,
-          "isTopUp": isTopup,
-          "payment_status": "success",
-          "date": DateTime.now(),
-        })
-        .then((value) {
-          firestore.collection(Wallet).doc(id).get().then((value) {
-            DocumentSnapshot<Map<String, dynamic>> documentData = value;
-            print("nato");
-            print(documentData.data());
-          });
-        });
+    await firestore.collection(Wallet).doc(id).set({
+      "serviceType": serviceType,
+      "user_id": userID,
+      "payment_method": paymentMethod,
+      "amount": amount,
+      "id": id,
+      "order_id": orderId,
+      "isTopUp": isTopup,
+      "payment_status": "success",
+      "date": DateTime.now(),
+    }).then((value) {
+      firestore.collection(Wallet).doc(id).get().then((value) {
+        DocumentSnapshot<Map<String, dynamic>> documentData = value;
+        print("nato");
+        print(documentData.data());
+      });
+    });
 
     return "updated Amount".tr();
   }
@@ -706,27 +758,22 @@ class FireStoreUtils {
         try {
           print(userDocument.data());
           try {
-            await firestore
-                .collection(USERS)
-                .doc(userId)
-                .update({
-                  "wallet_amount":
-                      double.parse(
-                        userDocument.data()!['wallet_amount'].toString(),
-                      ) +
-                      amount,
-                })
-                .then((value) {
-                  log("Wallet Updated");
-                });
+            await firestore.collection(USERS).doc(userId).update({
+              "wallet_amount": double.parse(
+                    userDocument.data()!['wallet_amount'].toString(),
+                  ) +
+                  amount,
+            }).then((value) {
+              log("Wallet Updated");
+            });
           } catch (e) {
             log("Wallet Update Error: ${e.toString()}");
           }
 
           DocumentSnapshot<Map<String, dynamic>> newUserDocument =
               await firestore.collection(USERS).doc(userId).get();
-          MyAppState.currentUser = User.fromJson(newUserDocument.data()!);
-          print(MyAppState.currentUser);
+          Constant.userModel = UserModel.fromJson(newUserDocument.data()!);
+          print(Constant.userModel);
         } catch (error) {
           print(error);
           if (error.toString() ==
@@ -756,12 +803,10 @@ class FireStoreUtils {
         try {
           print("--->amount---- $amount");
           print(userDocument.data());
-          User user = User.fromJson(userDocument.data()!);
-          await firestore
-              .collection(USERS)
-              .doc(userId)
-              .update({"wallet_amount": user.walletAmount + amount})
-              .then((value) => print("north"));
+          UserModel user = UserModel.fromJson(userDocument.data()!);
+          await firestore.collection(USERS).doc(userId).update({
+            "wallet_amount": (user.walletAmount ?? 0) + amount
+          }).then((value) => print("north"));
         } catch (error) {
           print(error);
           if (error.toString() ==
@@ -784,22 +829,22 @@ class FireStoreUtils {
   }) async {
     print("this is te payment id");
     print(withdrawHistory.id);
-    print(MyAppState.currentUser!.userID);
+    print(Constant.userModel!.id);
 
     await firestore
         .collection(driverPayouts)
         .doc(withdrawHistory.id)
         .set(withdrawHistory.toJson())
         .then((value) {
-          firestore
-              .collection(driverPayouts)
-              .doc(withdrawHistory.id)
-              .get()
-              .then((value) {
-                DocumentSnapshot<Map<String, dynamic>> documentData = value;
-                print(documentData.data());
-              });
-        });
+      firestore
+          .collection(driverPayouts)
+          .doc(withdrawHistory.id)
+          .get()
+          .then((value) {
+        DocumentSnapshot<Map<String, dynamic>> documentData = value;
+        print(documentData.data());
+      });
+    });
     return "updated Amount".tr();
   }
 
@@ -814,16 +859,14 @@ class FireStoreUtils {
         try {
           print("--->amount---- $amount");
           print(userDocument.data());
-          User user = User.fromJson(userDocument.data()!);
-          MyAppState.currentUser = user;
-          await firestore
-              .collection(USERS)
-              .doc(userId)
-              .update({"wallet_amount": user.walletAmount + amount})
-              .then((value) => print("north"));
+          UserModel user = UserModel.fromJson(userDocument.data()!);
+          Constant.userModel = user;
+          await firestore.collection(USERS).doc(userId).update({
+            "wallet_amount": (user.walletAmount ?? 0) + amount
+          }).then((value) => print("north"));
           DocumentSnapshot<Map<String, dynamic>> newUserDocument =
               await firestore.collection(USERS).doc(userId).get();
-          MyAppState.currentUser = User.fromJson(newUserDocument.data()!);
+          Constant.userModel = UserModel.fromJson(newUserDocument.data()!);
         } catch (error) {
           print(error);
           if (error.toString() ==
@@ -878,12 +921,10 @@ class FireStoreUtils {
         try {
           print("--->amount---- $amount");
           print(userDocument.data());
-          User user = User.fromJson(userDocument.data()!);
-          await firestore
-              .collection(USERS)
-              .doc(userId)
-              .update({"wallet_amount": user.walletAmount + amount})
-              .then((value) => print("north"));
+          UserModel user = UserModel.fromJson(userDocument.data()!);
+          await firestore.collection(USERS).doc(userId).update({
+            "wallet_amount": (user.walletAmount ?? 0) + amount
+          }).then((value) => print("north"));
         } catch (error) {
           print(error);
           if (error.toString() ==
@@ -902,10 +943,8 @@ class FireStoreUtils {
   }
 
   static Future<VendorModel?> getVendor(String vid) async {
-    DocumentSnapshot<Map<String, dynamic>> userDocument = await firestore
-        .collection(VENDORS)
-        .doc(vid)
-        .get();
+    DocumentSnapshot<Map<String, dynamic>> userDocument =
+        await firestore.collection(VENDORS).doc(vid).get();
     if (userDocument.data() != null && userDocument.exists) {
       print("dataaaaaa");
       return VendorModel.fromJson(userDocument.data()!);
@@ -923,7 +962,9 @@ class FireStoreUtils {
     UploadTask uploadTask = upload.putFile(image);
     var downloadUrl = await (await uploadTask.whenComplete(
       () {},
-    )).ref.getDownloadURL();
+    ))
+        .ref
+        .getDownloadURL();
     return downloadUrl.toString();
   }
 
@@ -938,7 +979,9 @@ class FireStoreUtils {
     UploadTask uploadTask = upload.putFile(compressedCarImage);
     var downloadUrl = await (await uploadTask.whenComplete(
       () {},
-    )).ref.getDownloadURL();
+    ))
+        .ref
+        .getDownloadURL();
     return downloadUrl.toString();
   }
 
@@ -1021,15 +1064,17 @@ class FireStoreUtils {
     UploadTask uploadTask = upload.putFile(compressedImage);
     var downloadUrl = await (await uploadTask.whenComplete(
       () {},
-    )).ref.getDownloadURL();
+    ))
+        .ref
+        .getDownloadURL();
     return downloadUrl.toString();
   }
 
-  Stream<User> getUserByID(String id) async* {
-    StreamController<User> userStreamController = StreamController();
+  Stream<UserModel> getUserByID(String id) async* {
+    StreamController<UserModel> userStreamController = StreamController();
     firestore.collection(USERS).doc(id).snapshots().listen((user) {
       try {
-        User userModel = User.fromJson(user.data() ?? {});
+        UserModel userModel = UserModel.fromJson(user.data() ?? {});
         userStreamController.sink.add(userModel);
       } catch (e) {
         print(
@@ -1040,12 +1085,12 @@ class FireStoreUtils {
     yield* userStreamController.stream;
   }
 
-  Future<bool> blockUser(User blockedUser, String type) async {
+  Future<bool> blockUser(UserModel blockedUser, String type) async {
     bool isSuccessful = false;
     BlockUserModel blockUserModel = BlockUserModel(
       type: type,
-      source: MyAppState.currentUser!.userID,
-      dest: blockedUser.userID,
+      source: Constant.userModel!.id!,
+      dest: blockedUser.id!,
       createdAt: Timestamp.now(),
     );
     await firestore.collection(REPORTS).add(blockUserModel.toJson()).then((
@@ -1060,16 +1105,16 @@ class FireStoreUtils {
     StreamController<bool> refreshStreamController = StreamController();
     firestore
         .collection(REPORTS)
-        .where('source', isEqualTo: MyAppState.currentUser!.userID)
+        .where('source', isEqualTo: Constant.userModel!.id)
         .snapshots()
         .listen((onData) {
-          List<BlockUserModel> list = [];
-          for (DocumentSnapshot<Map<String, dynamic>> block in onData.docs) {
-            list.add(BlockUserModel.fromJson(block.data() ?? {}));
-          }
-          blockedList = list;
-          refreshStreamController.sink.add(true);
-        });
+      List<BlockUserModel> list = [];
+      for (DocumentSnapshot<Map<String, dynamic>> block in onData.docs) {
+        list.add(BlockUserModel.fromJson(block.data() ?? {}));
+      }
+      blockedList = list;
+      refreshStreamController.sink.add(true);
+    });
     yield* refreshStreamController.stream;
   }
 
@@ -1135,8 +1180,8 @@ class FireStoreUtils {
     return orders;
   }
 
-  Future<List<User>> getRentalCompanyDriver(String companyId) async {
-    List<User> driverList = [];
+  Future<List<UserModel>> getRentalCompanyDriver(String companyId) async {
+    List<UserModel> driverList = [];
 
     QuerySnapshot<Map<String, dynamic>> ordersQuery = await firestore
         .collection(USERS)
@@ -1147,7 +1192,7 @@ class FireStoreUtils {
       QueryDocumentSnapshot<Map<String, dynamic>> document,
     ) {
       try {
-        driverList.add(User.fromJson(document.data()));
+        driverList.add(UserModel.fromJson(document.data()));
       } catch (e, stacksTrace) {
         print(
           'FireStoreUtils.getDriverOrders Parse error ${document.id} $e '
@@ -1158,8 +1203,8 @@ class FireStoreUtils {
     return driverList;
   }
 
-  Future<List<User>> getCabCompanyDriver(String companyId) async {
-    List<User> driverList = [];
+  Future<List<UserModel>> getCabCompanyDriver(String companyId) async {
+    List<UserModel> driverList = [];
 
     QuerySnapshot<Map<String, dynamic>> ordersQuery = await firestore
         .collection(USERS)
@@ -1170,7 +1215,7 @@ class FireStoreUtils {
       QueryDocumentSnapshot<Map<String, dynamic>> document,
     ) {
       try {
-        driverList.add(User.fromJson(document.data()));
+        driverList.add(UserModel.fromJson(document.data()));
       } catch (e, stacksTrace) {
         print(
           'FireStoreUtils.getDriverOrders Parse error ${document.id} $e '
@@ -1236,10 +1281,8 @@ class FireStoreUtils {
   }
 
   static Future<SectionModel?> getSectionBySectionId(String uid) async {
-    DocumentSnapshot<Map<String, dynamic>> userDocument = await firestore
-        .collection(SECTION)
-        .doc(uid)
-        .get();
+    DocumentSnapshot<Map<String, dynamic>> userDocument =
+        await firestore.collection(SECTION).doc(uid).get();
     if (userDocument.data() != null && userDocument.exists) {
       // print('milaa');
 
@@ -1258,12 +1301,12 @@ class FireStoreUtils {
         .where('authorID', isEqualTo: orderModel.authorID)
         .get()
         .then((value) {
-          if (value.size == 1) {
-            isFirst = true;
-          } else {
-            isFirst = false;
-          }
-        });
+      if (value.size == 1) {
+        isFirst = true;
+      } else {
+        isFirst = false;
+      }
+    });
     return isFirst;
   }
 
@@ -1287,23 +1330,22 @@ class FireStoreUtils {
     if (referralModel != null) {
       if (referralModel!.referralBy != null &&
           referralModel!.referralBy!.isNotEmpty) {
-        await firestore.collection(USERS).doc(referralModel!.referralBy).get().then((
+        await firestore
+            .collection(USERS)
+            .doc(referralModel!.referralBy)
+            .get()
+            .then((
           value,
         ) async {
           DocumentSnapshot<Map<String, dynamic>> userDocument = value;
           if (userDocument.data() != null && userDocument.exists) {
             try {
               print(userDocument.data());
-              User user = User.fromJson(userDocument.data()!);
-              await firestore
-                  .collection(USERS)
-                  .doc(user.userID)
-                  .update({
-                    "wallet_amount":
-                        user.walletAmount +
-                        double.parse(sectionModel!.referralAmount.toString()),
-                  })
-                  .then((value) => print("north"));
+              UserModel user = UserModel.fromJson(userDocument.data()!);
+              await firestore.collection(USERS).doc(user.id).update({
+                "wallet_amount": (user.walletAmount ?? 0) +
+                    double.parse(sectionModel!.referralAmount.toString()),
+              }).then((value) => print("north"));
 
               await FireStoreUtils.createPaymentId().then((value) async {
                 final paymentID = value;
@@ -1343,12 +1385,12 @@ class FireStoreUtils {
         .where('authorID', isEqualTo: orderModel.authorID)
         .get()
         .then((value) {
-          if (value.size == 1) {
-            isFirst = true;
-          } else {
-            isFirst = false;
-          }
-        });
+      if (value.size == 1) {
+        isFirst = true;
+      } else {
+        isFirst = false;
+      }
+    });
     return isFirst;
   }
 
@@ -1372,23 +1414,22 @@ class FireStoreUtils {
     if (referralModel != null) {
       if (referralModel!.referralBy != null &&
           referralModel!.referralBy!.isNotEmpty) {
-        await firestore.collection(USERS).doc(referralModel!.referralBy).get().then((
+        await firestore
+            .collection(USERS)
+            .doc(referralModel!.referralBy)
+            .get()
+            .then((
           value,
         ) async {
           DocumentSnapshot<Map<String, dynamic>> userDocument = value;
           if (userDocument.data() != null && userDocument.exists) {
             try {
               print(userDocument.data());
-              User user = User.fromJson(userDocument.data()!);
-              await firestore
-                  .collection(USERS)
-                  .doc(user.userID)
-                  .update({
-                    "wallet_amount":
-                        user.walletAmount +
-                        double.parse(sectionModel!.referralAmount.toString()),
-                  })
-                  .then((value) => print("north"));
+              UserModel user = UserModel.fromJson(userDocument.data()!);
+              await firestore.collection(USERS).doc(user.id).update({
+                "wallet_amount": (user.walletAmount ?? 0) +
+                    double.parse(sectionModel!.referralAmount.toString()),
+              }).then((value) => print("north"));
 
               await FireStoreUtils.createPaymentId().then((value) async {
                 final paymentID = value;
@@ -1426,12 +1467,12 @@ class FireStoreUtils {
         .where('authorID', isEqualTo: orderModel.authorID)
         .get()
         .then((value) {
-          if (value.size == 1) {
-            isFirst = true;
-          } else {
-            isFirst = false;
-          }
-        });
+      if (value.size == 1) {
+        isFirst = true;
+      } else {
+        isFirst = false;
+      }
+    });
     return isFirst;
   }
 
@@ -1455,23 +1496,22 @@ class FireStoreUtils {
     if (referralModel != null) {
       if (referralModel!.referralBy != null &&
           referralModel!.referralBy!.isNotEmpty) {
-        await firestore.collection(USERS).doc(referralModel!.referralBy).get().then((
+        await firestore
+            .collection(USERS)
+            .doc(referralModel!.referralBy)
+            .get()
+            .then((
           value,
         ) async {
           DocumentSnapshot<Map<String, dynamic>> userDocument = value;
           if (userDocument.data() != null && userDocument.exists) {
             try {
               print(userDocument.data());
-              User user = User.fromJson(userDocument.data()!);
-              await firestore
-                  .collection(USERS)
-                  .doc(user.userID)
-                  .update({
-                    "wallet_amount":
-                        user.walletAmount +
-                        double.parse(sectionModel!.referralAmount.toString()),
-                  })
-                  .then((value) => print("north"));
+              UserModel user = UserModel.fromJson(userDocument.data()!);
+              await firestore.collection(USERS).doc(user.id).update({
+                "wallet_amount": (user.walletAmount ?? 0) +
+                    double.parse(sectionModel!.referralAmount.toString()),
+              }).then((value) => print("north"));
 
               await FireStoreUtils.createPaymentId().then((value) async {
                 final paymentID = value;
@@ -1510,18 +1550,18 @@ class FireStoreUtils {
         .where('section_id', isEqualTo: orderModel.sectionId)
         .get()
         .then((value) {
-          if (value.size == 1) {
-            isFirst = true;
-          } else {
-            isFirst = false;
-          }
-        });
+      if (value.size == 1) {
+        isFirst = true;
+      } else {
+        isFirst = false;
+      }
+    });
     return isFirst;
   }
 
   static Future updateReferralAmount(OrderModel orderModel) async {
     ReferralModel? referralModel;
-    await getSectionBySectionId(orderModel.sectionId).then((
+    await getSectionBySectionId(orderModel.sectionId!).then((
       valueSection,
     ) async {
       await firestore.collection(REFERRAL).doc(orderModel.authorID).get().then((
@@ -1540,23 +1580,22 @@ class FireStoreUtils {
       if (referralModel != null) {
         if (referralModel!.referralBy != null &&
             referralModel!.referralBy!.isNotEmpty) {
-          await firestore.collection(USERS).doc(referralModel!.referralBy).get().then((
+          await firestore
+              .collection(USERS)
+              .doc(referralModel!.referralBy)
+              .get()
+              .then((
             value,
           ) async {
             DocumentSnapshot<Map<String, dynamic>> userDocument = value;
             if (userDocument.data() != null && userDocument.exists) {
               try {
                 print(userDocument.data());
-                User user = User.fromJson(userDocument.data()!);
-                await firestore
-                    .collection(USERS)
-                    .doc(user.userID)
-                    .update({
-                      "wallet_amount":
-                          double.parse(user.walletAmount.toString()) +
-                          double.parse(valueSection.referralAmount.toString()),
-                    })
-                    .then((value) => print("north"));
+                UserModel user = UserModel.fromJson(userDocument.data()!);
+                await firestore.collection(USERS).doc(user.id).update({
+                  "wallet_amount": double.parse(user.walletAmount.toString()) +
+                      double.parse(valueSection.referralAmount.toString()),
+                }).then((value) => print("north"));
 
                 await FireStoreUtils.createPaymentId().then((value) async {
                   final paymentID = value;
@@ -1599,12 +1638,12 @@ class FireStoreUtils {
         .where('authorID', isEqualTo: orderModel.authorID)
         .get()
         .then((value) {
-          if (value.size == 1) {
-            isFirst = true;
-          } else {
-            isFirst = false;
-          }
-        });
+      if (value.size == 1) {
+        isFirst = true;
+      } else {
+        isFirst = false;
+      }
+    });
     return isFirst;
   }
 
@@ -1628,23 +1667,22 @@ class FireStoreUtils {
     if (referralModel != null) {
       if (referralModel!.referralBy != null &&
           referralModel!.referralBy!.isNotEmpty) {
-        await firestore.collection(USERS).doc(referralModel!.referralBy).get().then((
+        await firestore
+            .collection(USERS)
+            .doc(referralModel!.referralBy)
+            .get()
+            .then((
           value,
         ) async {
           DocumentSnapshot<Map<String, dynamic>> userDocument = value;
           if (userDocument.data() != null && userDocument.exists) {
             try {
               print(userDocument.data());
-              User user = User.fromJson(userDocument.data()!);
-              await firestore
-                  .collection(USERS)
-                  .doc(user.userID)
-                  .update({
-                    "wallet_amount":
-                        user.walletAmount +
-                        double.parse(sectionModel!.referralAmount.toString()),
-                  })
-                  .then((value) => print("north"));
+              UserModel user = UserModel.fromJson(userDocument.data()!);
+              await firestore.collection(USERS).doc(user.id).update({
+                "wallet_amount": (user.walletAmount ?? 0) +
+                    double.parse(sectionModel!.referralAmount.toString()),
+              }).then((value) => print("north"));
 
               await FireStoreUtils.createPaymentId().then((value) async {
                 final paymentID = value;
@@ -1686,9 +1724,9 @@ class FireStoreUtils {
     String newString = emailTemplateModel!.message.toString();
     newString = newString.replaceAll(
       "{username}",
-      MyAppState.currentUser!.firstName +
+      (Constant.userModel!.firstName ?? '') +
           " " +
-          MyAppState.currentUser!.lastName,
+          (Constant.userModel!.lastName ?? ""),
     );
     newString = newString.replaceAll(
       "{date}",
@@ -1702,13 +1740,13 @@ class FireStoreUtils {
     newString = newString.replaceAll("{transactionid}", tractionId.toString());
     newString = newString.replaceAll(
       "{newwalletbalance}.",
-      amountShow(amount: MyAppState.currentUser!.walletAmount.toString()),
+      amountShow(amount: Constant.userModel!.walletAmount.toString()),
     );
     await sendMail(
       subject: emailTemplateModel.subject,
       isAdmin: emailTemplateModel.isSendToAdmin,
       body: newString,
-      recipients: [MyAppState.currentUser!.email],
+      recipients: [Constant.userModel!.email],
     );
   }
 
@@ -1720,18 +1758,18 @@ class FireStoreUtils {
         await FireStoreUtils.getEmailTemplates(payoutRequest);
 
     String body = emailTemplateModel!.subject.toString();
-    body = body.replaceAll("{userid}", MyAppState.currentUser!.userID);
+    body = body.replaceAll("{userid}", Constant.userModel!.id!);
 
     String newString = emailTemplateModel.message.toString();
     newString = newString.replaceAll(
       "{username}",
-      MyAppState.currentUser!.firstName +
+      (Constant.userModel!.firstName ?? '') +
           " " +
-          MyAppState.currentUser!.lastName,
+          (Constant.userModel!.lastName ?? ''),
     );
     newString = newString.replaceAll(
       "{userid}",
-      MyAppState.currentUser!.userID,
+      Constant.userModel!.id ?? '',
     );
     newString = newString.replaceAll("{amount}", amountShow(amount: amount));
     newString = newString.replaceAll(
@@ -1744,13 +1782,13 @@ class FireStoreUtils {
     );
     newString = newString.replaceAll(
       "{usercontactinfo}",
-      "${MyAppState.currentUser!.email}\n${MyAppState.currentUser!.phoneNumber}",
+      "${Constant.userModel!.email}\n${Constant.userModel!.phoneNumber}",
     );
     await sendMail(
       subject: body,
       isAdmin: emailTemplateModel.isSendToAdmin,
       body: newString,
-      recipients: [MyAppState.currentUser!.email],
+      recipients: [Constant.userModel!.email],
     );
   }
 
@@ -1761,14 +1799,14 @@ class FireStoreUtils {
         .where('type', isEqualTo: type)
         .get()
         .then((value) {
-          print("------>");
-          if (value.docs.isNotEmpty) {
-            print(value.docs.first.data());
-            emailTemplateModel = EmailTemplateModel.fromJson(
-              value.docs.first.data(),
-            );
-          }
-        });
+      print("------>");
+      if (value.docs.isNotEmpty) {
+        print(value.docs.first.data());
+        emailTemplateModel = EmailTemplateModel.fromJson(
+          value.docs.first.data(),
+        );
+      }
+    });
     return emailTemplateModel;
   }
 
@@ -1784,27 +1822,23 @@ class FireStoreUtils {
     print(id);
     print(userId);
 
-    await firestore
-        .collection(Wallet)
-        .doc(id)
-        .set({
-          "user_id": userId,
-          "payment_method": paymentMethod,
-          "amount": amount,
-          "id": id,
-          "order_id": orderId,
-          "isTopUp": isTopup,
-          "payment_status": "success",
-          "date": DateTime.now(),
-          "transactionUser": "driver",
-        })
-        .then((value) {
-          firestore.collection(Wallet).doc(id).get().then((value) {
-            DocumentSnapshot<Map<String, dynamic>> documentData = value;
-            print("nato");
-            print(documentData.data());
-          });
-        });
+    await firestore.collection(Wallet).doc(id).set({
+      "user_id": userId,
+      "payment_method": paymentMethod,
+      "amount": amount,
+      "id": id,
+      "order_id": orderId,
+      "isTopUp": isTopup,
+      "payment_status": "success",
+      "date": DateTime.now(),
+      "transactionUser": "driver",
+    }).then((value) {
+      firestore.collection(Wallet).doc(id).get().then((value) {
+        DocumentSnapshot<Map<String, dynamic>> documentData = value;
+        print("nato");
+        print(documentData.data());
+      });
+    });
 
     return "updated Amount".tr();
   }
@@ -1826,11 +1860,11 @@ class FireStoreUtils {
         .doc(inProgressOrderID)
         .snapshots()
         .listen((onData) async {
-          if (onData.data() != null) {
-            OrderModel? orderModel = OrderModel.fromJson(onData.data()!);
-            ordersStreamController.sink.add(orderModel);
-          }
-        });
+      if (onData.data() != null) {
+        OrderModel? orderModel = OrderModel.fromJson(onData.data()!);
+        ordersStreamController.sink.add(orderModel);
+      }
+    });
     yield* ordersStreamController.stream;
   }
 
@@ -1844,11 +1878,11 @@ class FireStoreUtils {
         .doc(inProgressOrderID)
         .snapshots()
         .listen((onData) async {
-          if (onData.data() != null) {
-            CabOrderModel? orderModel = CabOrderModel.fromJson(onData.data()!);
-            cabOrdersStreamController.sink.add(orderModel);
-          }
-        });
+      if (onData.data() != null) {
+        CabOrderModel? orderModel = CabOrderModel.fromJson(onData.data()!);
+        cabOrdersStreamController.sink.add(orderModel);
+      }
+    });
     yield* cabOrdersStreamController.stream;
   }
 
@@ -1864,13 +1898,13 @@ class FireStoreUtils {
         .doc(inProgressOrderID)
         .snapshots()
         .listen((onData) async {
-          if (onData.data() != null) {
-            ParcelOrderModel? orderModel = ParcelOrderModel.fromJson(
-              onData.data()!,
-            );
-            parcelOrdersStreamController.sink.add(orderModel);
-          }
-        });
+      if (onData.data() != null) {
+        ParcelOrderModel? orderModel = ParcelOrderModel.fromJson(
+          onData.data()!,
+        );
+        parcelOrdersStreamController.sink.add(orderModel);
+      }
+    });
     yield* parcelOrdersStreamController.stream;
   }
 
@@ -1901,10 +1935,10 @@ class FireStoreUtils {
 
       final XFile? compressedFile =
           await FlutterImageCompress.compressAndGetFile(
-            file.path,
-            targetPath,
-            quality: 25,
-          );
+        file.path,
+        targetPath,
+        quality: 25,
+      );
 
       if (compressedFile == null) {
         return file;
@@ -1966,12 +2000,12 @@ class FireStoreUtils {
     Map<String, dynamic> userData,
     AccessToken token,
   ) async {
-    auth.UserCredential authResult = await auth.FirebaseAuth.instance
-        .signInWithCredential(
-          auth.FacebookAuthProvider.credential(token.tokenString),
-        );
+    auth.UserCredential authResult =
+        await auth.FirebaseAuth.instance.signInWithCredential(
+      auth.FacebookAuthProvider.credential(token.tokenString),
+    );
     print(authResult.user!.uid);
-    User? user = await getCurrentUser(authResult.user?.uid ?? '');
+    UserModel? user = await getCurrentUser(authResult.user?.uid ?? '');
     List<String> fullName = (userData['name'] as String).split(' ');
     String firstName = '';
     String lastName = '';
@@ -1993,21 +2027,21 @@ class FireStoreUtils {
       return result;
     } else if (user == null) {
       print('else');
-      user = User(
+      user = UserModel(
         email: userData['email'] ?? '',
         firstName: firstName,
         profilePictureURL: userData['picture']['data']['url'] ?? '',
-        userID: authResult.user?.uid ?? '',
-        lastOnlineTimestamp: Timestamp.now(),
+        id: authResult.user?.uid ?? '',
+        // lastOnlineTimestamp: Timestamp.now(),
         lastName: lastName,
         isActive: false,
         role: USER_ROLE_DRIVER,
         fcmToken: await firebaseMessaging.getToken() ?? '',
         phoneNumber: '',
-        carName: 'Uber Car',
-        carNumber: 'No Plates',
+        // carName: 'Uber Car',
+        // carNumber: 'No Plates',
         carPictureURL: DEFAULT_CAR_IMAGE,
-        settings: UserSettings(),
+        // settings: UserSettings(),
       );
       String? errorMessage = await firebaseCreateNewUser(user);
       if (errorMessage == null) {
@@ -2029,15 +2063,15 @@ class FireStoreUtils {
     }
 
     if (appleCredential.status == apple.AuthorizationStatus.authorized) {
-      final auth.AuthCredential credential = auth.OAuthProvider('apple.com')
-          .credential(
-            accessToken: String.fromCharCodes(
-              appleCredential.credential?.authorizationCode ?? [],
-            ),
-            idToken: String.fromCharCodes(
-              appleCredential.credential?.identityToken ?? [],
-            ),
-          );
+      final auth.AuthCredential credential =
+          auth.OAuthProvider('apple.com').credential(
+        accessToken: String.fromCharCodes(
+          appleCredential.credential?.authorizationCode ?? [],
+        ),
+        idToken: String.fromCharCodes(
+          appleCredential.credential?.identityToken ?? [],
+        ),
+      );
       return await handleAppleLogin(credential, appleCredential.credential!);
     } else {
       return "Couldn't login with apple.".tr();
@@ -2048,9 +2082,9 @@ class FireStoreUtils {
     auth.AuthCredential credential,
     apple.AppleIdCredential appleIdCredential,
   ) async {
-    auth.UserCredential authResult = await auth.FirebaseAuth.instance
-        .signInWithCredential(credential);
-    User? user = await getCurrentUser(authResult.user?.uid ?? '');
+    auth.UserCredential authResult =
+        await auth.FirebaseAuth.instance.signInWithCredential(credential);
+    UserModel? user = await getCurrentUser(authResult.user?.uid ?? '');
     if (user != null) {
       user.isActive = false;
       user.role = USER_ROLE_DRIVER;
@@ -2059,22 +2093,20 @@ class FireStoreUtils {
       dynamic result = await updateCurrentUser(user);
       return result;
     } else {
-      user = User(
+      user = UserModel(
         email: appleIdCredential.email ?? '',
         firstName: appleIdCredential.fullName?.givenName ?? '',
         profilePictureURL: '',
-        userID: authResult.user?.uid ?? '',
-        lastOnlineTimestamp: Timestamp.now(),
+        id: authResult.user?.uid ?? '',
         lastName: appleIdCredential.fullName?.familyName ?? '',
         role: USER_ROLE_DRIVER,
         active: true,
         isActive: false,
         fcmToken: await firebaseMessaging.getToken() ?? '',
         phoneNumber: '',
-        carName: 'Uber Car',
-        carNumber: 'No Plates',
+        // carName: 'Uber Car',
+        // carNumber: 'No Plates',
         carPictureURL: DEFAULT_CAR_IMAGE,
-        settings: UserSettings(),
       );
       String? errorMessage = await firebaseCreateNewUser(user);
       if (errorMessage == null) {
@@ -2087,9 +2119,9 @@ class FireStoreUtils {
 
   /// save a new user document in the USERS table in firebase firestore
   /// returns an error message on failure or null on success
-  static Future<String?> firebaseCreateNewUser(User user) async {
+  static Future<String?> firebaseCreateNewUser(UserModel user) async {
     try {
-      await firestore.collection(USERS).doc(user.userID).set(user.toJson());
+      await firestore.collection(USERS).doc(user.id).set(user.toJson());
     } catch (e, s) {
       print('FireStoreUtils.firebaseCreateNewUser $e $s');
       return "Couldn't sign up".tr();
@@ -2107,13 +2139,11 @@ class FireStoreUtils {
     try {
       auth.UserCredential result = await auth.FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
-      DocumentSnapshot<Map<String, dynamic>> documentSnapshot = await firestore
-          .collection(USERS)
-          .doc(result.user?.uid ?? '')
-          .get();
-      User? user;
+      DocumentSnapshot<Map<String, dynamic>> documentSnapshot =
+          await firestore.collection(USERS).doc(result.user?.uid ?? '').get();
+      UserModel? user;
       if (documentSnapshot.exists) {
-        user = User.fromJson(documentSnapshot.data() ?? {});
+        user = UserModel.fromJson(documentSnapshot.data() ?? {});
         try {
           user.fcmToken = await firebaseMessaging.getToken() ?? '';
         } catch (e) {
@@ -2182,9 +2212,9 @@ class FireStoreUtils {
       verificationId: verificationID,
       smsCode: code,
     );
-    auth.UserCredential userCredential = await auth.FirebaseAuth.instance
-        .signInWithCredential(authCredential);
-    User? user = await getCurrentUser(userCredential.user?.uid ?? '');
+    auth.UserCredential userCredential =
+        await auth.FirebaseAuth.instance.signInWithCredential(authCredential);
+    UserModel? user = await getCurrentUser(userCredential.user?.uid ?? '');
     if (user != null && user.role == USER_ROLE_DRIVER) {
       user.fcmToken = await firebaseMessaging.getToken() ?? '';
       user.role = USER_ROLE_DRIVER;
@@ -2209,23 +2239,19 @@ class FireStoreUtils {
           userCredential.user?.uid ?? '',
         );
       }
-      User user = User(
+      UserModel user = UserModel(
         firstName: firstName,
         lastName: lastName,
         fcmToken: await firebaseMessaging.getToken() ?? '',
         phoneNumber: phoneNumber,
         profilePictureURL: profileImageUrl,
-        userID: userCredential.user?.uid ?? '',
+        id: userCredential.user?.uid ?? '',
         isActive: false,
         active: false,
-        lastOnlineTimestamp: Timestamp.now(),
-        settings: UserSettings(),
         email: '',
         role: USER_ROLE_DRIVER,
-        carName: carName,
-        carNumber: carPlates,
         carPictureURL: carPicUrl,
-        serviceType: serviceType.toString(),
+        serviceType: serviceType,
       );
       String? errorMessage = await firebaseCreateNewUser(user);
       if (errorMessage == null) {
@@ -2252,14 +2278,13 @@ class FireStoreUtils {
       verificationId: verificationID,
       smsCode: code,
     );
-    auth.UserCredential userCredential = await auth.FirebaseAuth.instance
-        .signInWithCredential(authCredential);
-    User? user = await getCurrentUser(userCredential.user?.uid ?? '');
+    auth.UserCredential userCredential =
+        await auth.FirebaseAuth.instance.signInWithCredential(authCredential);
+    UserModel? user = await getCurrentUser(userCredential.user?.uid ?? '');
     if (user != null && user.role == USER_ROLE_DRIVER) {
       user.fcmToken = await firebaseMessaging.getToken() ?? '';
       user.role = USER_ROLE_DRIVER;
       user.isActive = false;
-      log("Hello 18");
       await updateCurrentUser(user);
       return user;
     } else if (user == null) {
@@ -2279,23 +2304,19 @@ class FireStoreUtils {
           userCredential.user?.uid ?? '',
         );
       }
-      User user = User(
+      UserModel user = UserModel(
         firstName: firstName,
         lastName: lastName,
         fcmToken: await firebaseMessaging.getToken() ?? '',
         phoneNumber: phoneNumber,
         profilePictureURL: profileImageUrl,
-        userID: userCredential.user?.uid ?? '',
+        id: userCredential.user?.uid ?? '',
         isActive: false,
         active: false,
-        lastOnlineTimestamp: Timestamp.now(),
-        settings: UserSettings(),
         email: '',
         role: USER_ROLE_DRIVER,
-        carName: carName,
-        carNumber: carPlates,
         carPictureURL: carPicUrl,
-        serviceType: serviceType.toString(),
+        serviceType: serviceType,
       );
       String? errorMessage = await firebaseCreateNewUser(user);
       if (errorMessage == null) {
@@ -2324,14 +2345,13 @@ class FireStoreUtils {
       verificationId: verificationID,
       smsCode: code,
     );
-    auth.UserCredential userCredential = await auth.FirebaseAuth.instance
-        .signInWithCredential(authCredential);
-    User? user = await getCurrentUser(userCredential.user?.uid ?? '');
+    auth.UserCredential userCredential =
+        await auth.FirebaseAuth.instance.signInWithCredential(authCredential);
+    UserModel? user = await getCurrentUser(userCredential.user?.uid ?? '');
     if (user != null && user.role == USER_ROLE_DRIVER) {
       user.fcmToken = await firebaseMessaging.getToken() ?? '';
       user.role = USER_ROLE_DRIVER;
       user.isActive = false;
-      log("Hello 19");
       await updateCurrentUser(user);
       return user;
     } else if (user == null) {
@@ -2351,24 +2371,18 @@ class FireStoreUtils {
           userCredential.user?.uid ?? '',
         );
       }
-      User user = User(
+      UserModel user = UserModel(
         firstName: firstName,
         lastName: lastName,
         fcmToken: await firebaseMessaging.getToken() ?? '',
         phoneNumber: phoneNumber,
         profilePictureURL: profileImageUrl,
-        userID: userCredential.user?.uid ?? '',
+        id: userCredential.user?.uid ?? '',
         isActive: false,
         active: false,
-        lastOnlineTimestamp: Timestamp.now(),
-        settings: UserSettings(),
         email: '',
         role: USER_ROLE_DRIVER,
-        carName: carName,
-        carMakes: carMakes,
-        carNumber: carPlates,
         carPictureURL: carPicUrl,
-        vehicleType: vehicleType.toString(),
         serviceType: serviceType.toString(),
       );
       String? errorMessage = await firebaseCreateNewUser(user);
@@ -2396,11 +2410,11 @@ class FireStoreUtils {
     String? vehicleType,
   }) async {
     try {
-      auth.UserCredential result = await auth.FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-            email: emailAddress,
-            password: password,
-          );
+      auth.UserCredential result =
+          await auth.FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailAddress,
+        password: password,
+      );
       String profilePicUrl = '';
       String carPicUrl = DEFAULT_CAR_IMAGE;
 
@@ -2437,27 +2451,20 @@ class FireStoreUtils {
         );
       }
 
-      User user = User(
+      UserModel user = UserModel(
         email: emailAddress,
-        settings: UserSettings(),
-        lastOnlineTimestamp: Timestamp.now(),
         isActive: false,
         active: false,
         phoneNumber: mobile,
         firstName: firstName,
-        userID: result.user?.uid ?? '',
+        id: result.user?.uid ?? '',
         lastName: lastName,
         fcmToken: await firebaseMessaging.getToken() ?? '',
         profilePictureURL: profilePicUrl,
         carPictureURL: carPicUrl,
-        carNumber: carPlate,
-        carName: carName,
         role: USER_ROLE_DRIVER,
         serviceType: serviceType,
-        carProofPictureURL: carProofUrl,
-        driverProofPictureURL: driverProofUrl,
         createdAt: Timestamp.now(),
-        vehicleType: vehicleType ?? "",
       );
       String? errorMessage = await firebaseCreateNewUser(user);
       if (errorMessage == null) {
@@ -2510,11 +2517,11 @@ class FireStoreUtils {
     String companyAddress,
   ) async {
     try {
-      auth.UserCredential result = await auth.FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-            email: emailAddress,
-            password: password,
-          );
+      auth.UserCredential result =
+          await auth.FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailAddress,
+        password: password,
+      );
       String profilePicUrl = '';
       String carPicUrl = DEFAULT_CAR_IMAGE;
       String driverProofUrl = '';
@@ -2549,29 +2556,22 @@ class FireStoreUtils {
         );
       }
 
-      User user = User(
+      UserModel user = UserModel(
         email: emailAddress,
-        settings: UserSettings(),
-        lastOnlineTimestamp: Timestamp.now(),
         isActive: false,
         active: false,
         phoneNumber: mobile,
         firstName: firstName,
-        userID: result.user?.uid ?? '',
+        id: result.user?.uid ?? '',
         lastName: lastName,
         fcmToken: await firebaseMessaging.getToken() ?? '',
         profilePictureURL: profilePicUrl,
         carPictureURL: carPicUrl,
-        carNumber: carPlate,
-        carName: carName,
         // isCompany: companyOrNot == "company" ? true : false,
         // companyName: companyName,
         // companyAddress: companyAddress,
         role: USER_ROLE_DRIVER,
         serviceType: serviceType,
-        vehicleType: vehicleType,
-        carProofPictureURL: carProofUrl,
-        driverProofPictureURL: driverProofUrl,
         createdAt: Timestamp.now(),
       );
       String? errorMessage = await firebaseCreateNewUser(user);
@@ -2629,11 +2629,11 @@ class FireStoreUtils {
     String vehicleId,
   ) async {
     try {
-      auth.UserCredential result = await auth.FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-            email: emailAddress,
-            password: password,
-          );
+      auth.UserCredential result =
+          await auth.FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: emailAddress,
+        password: password,
+      );
       String profilePicUrl = '';
       String carPicUrl = DEFAULT_CAR_IMAGE;
       String driverProofUrl = '';
@@ -2668,34 +2668,24 @@ class FireStoreUtils {
         );
       }
 
-      User user = User(
+      UserModel user = UserModel(
         email: emailAddress,
-        settings: UserSettings(),
-        lastOnlineTimestamp: Timestamp.now(),
         isActive: false,
         active: false,
         phoneNumber: mobile,
         firstName: firstName,
-        userID: result.user?.uid ?? '',
+        id: result.user?.uid ?? '',
         lastName: lastName,
         fcmToken: await firebaseMessaging.getToken() ?? '',
         profilePictureURL: profilePicUrl,
         carPictureURL: carPicUrl,
-        carNumber: carPlate,
-        carName: carModel,
-        carMakes: carMakes,
-        vehicleType: vehicleType,
         serviceType: serviceType,
         role: USER_ROLE_DRIVER,
         // isCompany: companyOrNot == "company" ? true : false,
         // companyName: companyName,
         // companyAddress: companyAddress,
-        carProofPictureURL: carProofUrl,
-        driverProofPictureURL: driverProofUrl,
-        carColor: carColor,
         sectionId: sectionId,
         rideType: 'ride',
-        vehicleId: vehicleId,
         createdAt: Timestamp.now(),
       );
       String? errorMessage = await firebaseCreateNewUser(user);
@@ -2773,10 +2763,9 @@ class FireStoreUtils {
         .reauthenticateWithCredential(credential);
   }
 
-  static resetPassword(String emailAddress) async => await auth
-      .FirebaseAuth
-      .instance
-      .sendPasswordResetEmail(email: emailAddress);
+  static resetPassword(String emailAddress) async =>
+      await auth.FirebaseAuth.instance
+          .sendPasswordResetEmail(email: emailAddress);
 
   static deleteUser() async {
     try {
@@ -2801,10 +2790,10 @@ class FireStoreUtils {
           .where('source', isEqualTo: uid)
           .get()
           .then((value) async {
-            for (var doc in value.docs) {
-              await firestore.doc(doc.reference.path).delete();
-            }
-          });
+        for (var doc in value.docs) {
+          await firestore.doc(doc.reference.path).delete();
+        }
+      });
 
       // delete user records from REPORTS table
       await firestore
@@ -2812,10 +2801,10 @@ class FireStoreUtils {
           .where('dest', isEqualTo: uid)
           .get()
           .then((value) async {
-            for (var doc in value.docs) {
-              await firestore.doc(doc.reference.path).delete();
-            }
-          });
+        for (var doc in value.docs) {
+          await firestore.doc(doc.reference.path).delete();
+        }
+      });
 
       await firestore.collection(USERS).doc(uid).delete();
 
@@ -2836,22 +2825,22 @@ class FireStoreUtils {
         .where('type', isEqualTo: type)
         .get()
         .then((value) {
-          print("------>");
-          if (value.docs.isNotEmpty) {
-            print(value.docs.first.data());
+      print("------>");
+      if (value.docs.isNotEmpty) {
+        print(value.docs.first.data());
 
-            notificationModel = NotificationModel.fromJson(
-              value.docs.first.data(),
-            );
-          } else {
-            notificationModel = NotificationModel(
-              id: "",
-              message: "Notification setup is pending",
-              subject: "setup notification",
-              type: "",
-            );
-          }
-        });
+        notificationModel = NotificationModel.fromJson(
+          value.docs.first.data(),
+        );
+      } else {
+        notificationModel = NotificationModel(
+          id: "",
+          message: "Notification setup is pending",
+          subject: "setup notification",
+          type: "",
+        );
+      }
+    });
     return notificationModel;
   }
 
@@ -2884,12 +2873,12 @@ class FireStoreUtils {
       scopes,
     );
 
-    auth.AccessCredentials credentials = await auth
-        .obtainAccessCredentialsViaServiceAccount(
-          auth.ServiceAccountCredentials.fromJson(serviceAccJson),
-          scopes,
-          client,
-        );
+    auth.AccessCredentials credentials =
+        await auth.obtainAccessCredentialsViaServiceAccount(
+      auth.ServiceAccountCredentials.fromJson(serviceAccJson),
+      scopes,
+      client,
+    );
 
     client.close();
 
@@ -2933,10 +2922,10 @@ class FireStoreUtils {
                 },
                 "sound":
                     notificationModel.subject.toString().toLowerCase().contains(
-                      'New'.toLowerCase(),
-                    )
-                    ? "notification_sound.wav"
-                    : "default",
+                              'New'.toLowerCase(),
+                            )
+                        ? "notification_sound.wav"
+                        : "default",
                 "badge": 1,
               },
             },

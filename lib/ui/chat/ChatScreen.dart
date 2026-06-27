@@ -418,7 +418,7 @@
 //   }
 //
 //   Widget buildMessage(MessageData messageData, List<User> members) {
-//     if (messageData.senderID == MyAppState.currentUser!.userID) {
+//     if (messageData.senderID == Constant.userModel!.id) {
 //       return myMessageView(messageData);
 //     } else {
 //       return remoteMessageView(
@@ -775,7 +775,7 @@
 //     } else {
 //       String channelID;
 //       User friend = homeConversationModel.members.first;
-//       User user = MyAppState.currentUser!;
+//       User user = Constant.userModel!;
 //       if (friend.userID.compareTo(user.userID) < 0) {
 //         channelID = friend.userID + user.userID;
 //       } else {
@@ -802,19 +802,19 @@
 //         recipientID: homeConversationModel.members.first.userID,
 //         recipientLastName: homeConversationModel.members.first.lastName,
 //         recipientProfilePictureURL: homeConversationModel.members.first.profilePictureURL,
-//         senderFirstName: MyAppState.currentUser!.firstName,
-//         senderID: MyAppState.currentUser!.userID,
-//         senderLastName: MyAppState.currentUser!.lastName,
-//         senderProfilePictureURL: MyAppState.currentUser!.profilePictureURL,
+//         senderFirstName: Constant.userModel!.firstName,
+//         senderID: Constant.userModel!.id,
+//         senderLastName: Constant.userModel!.lastName,
+//         senderProfilePictureURL: Constant.userModel!.profilePictureURL,
 //         url: url,
 //         videoThumbnail: videoThumbnail);
 //
 //     if (url.mime.contains('image')) {
-//       message.content = '{} sent an image'.tr(args: ['${MyAppState.currentUser!.firstName}']);
+//       message.content = '{} sent an image'.tr(args: ['${Constant.userModel!.firstName}']);
 //     } else if (url.mime.contains('video')) {
-//       message.content = '{} sent a video'.tr(args: ['${MyAppState.currentUser!.firstName}']);
+//       message.content = '{} sent a video'.tr(args: ['${Constant.userModel!.firstName}']);
 //     } else if (url.mime.contains('audio')) {
-//       message.content = '{} sent a voice message'.tr(args: ['${MyAppState.currentUser!.firstName}']);
+//       message.content = '{} sent a voice message'.tr(args: ['${Constant.userModel!.firstName}']);
 //     }
 //     if (await _checkChannelNullability(homeConversationModel.conversationModel)) {
 //       await _fireStoreUtils.sendMessage(homeConversationModel.members, message, homeConversationModel.conversationModel!);

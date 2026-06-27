@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:door_delights_driver/models/user_model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/main.dart';
-import 'package:door_delights_driver/model/User.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/services/show_toast_dialog.dart';
@@ -15,8 +15,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../constant/constant.dart';
+
 class ProfileScreen extends StatefulWidget {
-  final User user;
+  final UserModel user;
 
   ProfileScreen({Key? key, required this.user}) : super(key: key);
 
@@ -26,7 +28,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final ImagePicker _imagePicker = ImagePicker();
-  late User user;
+  late UserModel user;
 
   @override
   void initState() {
@@ -52,7 +54,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: <Widget>[
                         Center(
                           child: displayCircleImage(
-                            user.profilePictureURL,
+                            user.profilePictureURL ?? '',
                             130,
                             false,
                           ),
@@ -81,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: <Widget>[
                         Center(
                           child: displayCarImage(
-                            user.carPictureURL,
+                            user.carPictureURL ?? '',
                             130,
                             false,
                           ),
@@ -207,10 +209,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ).tr(),
                   onPressed: () async {
                     user.isActive = false;
-                    user.lastOnlineTimestamp = Timestamp.now();
+                    // user.lastOnlineTimestamp = Timestamp.now();
                     await FireStoreUtils.updateCurrentUser(user);
                     await auth.FirebaseAuth.instance.signOut();
-                    MyAppState.currentUser = null;
+                    Constant.userModel = null;
                     pushAndRemoveUntil(context, AuthScreen(), false);
                   },
                 ),
@@ -230,7 +232,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ShowToastDialog.showLoader("Please wait"..tr());
         await FireStoreUtils.deleteUser();
 
-        MyAppState.currentUser = null;
+        Constant.userModel = null;
         ShowToastDialog.closeLoader();
         ShowToastDialog.showToast("Account delete"..tr());
         pushAndRemoveUntil(context, AuthScreen(), false);
@@ -274,7 +276,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             showProgress(context, 'Removing Picture...'.tr(), false);
             isUserImage ? user.profilePictureURL = '' : user.carPictureURL = '';
             await FireStoreUtils.updateCurrentUser(user);
-            MyAppState.currentUser = user;
+            Constant.userModel = user;
             hideProgress();
             setState(() {});
           },
@@ -324,14 +326,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
     if (isUserImage)
       user.profilePictureURL =
-          await FireStoreUtils.uploadUserImageToFireStorage(image, user.userID);
+          await FireStoreUtils.uploadUserImageToFireStorage(image, user.id!);
     else
       user.carPictureURL = await FireStoreUtils.uploadCarImageToFireStorage(
         image,
-        user.userID,
+        user.id!,
       );
     await FireStoreUtils.updateCurrentUser(user);
-    MyAppState.currentUser = user;
+    Constant.userModel = user;
     setState(() {});
     hideProgress();
   }

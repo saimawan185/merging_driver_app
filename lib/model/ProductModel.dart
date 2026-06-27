@@ -1,6 +1,8 @@
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/model/variant_info.dart';
 
+import '../models/tax_model.dart';
+
 class ProductModel {
   dynamic extras;
   dynamic variant_info;
@@ -16,6 +18,7 @@ class ProductModel {
   bool scheduleBase;
   bool prescriptionRequired;
   bool loaderVehicle;
+  List<TaxModel>? taxSetting;
 
   ProductModel({
     this.id = '',

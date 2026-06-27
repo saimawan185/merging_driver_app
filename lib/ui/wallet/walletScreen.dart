@@ -2,16 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:door_delights_driver/app/cab_screen/cab_order_details.dart';
+import 'package:door_delights_driver/app/parcel_screen/parcel_order_details.dart';
+import 'package:door_delights_driver/app/rental_service/rental_order_details_screen.dart';
 import 'package:door_delights_driver/model/onePaySettingsModel.dart';
 import 'package:door_delights_driver/services/onepaypayment.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:door_delights_driver/CabService/cab_order_detail_screen.dart';
-import 'package:door_delights_driver/Parcel_service/parcel_order_detail_screen.dart';
-import 'package:door_delights_driver/Parcel_service/parcel_order_model.dart';
 import 'package:door_delights_driver/model/CabOrderModel.dart';
 import 'package:door_delights_driver/model/FlutterWaveSettingDataModel.dart';
 import 'package:door_delights_driver/model/MercadoPagoSettingsModel.dart';
-import 'package:door_delights_driver/model/OrderModel.dart';
 import 'package:door_delights_driver/model/PayFastSettingData.dart';
 import 'package:door_delights_driver/model/PayStackSettingsModel.dart';
 import 'package:door_delights_driver/model/StripePayFailedModel.dart';
@@ -23,8 +22,6 @@ import 'package:door_delights_driver/model/paytmSettingData.dart';
 import 'package:door_delights_driver/model/razorpayKeyModel.dart';
 import 'package:door_delights_driver/model/stripeSettingData.dart';
 import 'package:door_delights_driver/model/withdrawHistoryModel.dart';
-import 'package:door_delights_driver/rental_service/model/rental_order_model.dart';
-import 'package:door_delights_driver/rental_service/renatal_summary_screen.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/services/payStackScreen.dart';
@@ -38,27 +35,32 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/instance_manager.dart';
+import 'package:get/route_manager.dart';
 // import 'package:flutter_paypal_native/flutter_paypal_native.dart';
-// import 'package:flutter_paypal_native/models/custom/currency_code.dart';
-// import 'package:flutter_paypal_native/models/custom/environment.dart';
-// import 'package:flutter_paypal_native/models/custom/order_callback.dart';
-// import 'package:flutter_paypal_native/models/custom/purchase_unit.dart';
-// import 'package:flutter_paypal_native/models/custom/user_action.dart';
-// import 'package:flutter_paypal_native/str_helper.dart';
-// import 'package:flutter_stripe/flutter_stripe.dart' as stripe1;
-// import 'package:flutterwave_standard/flutterwave.dart';
+// ... other imports omitted for brevity (keep as is)
+
 import 'package:get/state_manager.dart';
 import 'package:http/http.dart' as http;
 import 'package:mercadopago_sdk/mercadopago_sdk.dart';
 import 'package:open_file/open_file.dart';
-// import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
-// import 'package:paytm_allinonesdk/paytm_allinonesdk.dart';
-// import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
+import '../../constant/constant.dart';
 import '../../constants.dart';
 import '../../main.dart';
-import '../../model/User.dart';
+import '../../models/order_model.dart';
+import '../../models/parcel_order_model.dart';
+import '../../models/rental_order_model.dart';
+import '../../models/user_model.dart';
+import '../../models/withdrawal_model.dart';
+import '../../theme/app_them_data.dart';
+import '../../theme/responsive.dart';
+import '../../theme/round_button_fill.dart';
+import '../../themes/text_field_widget.dart';
+import '../../themes/theme_controller.dart';
+import '../../widget/my_separator.dart';
 import 'card_management_screen.dart';
 
 class WalletScreen extends StatefulWidget {
@@ -102,15 +104,14 @@ class WalletScreenState extends State<WalletScreen> {
 
     DateTime nowDate = DateTime.now();
 
-    if (MyAppState.currentUser!.serviceType == "cab-service") {
-      ///earnings History
-
+    // Use serviceType (singular) for all checks
+    if (Constant.userModel!.serviceType == "cab-service") {
       dailyEarningQuery = fireStore
           .collection(RIDESORDER)
           .where('driverID', isEqualTo: driverId)
-          .where('createdAt',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(
-                  DateTime(nowDate.year, nowDate.month, nowDate.day)))
+          // .where('createdAt',
+          //     isGreaterThanOrEqualTo: Timestamp.fromDate(
+          //         DateTime(nowDate.year, nowDate.month, nowDate.day)))
           .orderBy('createdAt', descending: true)
           .snapshots();
 
@@ -134,14 +135,13 @@ class WalletScreenState extends State<WalletScreen> {
               )))
           .orderBy('createdAt', descending: true)
           .snapshots();
-    } else if (MyAppState.currentUser!.serviceType == "parcel_delivery") {
-      ///earnings History
+    } else if (Constant.userModel!.serviceType == "parcel_delivery") {
       dailyEarningQuery = fireStore
           .collection(PARCELORDER)
           .where('driverID', isEqualTo: driverId)
-          .where('createdAt',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(
-                  DateTime(nowDate.year, nowDate.month, nowDate.day)))
+          // .where('createdAt',
+          //     isGreaterThanOrEqualTo: Timestamp.fromDate(
+          //         DateTime(nowDate.year, nowDate.month, nowDate.day)))
           .orderBy('createdAt', descending: true)
           .snapshots();
 
@@ -165,15 +165,13 @@ class WalletScreenState extends State<WalletScreen> {
               )))
           .orderBy('createdAt', descending: true)
           .snapshots();
-    } else if (MyAppState.currentUser!.serviceType == "rental-service") {
-      ///earnings History
-
+    } else if (Constant.userModel!.serviceType == "rental-service") {
       dailyEarningQuery = fireStore
           .collection(RENTALORDER)
           .where('driverID', isEqualTo: driverId)
-          .where('createdAt',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(
-                  DateTime(nowDate.year, nowDate.month, nowDate.day)))
+          // .where('createdAt',
+          //     isGreaterThanOrEqualTo: Timestamp.fromDate(
+          //         DateTime(nowDate.year, nowDate.month, nowDate.day)))
           .orderBy('createdAt', descending: true)
           .snapshots();
 
@@ -198,14 +196,13 @@ class WalletScreenState extends State<WalletScreen> {
           .orderBy('createdAt', descending: true)
           .snapshots();
     } else {
-      ///earnings History
-
+      // default: delivery-service
       dailyEarningQuery = fireStore
           .collection(ORDERS)
           .where('driverID', isEqualTo: driverId)
-          .where('createdAt',
-              isGreaterThanOrEqualTo: Timestamp.fromDate(
-                  DateTime(nowDate.year, nowDate.month, nowDate.day)))
+          // .where('createdAt',
+          //     isGreaterThanOrEqualTo: Timestamp.fromDate(
+          //         DateTime(nowDate.year, nowDate.month, nowDate.day)))
           .orderBy('createdAt', descending: true)
           .snapshots();
 
@@ -242,10 +239,9 @@ class WalletScreenState extends State<WalletScreen> {
     ));
   }
 
-  final userId = MyAppState.currentUser!.userID;
-  final driverId =
-      MyAppState.currentUser!.userID; //'8BBDG88lB4dqRaCcLIhdonuwQtU2';
-  UserBankDetails? userBankDetail = MyAppState.currentUser!.userBankDetails;
+  final userId = Constant.userModel!.id!;
+  final driverId = Constant.userModel!.id; //'8BBDG88lB4dqRaCcLIhdonuwQtU2';
+  UserBankDetails? userBankDetail = Constant.userModel!.userBankDetails;
   String walletAmount = "0.0";
 
   paymentCompleted({required String paymentMethod}) async {
@@ -255,7 +251,7 @@ class WalletScreenState extends State<WalletScreen> {
               paymentMethod: paymentMethod,
               amount: double.parse(_amountController.text),
               id: paymentID,
-              userID: MyAppState.currentUser!.userID)
+              userID: Constant.userModel!.id!)
           .then((value) {
         FireStoreUtils.updateWalletAmount(
                 userId: userId, amount: double.parse(_amountController.text))
@@ -303,10 +299,8 @@ class WalletScreenState extends State<WalletScreen> {
         .where('user_id', isEqualTo: userId)
         .orderBy('date', descending: true)
         .snapshots();
-    userQuery = fireStore
-        .collection(USERS)
-        .doc(MyAppState.currentUser!.userID)
-        .snapshots();
+    userQuery =
+        fireStore.collection(USERS).doc(Constant.userModel!.id).snapshots();
 
     // razorPayData = await UserPreference.getRazorPayData();
     onePaySettingData = await UserPreference.getOnePayData();
@@ -386,91 +380,74 @@ class WalletScreenState extends State<WalletScreen> {
         child: Column(
           children: [
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 15.0, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Container(
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(22),
-                    image: DecorationImage(
-                        fit: BoxFit.fitWidth,
-                        image: AssetImage("assets/images/earning_bg_@3x.png"))),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        //   crossAxisAlignment: CrossAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(
-                            height: 40,
-                          ),
-                          Text(
-                            "Total Balance".tr(),
+                width: Responsive.width(100, context),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(20)),
+                  image: DecorationImage(
+                    image: AssetImage("assets/images/earning_bg_@3x.png"),
+                    fit: BoxFit.fill,
+                  ),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Column(
+                    children: [
+                      Text(
+                        "My Wallet".tr(),
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 18),
+                      ),
+                      const SizedBox(height: 10),
+                      StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                        stream: userQuery,
+                        builder: (context,
+                            AsyncSnapshot<
+                                    DocumentSnapshot<Map<String, dynamic>>>
+                                asyncSnapshot) {
+                          if (asyncSnapshot.hasError) {
+                            return Text(
+                              "error".tr(),
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 30),
+                            );
+                          }
+                          if (asyncSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return Center(
+                                child: SizedBox(
+                                    height: 30,
+                                    width: 30,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 0.8,
+                                      color: Colors.white,
+                                      backgroundColor: Colors.transparent,
+                                    )));
+                          }
+                          UserModel userData =
+                              UserModel.fromJson(asyncSnapshot.data!.data()!);
+                          walletAmount = userData.walletAmount.toString();
+                          return Text(
+                            "${amountShow(amount: userData.walletAmount.toString())}",
                             style: TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 18),
-                          ),
-                          Padding(
-                            padding:
-                                const EdgeInsets.only(top: 10.0, bottom: 25.0),
-                            child: StreamBuilder<
-                                DocumentSnapshot<Map<String, dynamic>>>(
-                              stream: userQuery,
-                              builder: (context,
-                                  AsyncSnapshot<
-                                          DocumentSnapshot<
-                                              Map<String, dynamic>>>
-                                      asyncSnapshot) {
-                                if (asyncSnapshot.hasError) {
-                                  return Text(
-                                    "error".tr(),
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 30),
-                                  );
-                                }
-                                if (asyncSnapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return Center(
-                                      child: SizedBox(
-                                          height: 30,
-                                          width: 30,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 0.8,
-                                            color: Colors.white,
-                                            backgroundColor: Colors.transparent,
-                                          )));
-                                }
-                                User userData =
-                                    User.fromJson(asyncSnapshot.data!.data()!);
-                                walletAmount = userData.walletAmount.toString();
-                                return Text(
-                                  "${amountShow(amount: userData.walletAmount.toString())}",
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 28),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
+                                fontWeight: FontWeight.bold,
+                                fontSize: 28),
+                          );
+                        },
                       ),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                            bottom: 15.0, right: 15, left: 15),
-                        child: buildTopUpButton(),
+                      const SizedBox(
+                        height: 20,
                       ),
-                    ),
-                  ],
+                      buildTopUpButton(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -479,140 +456,160 @@ class WalletScreenState extends State<WalletScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 10, top: 5),
-        child: MyAppState.currentUser!.serviceType == "rental-service" ||
-                MyAppState.currentUser!.serviceType == "cab-service"
-            ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  buildButton(context, width: 0.32, title: 'WITHDRAW'.tr(),
-                      onPress: () {
-                    if (MyAppState.currentUser!.userBankDetails.accountNumber
-                        .isNotEmpty) {
-                      withdrawAmountBottomSheet(context);
-                    } else {
-                      final snackBar = SnackBar(
-                        backgroundColor: Colors.red[400],
-                        content: Text(
-                          'Please add your Bank Details first'.tr(),
-                        ),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    }
-                  }),
-                  buildTransButton(context,
-                      width: 0.55,
-                      title: 'WITHDRAWAL HISTORY'.tr(), onPress: () {
-                    if (MyAppState.currentUser!.userBankDetails.accountNumber
-                        .isNotEmpty) {
-                      withdrawalHistoryBottomSheet(context);
-                    } else {
-                      final snackBar = SnackBar(
-                        backgroundColor: Colors.red[400],
-                        content: Text(
-                          'Please add your Bank Details first'.tr(),
-                        ),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    }
-                  }),
-                ],
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  buildButton(context, width: 0.32, title: 'WITHDRAW'.tr(),
-                      onPress: () {
-                    if (MyAppState.currentUser!.userBankDetails.accountNumber
-                        .isNotEmpty) {
-                      withdrawAmountBottomSheet(context);
-                    } else {
-                      final snackBar = SnackBar(
-                        backgroundColor: Colors.red[400],
-                        content: Text(
-                          'Please add your Bank Details first'.tr(),
-                        ),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    }
-                  }),
-                  buildTransButton(context,
-                      width: 0.55,
-                      title: 'WITHDRAWAL HISTORY'.tr(), onPress: () {
-                    if (MyAppState.currentUser!.userBankDetails.accountNumber
-                        .isNotEmpty) {
-                      withdrawalHistoryBottomSheet(context);
-                    } else {
-                      final snackBar = SnackBar(
-                        backgroundColor: Colors.red[400],
-                        content: Text(
-                          'Please add your Bank Details first'.tr(),
-                        ),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                    }
-                  }),
-                ],
-              ),
-      ),
+      // bottomNavigationBar: Padding(
+      //   padding: const EdgeInsets.only(bottom: 10, top: 5),
+      //   child: Constant.userModel!.serviceType == "rental-service" ||
+      //           Constant.userModel!.serviceType == "cab-service"
+      //       ? Row(
+      //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      //           children: [
+      //             buildButton(context, width: 0.32, title: 'WITHDRAW'.tr(),
+      //                 onPress: () {
+      //               if (Constant.userModel!.userBankDetails != null &&
+      //                   Constant.userModel!.userBankDetails!.accountNumber
+      //                       .isNotEmpty) {
+      //                 withdrawAmountBottomSheet(context);
+      //               } else {
+      //                 final snackBar = SnackBar(
+      //                   backgroundColor: Colors.red[400],
+      //                   content: Text(
+      //                     'Please add your Bank Details first'.tr(),
+      //                   ),
+      //                 );
+      //                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      //               }
+      //             }),
+      //             buildTransButton(context,
+      //                 width: 0.55,
+      //                 title: 'WITHDRAWAL HISTORY'.tr(), onPress: () {
+      //               if (Constant.userModel!.userBankDetails != null &&
+      //                   Constant.userModel!.userBankDetails!.accountNumber
+      //                       .isNotEmpty) {
+      //                 withdrawalHistoryBottomSheet(context);
+      //               } else {
+      //                 final snackBar = SnackBar(
+      //                   backgroundColor: Colors.red[400],
+      //                   content: Text(
+      //                     'Please add your Bank Details first'.tr(),
+      //                   ),
+      //                 );
+      //                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      //               }
+      //             }),
+      //           ],
+      //         )
+      //       : Row(
+      //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      //           children: [
+      //             buildButton(context, width: 0.32, title: 'WITHDRAW'.tr(),
+      //                 onPress: () {
+      //               if (Constant.userModel!.userBankDetails != null &&
+      //                   Constant.userModel!.userBankDetails!.accountNumber
+      //                       .isNotEmpty) {
+      //                 withdrawAmountBottomSheet(context);
+      //               } else {
+      //                 final snackBar = SnackBar(
+      //                   backgroundColor: Colors.red[400],
+      //                   content: Text(
+      //                     'Please add your Bank Details first'.tr(),
+      //                   ),
+      //                 );
+      //                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      //               }
+      //             }),
+      //             buildTransButton(context,
+      //                 width: 0.55,
+      //                 title: 'WITHDRAWAL HISTORY'.tr(), onPress: () {
+      //               if (Constant.userModel!.userBankDetails != null &&
+      //                   Constant.userModel!.userBankDetails!.accountNumber
+      //                       .isNotEmpty) {
+      //                 withdrawalHistoryBottomSheet(context);
+      //               } else {
+      //                 final snackBar = SnackBar(
+      //                   backgroundColor: Colors.red[400],
+      //                   content: Text(
+      //                     'Please add your Bank Details first'.tr(),
+      //                   ),
+      //                 );
+      //                 ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      //               }
+      //             }),
+      //           ],
+      //         ),
+      // ),
     );
   }
 
   Widget buildTopUpButton() {
-    return Column(
-      children: [
-        FittedBox(
-          child: GestureDetector(
-            onTap: () {
-              topUpBalance();
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10),
-                child: Text(
-                  "TOPUP WALLET".tr(),
-                  style: TextStyle(
-                      color: Color(DARK_CARD_BG_COLOR),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16),
-                ),
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: RoundedButtonFill(
+              title: "Withdraw".tr(),
+              width: 24,
+              height: 5.5,
+              color: AppThemeData.grey50,
+              textColor: AppThemeData.grey900,
+              borderRadius: 200,
+              onPress: () {
+                if (Constant.userModel!.userBankDetails != null &&
+                    Constant
+                        .userModel!.userBankDetails!.accountNumber.isNotEmpty) {
+                  withdrawAmountBottomSheet(context);
+                } else {
+                  final snackBar = SnackBar(
+                    backgroundColor: Colors.red[400],
+                    content: Text(
+                      'Please add your Bank Details first'.tr(),
+                    ),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                }
+                // Navigator.push(context,
+                //     MaterialPageRoute(builder: (context) => TopUpScreen()));
+              },
             ),
           ),
-        ),
-        SizedBox(height: 5),
-        FittedBox(
-          child: InkWell(
-            onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => TopUpScreen()));
-            },
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(32),
-              ),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18.0, vertical: 10),
-                child: Text(
-                  "TOPUP HISTORY".tr(),
-                  style: TextStyle(
-                      color: Color(DARK_CARD_BG_COLOR),
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16),
-                ),
-              ),
+          const SizedBox(width: 20),
+          Expanded(
+            child: RoundedButtonFill(
+              title: "Top up".tr(),
+              width: 24,
+              height: 5.5,
+              borderRadius: 200,
+              color: AppThemeData.primary300,
+              textColor: AppThemeData.grey50,
+              onPress: () {
+                topUpBalance();
+              },
             ),
+            //  GestureDetector(
+            //   onTap: () {
+            //     topUpBalance();
+            //   },
+            //   child: Container(
+            //     decoration: BoxDecoration(
+            //       color: Colors.white,
+            //       borderRadius: BorderRadius.circular(32),
+            //     ),
+            //     child: Padding(
+            //       padding: const EdgeInsets.symmetric(
+            //           horizontal: 18.0, vertical: 10),
+            //       child: Text(
+            //         "Top up".tr(),
+            //         style: TextStyle(
+            //             color: Color(DARK_CARD_BG_COLOR),
+            //             fontWeight: FontWeight.w700,
+            //             fontSize: 16),
+            //       ),
+            //     ),
+            //   ),
+            // ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1567,41 +1564,6 @@ class WalletScreenState extends State<WalletScreen> {
         ),
       ),
     );
-
-    // var url = await OnePayPayment.makeApiCall(context,
-    //     onePaySettingData: onePaySettingData,
-    //     amount: double.parse(_amountController.text).toStringAsFixed(2),
-    //     user: MyAppState.currentUser!);
-
-    // if (url != '') {
-    //   print("PAYMENTURL :: " + url.toString());
-    //   final bool isDone = await Navigator.push(
-    //       context,
-    //       MaterialPageRoute(
-    //           builder: (context) => PaymentURLScreen(
-    //               initialURl: url.toString(),
-    //               returnUrl: onePaySettingData!.redirectUrl)));
-    //   if (isDone) {
-    //     Navigator.pop(context);
-    //     hideProgress();
-    //     paymentCompleted(paymentMethod: "Card");
-    //   } else {
-    //     Navigator.pop(_scaffoldKey.currentContext!);
-    //     hideProgress();
-    //     ScaffoldMessenger.of(_scaffoldKey.currentContext!)
-    //         .showSnackBar(SnackBar(
-    //       content: Text("Payment UnSuccessful!!".tr() + "\n"),
-    //       backgroundColor: Colors.red,
-    //     ));
-    //   }
-    // } else {
-    //   Navigator.pop(_scaffoldKey.currentContext!);
-    //   hideProgress();
-    //   ScaffoldMessenger.of(_globalKey.currentContext!).showSnackBar(SnackBar(
-    //     content: Text("Error while transaction!".tr()),
-    //     backgroundColor: Colors.red,
-    //   ));
-    // }
   }
 
   _flutterWaveInitiatePayment(
@@ -1611,9 +1573,9 @@ class WalletScreenState extends State<WalletScreen> {
     //   amount: _amountController.text.toString().trim(),
     //   currency: currencyData!.code,
     //   customer: Customer(
-    //       name: MyAppState.currentUser!.firstName,
-    //       phoneNumber: MyAppState.currentUser!.phoneNumber.trim(),
-    //       email: MyAppState.currentUser!.email.trim()),
+    //       name: Constant.userModel!.firstName,
+    //       phoneNumber: Constant.userModel!.phoneNumber.trim(),
+    //       email: Constant.userModel!.email.trim()),
     //   context: context,
     //   publicKey: flutterWaveSettingData!.publicKey.trim(),
     //   paymentOptions: "card, payattitude",
@@ -1887,9 +1849,9 @@ class WalletScreenState extends State<WalletScreen> {
   //       'currency': currencyData!.code,
   //       'payment_method_types[0]': 'card',
   //       // 'payment_method_types[1]': 'ideal',
-  //       "description": "${MyAppState.currentUser?.userID} Wallet Topup",
+  //       "description": "${Constant.userModel?.userID} Wallet Topup",
   //       "shipping[name]":
-  //           "${MyAppState.currentUser?.firstName} ${MyAppState.currentUser?.lastName}",
+  //           "${Constant.userModel?.firstName} ${Constant.userModel?.lastName}",
   //       "shipping[address][line1]": "510 Townsend St",
   //       "shipping[address][postal_code]": "98140",
   //       "shipping[address][city]": "San Francisco",
@@ -1927,8 +1889,8 @@ class WalletScreenState extends State<WalletScreen> {
   //     'retry': {'enabled': true, 'max_count': 1},
   //     'send_sms_hash': true,
   //     'prefill': {
-  //       'contact': MyAppState.currentUser!.phoneNumber,
-  //       'email': MyAppState.currentUser!.email,
+  //       'contact': Constant.userModel!.phoneNumber,
+  //       'email': Constant.userModel!.email,
   //     },
   //     'external': {
   //       'wallets': ['paytm']
@@ -2077,7 +2039,7 @@ class WalletScreenState extends State<WalletScreen> {
           "amount": amount.toString(),
           "currency": currencyData!.code,
           "callback_url": callback,
-          "custId": MyAppState.currentUser!.userID,
+          "custId": Constant.userModel!.id,
           "issandbox": paytmSettingData!.isSandboxEnabled ? "1" : "2",
         });
     final data = jsonDecode(response.body);
@@ -2157,54 +2119,68 @@ class WalletScreenState extends State<WalletScreen> {
   }
 
   tabController() {
-    return Expanded(
-      child: DefaultTabController(
-          length: 3,
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
-                child: Container(
-                  height: 40,
-                  child: TabBar(
-                    //indicator: BoxDecoration(color: const Color(COLOR_PRIMARY), borderRadius: BorderRadius.circular(2.0)),
-                    indicatorColor: Color(COLOR_PRIMARY),
-                    labelColor: Color(COLOR_PRIMARY),
-                    automaticIndicatorColorAdjustment: true,
-                    dragStartBehavior: DragStartBehavior.start,
-                    unselectedLabelColor:
-                        isDarkMode(context) ? Colors.white70 : Colors.black54,
-                    indicatorWeight: 1.5,
-                    //indicatorPadding: EdgeInsets.symmetric(horizontal: 10),
-                    enableFeedback: true,
-                    //unselectedLabelColor: const Colors,
-                    tabs: [
-                      Tab(text: 'Daily'.tr()),
-                      Tab(
-                        text: 'Monthly'.tr(),
-                      ),
-                      Tab(
-                        text: 'Yearly'.tr(),
-                      ),
-                    ],
+    final themeController = Get.find<ThemeController>();
+
+    return Obx(() {
+      final isDark = themeController.isDark.value;
+
+      return Expanded(
+        child: DefaultTabController(
+            length: 2,
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5),
+                  child: Container(
+                    height: 40,
+                    child: TabBar(
+                      //indicator: BoxDecoration(color: const Color(COLOR_PRIMARY), borderRadius: BorderRadius.circular(2.0)),
+                      indicatorColor: Color(COLOR_PRIMARY),
+                      labelColor: Color(COLOR_PRIMARY),
+                      automaticIndicatorColorAdjustment: true,
+                      dragStartBehavior: DragStartBehavior.start,
+                      unselectedLabelColor:
+                          isDark ? Colors.white70 : Colors.black54,
+                      indicatorWeight: 1.5,
+                      //indicatorPadding: EdgeInsets.symmetric(horizontal: 10),
+                      enableFeedback: true,
+                      //unselectedLabelColor: const Colors,
+                      tabs: [
+                        Tab(
+                          text: "Wallet History".tr(),
+                        ),
+                        Tab(
+                          text: "Withdrawal History".tr(),
+                        ),
+                        // Tab(text: 'Daily'.tr()),
+                        // Tab(
+                        //   text: 'Monthly'.tr(),
+                        // ),
+                        // Tab(
+                        //   text: 'Yearly'.tr(),
+                        // ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 2.0),
-                  child: TabBarView(
-                    children: [
-                      showEarningsHistory(context, query: dailyEarningQuery),
-                      showEarningsHistory(context, query: monthlyEarningQuery),
-                      showEarningsHistory(context, query: yearlyEarningQuery),
-                    ],
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2.0),
+                    child: TabBarView(
+                      children: [
+                        showEarningsHistory(context, query: dailyEarningQuery),
+                        showWithdrawalHistory(context,
+                            query: withdrawalHistoryQuery),
+                        // showEarningsHistory(context, query: monthlyEarningQuery),
+                        // showEarningsHistory(context, query: yearlyEarningQuery),
+                      ],
+                    ),
                   ),
-                ),
-              )
-            ],
-          )),
-    );
+                )
+              ],
+            )),
+      );
+    });
   }
 
   Widget showEarningsHistory(BuildContext context,
@@ -2225,45 +2201,29 @@ class WalletScreenState extends State<WalletScreen> {
           for (var document in snapshot.data!.docs) {
             final currentOrder;
             double amount = 0.0;
-            print("-------->" + MyAppState.currentUser!.serviceType);
-            if (MyAppState.currentUser!.serviceType == "cab-service") {
+            if (Constant.userModel!.serviceType == "cab-service") {
               currentOrder = CabOrderModel.fromJson(
                   document.data() as Map<String, dynamic>);
               amount = amount + double.parse(currentOrder!.subTotal ?? '0.0');
               amount = amount +
-                  double.parse((currentOrder!.tipValue == null ||
-                          currentOrder!.tipValue.toString().isEmpty)
+                  double.parse((currentOrder!.tipAmount == null ||
+                          currentOrder!.tipAmount.toString().isEmpty)
                       ? '0.0'
-                      : currentOrder!.tipValue.toString());
-
-              // amount = amount -
-              //     double.parse((currentOrder!.discount.toString() != 'null' &&
-              //             currentOrder!.discount.toString() != '')
-              //         ? currentOrder!.discount.toString()
-              //         : '0.0');
-
+                      : currentOrder!.tipAmount.toString());
               amount = double.parse(amount.toStringAsFixed(2));
               totalAmounts.add(amount.toString());
-            } else if (MyAppState.currentUser!.serviceType ==
-                "parcel_delivery") {
+            } else if (Constant.userModel!.serviceType == "parcel_delivery") {
               currentOrder = ParcelOrderModel.fromJson(
                   document.data() as Map<String, dynamic>);
-
               amount = amount + double.parse(currentOrder!.subTotal ?? '0.0');
-
-              // amount = amount -
-              //     double.parse((currentOrder!.discount.toString() != 'null' &&
-              //             currentOrder!.discount.toString() != '')
-              //         ? currentOrder!.discount.toString()
-              //         : '0.0');
-
               amount = double.parse(amount.toStringAsFixed(2));
               totalAmounts.add(amount.toString());
-            } else if (MyAppState.currentUser!.serviceType ==
-                "rental-service") {
+            } else if (Constant.userModel!.serviceType == "rental-service") {
               currentOrder = RentalOrderModel.fromJson(
                   document.data() as Map<String, dynamic>);
+              // Rental order processing (if needed)
             } else {
+              // delivery-service
               currentOrder =
                   OrderModel.fromJson(document.data() as Map<String, dynamic>);
               for (var product in currentOrder!.products) {
@@ -2276,12 +2236,6 @@ class WalletScreenState extends State<WalletScreen> {
               }
               amount =
                   amount + double.parse(currentOrder!.deliveryCharge ?? '0.0');
-
-              // amount = amount -
-              //     double.parse((currentOrder!.discount.toString() != 'null' &&
-              //             currentOrder!.discount.toString() != '')
-              //         ? currentOrder!.discount.toString()
-              //         : '0.0');
               amount = amount -
                   ((currentOrder!.specialDiscount != null &&
                           currentOrder!.specialDiscount is Map &&
@@ -2293,134 +2247,124 @@ class WalletScreenState extends State<WalletScreen> {
                                   0)
                               .toString())
                       : 0);
-              amount = amount +
-                  double.parse(currentOrder!.tipValue ?? '0.0') +
-                  double.parse(currentOrder!.serviceCharges!.toString());
-
+              amount = amount + double.parse(currentOrder!.tipAmount ?? '0.0');
+              double.parse(currentOrder!.serviceCharges!.toString());
               amount = amount -
                   double.parse(currentOrder!.deliveryDiscount!.toString());
-
               amount = double.parse(amount.toStringAsFixed(2));
               totalAmounts.add(amount.toString());
             }
 
             orderAmount.value = orderAmount.value + amount;
           }
+          final themeController = Get.find<ThemeController>();
 
-          return Column(
-            children: [
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          "Orders Amount".tr(),
-                          maxLines: 1,
-                          style: TextStyle(
-                            color: isDarkMode(context)
-                                ? Colors.white
-                                : Color(DARK_COLOR),
-                            fontSize: 14,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        Obx(
-                          () => Text(
-                            amountShow(amount: orderAmount.value.toString()),
+          return Obx(() {
+            final isDark = themeController.isDark.value;
+            return Column(
+              children: [
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            "Orders Amount".tr(),
                             maxLines: 1,
                             style: TextStyle(
-                              color: isDarkMode(context)
-                                  ? Colors.white
-                                  : Color(DARK_COLOR),
+                              color: isDark ? Colors.white : Color(DARK_COLOR),
+                              fontSize: 14,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Obx(
+                            () => Text(
+                              amountShow(amount: orderAmount.value.toString()),
+                              maxLines: 1,
+                              style: TextStyle(
+                                color:
+                                    isDark ? Colors.white : Color(DARK_COLOR),
+                                fontSize: 18,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          Text(
+                            "Total Orders.".tr(),
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Color(DARK_COLOR),
+                              fontSize: 14,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            snapshot.data!.docs.length.toString(),
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: isDark ? Colors.white : Color(DARK_COLOR),
                               fontSize: 18,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Text(
-                          "Total Orders.".tr(),
-                          maxLines: 1,
-                          style: TextStyle(
-                            color: isDarkMode(context)
-                                ? Colors.white
-                                : Color(DARK_COLOR),
-                            fontSize: 14,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        Text(
-                          snapshot.data!.docs.length.toString(),
-                          maxLines: 1,
-                          style: TextStyle(
-                            color: isDarkMode(context)
-                                ? Colors.white
-                                : Color(DARK_COLOR),
-                            fontSize: 18,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: buildButton(
-                      context,
-                      title: "Download Statement".tr(),
-                      onPress: () async {
-                        await createAndSavePdf(
-                            snapshot.data!.docs, totalAmounts);
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                ],
-              ),
-              SizedBox(height: 20),
-              Expanded(
-                child: ListView(
-                  shrinkWrap: true,
-                  children:
-                      snapshot.data!.docs.map((DocumentSnapshot document) {
-                    final earningData;
-                    print("-------->" + MyAppState.currentUser!.serviceType);
-                    if (MyAppState.currentUser!.serviceType == "cab-service") {
-                      earningData = CabOrderModel.fromJson(
-                          document.data() as Map<String, dynamic>);
-                    } else if (MyAppState.currentUser!.serviceType ==
-                        "parcel_delivery") {
-                      earningData = ParcelOrderModel.fromJson(
-                          document.data() as Map<String, dynamic>);
-                    } else if (MyAppState.currentUser!.serviceType ==
-                        "rental-service") {
-                      earningData = RentalOrderModel.fromJson(
-                          document.data() as Map<String, dynamic>);
-                    } else {
-                      earningData = OrderModel.fromJson(
-                          document.data() as Map<String, dynamic>);
-                    }
-
-                    return buildEarningCard(
-                      orderModel: earningData,
-                    );
-                  }).toList(),
+                  ],
                 ),
-              ),
-            ],
-          );
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: buildButton(
+                        context,
+                        title: "Download Statement".tr(),
+                        onPress: () async {
+                          await createAndSavePdf(
+                              snapshot.data!.docs, totalAmounts);
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                  ],
+                ),
+                SizedBox(height: 20),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: snapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      final document = snapshot.data!.docs[index];
+                      final earningData;
+                      if (Constant.userModel!.serviceType == "cab-service") {
+                        earningData = CabOrderModel.fromJson(
+                            document.data() as Map<String, dynamic>);
+                      } else if (Constant.userModel!.serviceType ==
+                          "parcel_delivery") {
+                        earningData = ParcelOrderModel.fromJson(
+                            document.data() as Map<String, dynamic>);
+                      } else if (Constant.userModel!.serviceType ==
+                          "rental-service") {
+                        earningData = RentalOrderModel.fromJson(
+                            document.data() as Map<String, dynamic>);
+                      } else {
+                        earningData = OrderModel.fromJson(
+                            document.data() as Map<String, dynamic>);
+                      }
+                      return buildEarningCard(orderModel: earningData);
+                    },
+                  ),
+                ),
+              ],
+            );
+          });
         } else {
           return Center(
               child: Text(
@@ -2460,13 +2404,13 @@ class WalletScreenState extends State<WalletScreen> {
       PdfGridRow row = grid.rows.add();
       for (int i = 0; i < transactions.length; i++) {
         final earningData;
-        if (MyAppState.currentUser!.serviceType == "cab-service") {
+        if (Constant.userModel!.serviceType == "cab-service") {
           earningData = CabOrderModel.fromJson(
               transactions[i].data() as Map<String, dynamic>);
-        } else if (MyAppState.currentUser!.serviceType == "parcel_delivery") {
+        } else if (Constant.userModel!.serviceType == "parcel_delivery") {
           earningData = ParcelOrderModel.fromJson(
               transactions[i].data() as Map<String, dynamic>);
-        } else if (MyAppState.currentUser!.serviceType == "rental-service") {
+        } else if (Constant.userModel!.serviceType == "rental-service") {
           earningData = RentalOrderModel.fromJson(
               transactions[i].data() as Map<String, dynamic>);
         } else {
@@ -2477,7 +2421,7 @@ class WalletScreenState extends State<WalletScreen> {
         row.cells[0].value = orderId(orderId: earningData.id.toString());
         row.cells[1].value = amountShow(amount: amounts[i].toString());
         row.cells[2].value =
-            amountShow(amount: (earningData.tipValue ?? 0).toString());
+            amountShow(amount: (earningData.tipAmount ?? 0).toString());
         row.cells[3].value = timestampToDateTime(earningData.createdAt);
         row = grid.rows.add();
       }
@@ -2527,7 +2471,7 @@ class WalletScreenState extends State<WalletScreen> {
     final size = MediaQuery.of(context).size;
     double amount = 0;
     double adminComm = 0.0;
-    if (MyAppState.currentUser!.serviceType == "cab-service") {
+    if (Constant.userModel!.serviceType == "cab-service") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
@@ -2554,12 +2498,12 @@ class WalletScreenState extends State<WalletScreen> {
       }
 
       print("--->finalAmount---- $subTotal");
-      double tipValue = orderModel.tipValue!.isEmpty
+      double tipAmount = orderModel.tipAmount!.isEmpty
           ? 0.0
-          : double.parse(orderModel.tipValue.toString());
-      amount = subTotal + totalTax + tipValue;
+          : double.parse(orderModel.tipAmount.toString());
+      amount = subTotal + totalTax + tipAmount;
       adminComm = adminComm;
-    } else if (MyAppState.currentUser!.serviceType == "parcel_delivery") {
+    } else if (Constant.userModel!.serviceType == "parcel_delivery") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
@@ -2585,7 +2529,7 @@ class WalletScreenState extends State<WalletScreen> {
       print("--->finalAmount---- $subTotal");
       amount = subTotal + totalTax;
       adminComm = adminComm;
-    } else if (MyAppState.currentUser!.serviceType == "rental-service") {
+    } else if (Constant.userModel!.serviceType == "rental-service") {
       double totalTax = 0.0;
       double subTotal = (double.parse(orderModel.subTotal.toString()) +
               double.parse(orderModel.driverRate.toString()))
@@ -2615,13 +2559,13 @@ class WalletScreenState extends State<WalletScreen> {
         amount += double.parse(orderModel.deliveryCharge!);
       }
 
-      if (orderModel.tipValue != null && orderModel.tipValue!.isNotEmpty) {
-        amount += double.parse(orderModel.tipValue!);
+      if (orderModel.tipAmount != null && orderModel.tipAmount!.isNotEmpty) {
+        amount += double.parse(orderModel.tipAmount!);
       }
     }
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-        child: MyAppState.currentUser!.serviceType == "delivery-service"
+        child: Constant.userModel!.serviceType == "delivery-service"
             ? Card(
                 elevation: 2,
                 shape: RoundedRectangleBorder(
@@ -2817,7 +2761,7 @@ class WalletScreenState extends State<WalletScreen> {
   showTransactionDetails({required orderModel}) {
     double amount = 0;
     double adminComm = 0.0;
-    if (MyAppState.currentUser!.serviceType == "cab-service") {
+    if (Constant.userModel!.serviceType == "cab-service") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
@@ -2842,13 +2786,13 @@ class WalletScreenState extends State<WalletScreen> {
       }
 
       print("--->finalAmount---- $subTotal");
-      double tipValue = orderModel.tipValue!.isEmpty
+      double tipAmount = orderModel.tipAmount!.isEmpty
           ? 0.0
-          : double.parse(orderModel.tipValue.toString());
+          : double.parse(orderModel.tipAmount.toString());
 
-      amount = subTotal + totalTax + tipValue;
+      amount = subTotal + totalTax + tipAmount;
       adminComm = adminComm;
-    } else if (MyAppState.currentUser!.serviceType == "parcel_delivery") {
+    } else if (Constant.userModel!.serviceType == "parcel_delivery") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
@@ -2872,7 +2816,7 @@ class WalletScreenState extends State<WalletScreen> {
 
       amount = subTotal + totalTax;
       adminComm = adminComm;
-    } else if (MyAppState.currentUser!.serviceType == "rental-service") {
+    } else if (Constant.userModel!.serviceType == "rental-service") {
       double totalTax = 0.0;
       double subTotal = (double.parse(orderModel.subTotal.toString()) +
           double.parse(orderModel.driverRate.toString()));
@@ -3118,7 +3062,7 @@ class WalletScreenState extends State<WalletScreen> {
                         ),
                         GestureDetector(
                           onTap: () async {
-                            if (MyAppState.currentUser!.serviceType ==
+                            if (Constant.userModel!.serviceType ==
                                 "cab-service") {
                               await FireStoreUtils.firestore
                                   .collection(RIDESORDER)
@@ -3127,13 +3071,9 @@ class WalletScreenState extends State<WalletScreen> {
                                   .then((value) {
                                 CabOrderModel orderModel =
                                     CabOrderModel.fromJson(value.data()!);
-                                push(
-                                    context,
-                                    CabOrderDetailScreen(
-                                      orderModel: orderModel,
-                                    ));
+                                push(context, CabOrderDetails());
                               });
-                            } else if (MyAppState.currentUser!.serviceType ==
+                            } else if (Constant.userModel!.serviceType ==
                                 "parcel_delivery") {
                               await FireStoreUtils.firestore
                                   .collection(PARCELORDER)
@@ -3142,13 +3082,9 @@ class WalletScreenState extends State<WalletScreen> {
                                   .then((value) {
                                 ParcelOrderModel orderModel =
                                     ParcelOrderModel.fromJson(value.data()!);
-                                push(
-                                    context,
-                                    ParcelOrderDetailScreen(
-                                      orderModel: orderModel,
-                                    ));
+                                push(context, ParcelOrderDetails());
                               });
-                            } else if (MyAppState.currentUser!.serviceType ==
+                            } else if (Constant.userModel!.serviceType ==
                                 "rental-service") {
                               await FireStoreUtils.firestore
                                   .collection(RENTALORDER)
@@ -3159,9 +3095,9 @@ class WalletScreenState extends State<WalletScreen> {
                                     RentalOrderModel.fromJson(value.data()!);
                                 push(
                                     context,
-                                    RenatalSummaryScreen(
-                                      rentalOrderModel: orderModel,
-                                    ));
+                                    RentalOrderDetailsScreen(
+                                        // rentalOrderModel: orderModel,
+                                        ));
                               });
                             }
                           },
@@ -3190,7 +3126,7 @@ class WalletScreenState extends State<WalletScreen> {
   // Widget buildEarningCard({required var orderModel}) {
   //   final size = MediaQuery.of(context).size;
   //   double amount = 0;
-  //   if (MyAppState.currentUser!.serviceType == "cab-service") {
+  //   if (Constant.userModel!.serviceType == "cab-service") {
   //     double totalTax = 0.0;
   //
   //   /*  if (orderModel.taxType!.isNotEmpty) {
@@ -3215,13 +3151,13 @@ class WalletScreenState extends State<WalletScreen> {
   //     }
   //
   //     print("--->finalAmount---- $subTotal");
-  //     double tipValue = orderModel.tipValue!.isEmpty ? 0.0 : double.parse(orderModel.tipValue.toString());
+  //     double tipAmount = orderModel.tipAmount!.isEmpty ? 0.0 : double.parse(orderModel.tipAmount.toString());
   //     if (orderModel.paymentMethod.toLowerCase() != "cod") {
-  //       amount = subTotal + totalTax + tipValue + adminComm;
+  //       amount = subTotal + totalTax + tipAmount + adminComm;
   //     } else {
-  //       amount = -(subTotal + totalTax + tipValue + adminComm);
+  //       amount = -(subTotal + totalTax + tipAmount + adminComm);
   //     }
-  //   } else if (MyAppState.currentUser!.serviceType == "parcel_delivery") {
+  //   } else if (Constant.userModel!.serviceType == "parcel_delivery") {
   //     double totalTax = 0.0;
   //
   //    /* if (orderModel.taxType!.isNotEmpty) {
@@ -3252,7 +3188,7 @@ class WalletScreenState extends State<WalletScreen> {
   //     } else {
   //       amount = -(subTotal + totalTax + adminComm);
   //     }
-  //   } else if (MyAppState.currentUser!.serviceType == "rental-service") {
+  //   } else if (Constant.userModel!.serviceType == "rental-service") {
   //     double totalTax = 0.0;
   //     double subTotal = (double.parse(orderModel.subTotal.toString()) + double.parse(orderModel.driverRate.toString())) - double.parse(orderModel.discount.toString());
   //
@@ -3287,8 +3223,8 @@ class WalletScreenState extends State<WalletScreen> {
   //       amount += double.parse(orderModel.deliveryCharge!);
   //     }
   //
-  //     if (orderModel.tipValue != null && orderModel.tipValue!.isNotEmpty) {
-  //       amount += double.parse(orderModel.tipValue!);
+  //     if (orderModel.tipAmount != null && orderModel.tipAmount!.isNotEmpty) {
+  //       amount += double.parse(orderModel.tipAmount!);
   //     }
   //   }
   //   return Padding(
@@ -3367,39 +3303,186 @@ class WalletScreenState extends State<WalletScreen> {
 
   Widget showWithdrawalHistory(BuildContext context,
       {required Stream<QuerySnapshot>? query}) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: query,
-      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-        if (snapshot.hasError) {
-          return Center(child: Text('Something went wrong'.tr()));
-        }
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-              child: SizedBox(
-                  height: 35, width: 35, child: CircularProgressIndicator()));
-        }
-        if (snapshot.data!.docs.isEmpty) {
-          return Center(
-              child: Text(
-            "No Transaction History".tr(),
-            style: TextStyle(fontSize: 18),
-          ));
-        } else {
-          return ListView(
-            shrinkWrap: true,
-            physics: BouncingScrollPhysics(),
-            children: snapshot.data!.docs.map((DocumentSnapshot document) {
-              final topUpData = WithdrawHistoryModel.fromJson(
-                  document.data() as Map<String, dynamic>);
-              //Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
-              return buildTransactionCard(
-                withdrawHistory: topUpData,
-                date: topUpData.paidDate.toDate(),
-              );
-            }).toList(),
-          );
-        }
-      },
+    final themeController = Get.find<ThemeController>();
+    return Obx(() {
+      final isDark = themeController.isDark.value;
+      return StreamBuilder<QuerySnapshot>(
+        stream: query,
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Something went wrong'.tr()));
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+                child: SizedBox(
+                    height: 35, width: 35, child: CircularProgressIndicator()));
+          }
+          if (snapshot.data!.docs.isEmpty) {
+            return Center(
+                child: Text(
+              "No Transaction History".tr(),
+              style: TextStyle(fontSize: 18),
+            ));
+          } else {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Container(
+                decoration: ShapeDecoration(
+                  color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListView.separated(
+                    padding: EdgeInsets.zero,
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: snapshot.data!.docs.length,
+                    separatorBuilder: (BuildContext context, int index) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 5),
+                        child: MySeparator(
+                            color: isDark
+                                ? AppThemeData.grey700
+                                : AppThemeData.grey200),
+                      );
+                    },
+                    itemBuilder: (context, index) {
+                      final document = snapshot.data!.docs[index];
+                      final topUpData = WithdrawHistoryModel.fromJson(
+                          document.data() as Map<String, dynamic>);
+                      return transactionCardWithdrawal(isDark, topUpData);
+                      // return buildTransactionCard(
+                      //   withdrawHistory: topUpData,
+                      //   date: topUpData.paidDate.toDate(),
+                      // );
+                    },
+                  ),
+                ),
+              ),
+            );
+          }
+        },
+      );
+    });
+  }
+
+  InkWell transactionCardWithdrawal(
+      isDark, WithdrawHistoryModel transactionModel) {
+    return InkWell(
+      onTap: () async {},
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Row(
+          children: [
+            Container(
+              decoration: ShapeDecoration(
+                shape: RoundedRectangleBorder(
+                  side: BorderSide(
+                      width: 1,
+                      color:
+                          isDark ? AppThemeData.grey800 : AppThemeData.grey100),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SvgPicture.asset(
+                  "assets/icons/ic_debit.svg",
+                  height: 16,
+                  width: 16,
+                ),
+              ),
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              transactionModel.note.toString(),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontFamily: AppThemeData.semiBold,
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? AppThemeData.grey100
+                                    : AppThemeData.grey800,
+                              ),
+                            ),
+                            Text(
+                              // "(${transactionModel.withdrawMethod!.capitalizeString()})",
+                              '(Bank)',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontFamily: AppThemeData.medium,
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? AppThemeData.grey100
+                                    : AppThemeData.grey800,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Text(
+                        "-${Constant.amountShow(amount: transactionModel.amount.toString())}",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontFamily: AppThemeData.medium,
+                          color: AppThemeData.danger300,
+                        ),
+                      )
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 2,
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          transactionModel.paymentStatus.toString(),
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: AppThemeData.semiBold,
+                            fontWeight: FontWeight.w600,
+                            color: transactionModel.paymentStatus == "Success"
+                                ? AppThemeData.success400
+                                : transactionModel.paymentStatus == "Pending"
+                                    ? AppThemeData.primary300
+                                    : AppThemeData.danger300,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        Constant.timestampToDateTime(
+                            transactionModel.paidDate!),
+                        style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: AppThemeData.medium,
+                            fontWeight: FontWeight.w500,
+                            color: isDark
+                                ? AppThemeData.grey200
+                                : AppThemeData.grey700),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -3542,296 +3625,462 @@ class WalletScreenState extends State<WalletScreen> {
     return showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(25), topRight: Radius.circular(25)),
+        isDismissible: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(30),
+          ),
         ),
+        clipBehavior: Clip.antiAliasWithSaveLayer,
         builder: (context) {
-          return StatefulBuilder(builder: (context, setState) {
-            return Container(
-              padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom + 5),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 25.0, bottom: 10),
-                      child: Text(
-                        "Withdraw".tr(),
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: isDarkMode(context)
-                              ? Colors.white
-                              : Color(DARK_COLOR),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 15.0, vertical: 25),
-                      child: Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                                color: Color(COLOR_ACCENt1), width: 4)),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 15.0, horizontal: 15),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    userBankDetail!.bankName,
-                                    style: TextStyle(
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(COLOR_PRIMARY_DARK),
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.account_balance,
-                                    size: 40,
-                                    color: Color(COLOR_ACCENt1),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 2,
-                              ),
-                              Text(
-                                userBankDetail!.accountNumber,
+          return FractionallySizedBox(
+            heightFactor: 0.8,
+            child: StatefulBuilder(builder: (context, setState) {
+              final themeController = Get.find<ThemeController>();
+              final isDark = themeController.isDark.value;
+              return Scaffold(
+                body: SingleChildScrollView(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                "Withdrawal".tr(),
                                 style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDarkMode(context)
-                                      ? Colors.white.withOpacity(0.9)
-                                      : Color(DARK_COLOR).withOpacity(0.9),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              Text(
-                                userBankDetail!.holderName,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: isDarkMode(context)
-                                      ? Colors.white.withOpacity(0.7)
-                                      : Color(DARK_COLOR).withOpacity(0.7),
-                                ),
-                              ),
-                              SizedBox(
-                                height: 4,
-                              ),
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    userBankDetail!.otherDetails,
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      color: isDarkMode(context)
-                                          ? Colors.white.withOpacity(0.9)
-                                          : Color(DARK_COLOR).withOpacity(0.9),
-                                    ),
-                                  ),
-                                  Text(
-                                    userBankDetail!.branchName,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: isDarkMode(context)
-                                          ? Colors.white.withOpacity(0.7)
-                                          : Color(DARK_COLOR).withOpacity(0.7),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20.0, vertical: 5),
-                          child: RichText(
-                            text: TextSpan(
-                              text: "Amount to Withdraw".tr(),
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: isDarkMode(context)
-                                    ? Colors.white70
-                                    : Color(DARK_COLOR).withOpacity(0.7),
+                                    color: isDark
+                                        ? AppThemeData.grey100
+                                        : AppThemeData.grey800,
+                                    fontSize: 18,
+                                    fontFamily: AppThemeData.semiBold),
                               ),
                             ),
-                          ),
+                            InkWell(
+                                onTap: () {
+                                  Get.back();
+                                },
+                                child: const Icon(Icons.close)),
+                          ],
                         ),
-                      ],
-                    ),
-                    Form(
-                      key: _globalKey,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20.0, vertical: 2),
-                        child: Padding(
+                      ),
+                      TextFieldWidget(
+                        title: 'Withdrawal amount'.tr(),
+                        controller: _amountController,
+                        hintText: 'Enter withdrawal amount'.tr(),
+                        textInputType: const TextInputType.numberWithOptions(
+                            signed: true, decimal: true),
+                        textInputAction: TextInputAction.done,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp('[0-9]')),
+                        ],
+                        prefix: Padding(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 0.0, horizontal: 8),
-                          child: TextFormField(
-                            controller: _amountController,
+                              horizontal: 16, vertical: 14),
+                          child: Text(
+                            "${Constant.currencyModel!.symbol}".tr(),
                             style: TextStyle(
-                              color: Color(COLOR_PRIMARY_DARK),
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                            ),
-                            //initialValue:"50",
-                            maxLines: 1,
-                            validator: (value) {
-                              if (value!.isEmpty) {
-                                return "*required Field".tr();
-                              } else {
-                                if (double.parse(value) <= 0) {
-                                  return "*Invalid Amount".tr();
-                                } else if (double.parse(value) >
-                                    double.parse(MyAppState
-                                        .currentUser!.walletAmount
-                                        .toString())) {
-                                  return "*withdraw is more then wallet balance"
-                                      .tr();
-                                } else {
-                                  return null;
-                                }
-                              }
-                            },
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'^\d+\.?\d{0,2}')),
-                            ],
-                            keyboardType:
-                                TextInputType.numberWithOptions(decimal: true),
-                            decoration: InputDecoration(
-                              prefix: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0, vertical: 2),
-                                child: Text(
-                                  "${currencyData!.symbol}",
-                                  style: TextStyle(
-                                    color: isDarkMode(context)
-                                        ? Colors.white
-                                        : Color(DARK_COLOR),
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              fillColor: Colors.grey[200],
-                              focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(5.0),
-                                  borderSide: BorderSide(
-                                      color: Color(COLOR_PRIMARY),
-                                      width: 1.50)),
-                              errorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                    color: Theme.of(context).colorScheme.error),
-                                borderRadius: BorderRadius.circular(5.0),
-                              ),
-                              focusedErrorBorder: OutlineInputBorder(
-                                borderSide: BorderSide(
-                                    color: Theme.of(context).colorScheme.error),
-                                borderRadius: BorderRadius.circular(5.0),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide:
-                                    BorderSide(color: Colors.grey.shade400),
-                                borderRadius: BorderRadius.circular(5.0),
-                              ),
-                            ),
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
+                                fontFamily: AppThemeData.semiBold,
+                                fontSize: 18),
                           ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 25, vertical: 10),
-                      child: TextFormField(
+                      TextFieldWidget(
+                        title: 'Notes'.tr(),
                         controller: _noteController,
-                        style: TextStyle(
-                          color: Color(COLOR_PRIMARY_DARK),
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
+                        hintText: 'Add Notes'.tr(),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Text(
+                          "Select Withdraw Method".tr(),
+                          style: TextStyle(
+                              color: isDark
+                                  ? AppThemeData.grey100
+                                  : AppThemeData.grey800,
+                              fontSize: 16,
+                              fontFamily: AppThemeData.medium),
                         ),
-                        //initialValue:"50",
-                        maxLines: 1,
-                        validator: (value) {
-                          if (value!.isEmpty) {
-                            return "*required Field".tr();
-                          }
-                          return null;
-                        },
-                        keyboardType: TextInputType.text,
-                        decoration: InputDecoration(
-                          hintText: 'Add note'.tr(),
-                          fillColor: Colors.grey[200],
-                          focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(5.0),
-                              borderSide: BorderSide(
-                                  color: Color(COLOR_PRIMARY), width: 1.50)),
-                          errorBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Theme.of(context).colorScheme.error),
-                            borderRadius: BorderRadius.circular(5.0),
-                          ),
-                          focusedErrorBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Theme.of(context).colorScheme.error),
-                            borderRadius: BorderRadius.circular(5.0),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.grey.shade400),
-                            borderRadius: BorderRadius.circular(5.0),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(20)),
+                            color: isDark
+                                ? AppThemeData.grey900
+                                : AppThemeData.grey50),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 10),
+                          child: Column(
+                            children: [
+                              Constant.userModel!.userBankDetails == null ||
+                                      Constant.userModel!.userBankDetails!
+                                          .accountNumber.isEmpty
+                                  ? const SizedBox()
+                                  : InkWell(
+                                      onTap: () {},
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 50,
+                                            height: 50,
+                                            decoration: ShapeDecoration(
+                                              shape: RoundedRectangleBorder(
+                                                side: BorderSide(
+                                                    width: 1,
+                                                    color: isDark
+                                                        ? AppThemeData.grey700
+                                                        : AppThemeData.grey200),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                            ),
+                                            child: Padding(
+                                              padding: const EdgeInsets.all(10),
+                                              child: SvgPicture.asset(
+                                                  "assets/icons/ic_building_four.svg"),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 10,
+                                          ),
+                                          Expanded(
+                                            child: Text(
+                                              "Bank Transfer".tr(),
+                                              style: TextStyle(
+                                                  color: isDark
+                                                      ? AppThemeData.grey50
+                                                      : AppThemeData.grey900,
+                                                  fontSize: 16,
+                                                  fontFamily:
+                                                      AppThemeData.medium),
+                                            ),
+                                          ),
+                                          Radio(
+                                            value: 0,
+                                            groupValue: 0,
+                                            activeColor:
+                                                AppThemeData.primary300,
+                                            // onChanged: (value) {
+                                            //   controller.selectedValue
+                                            //       .value = value!;
+                                            // },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                              const SizedBox(
+                                height: 10,
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                      child: buildButton(context, title: "WITHDRAW".tr(),
-                          onPress: () {
-                        if (_globalKey.currentState!.validate()) {
-                          print("------->");
-                          print(minimumAmountToWithdrawal);
-                          print(_amountController.text);
-                          if (double.parse(minimumAmountToWithdrawal) >
-                              double.parse(_amountController.text)) {
-                            showAlertDialog(
-                                context,
-                                "Failed!".tr(),
-                                '${"Withdraw amount must be greater or equal to".tr()} ${amountShow(amount: minimumAmountToWithdrawal)}'
-                                    .tr(),
-                                true);
-                          } else {
-                            withdrawRequest();
-                          }
-                        }
-                      }),
-                    ),
-                  ],
+                      // Padding(
+                      //   padding: const EdgeInsets.symmetric(
+                      //       horizontal: 15.0, vertical: 25),
+                      //   child: Container(
+                      //     decoration: BoxDecoration(
+                      //         borderRadius: BorderRadius.circular(18),
+                      //         border: Border.all(
+                      //             color: Color(COLOR_ACCENt1), width: 4)),
+                      //     child: Padding(
+                      //       padding: const EdgeInsets.symmetric(
+                      //           vertical: 15.0, horizontal: 15),
+                      //       child: Column(
+                      //         crossAxisAlignment: CrossAxisAlignment.start,
+                      //         children: [
+                      //           Row(
+                      //             mainAxisAlignment:
+                      //                 MainAxisAlignment.spaceBetween,
+                      //             children: [
+                      //               Text(
+                      //                 userBankDetail!.bankName,
+                      //                 style: TextStyle(
+                      //                   fontSize: 22,
+                      //                   fontWeight: FontWeight.bold,
+                      //                   color: Color(COLOR_PRIMARY_DARK),
+                      //                 ),
+                      //               ),
+                      //               Icon(
+                      //                 Icons.account_balance,
+                      //                 size: 40,
+                      //                 color: Color(COLOR_ACCENt1),
+                      //               ),
+                      //             ],
+                      //           ),
+                      //           SizedBox(
+                      //             height: 2,
+                      //           ),
+                      //           Text(
+                      //             userBankDetail!.accountNumber,
+                      //             style: TextStyle(
+                      //               fontSize: 20,
+                      //               fontWeight: FontWeight.w600,
+                      //               color: isDarkMode(context)
+                      //                   ? Colors.white.withOpacity(0.9)
+                      //                   : Color(DARK_COLOR).withOpacity(0.9),
+                      //             ),
+                      //           ),
+                      //           SizedBox(
+                      //             height: 10,
+                      //           ),
+                      //           Text(
+                      //             userBankDetail!.holderName,
+                      //             style: TextStyle(
+                      //               fontSize: 18,
+                      //               fontWeight: FontWeight.bold,
+                      //               color: isDarkMode(context)
+                      //                   ? Colors.white.withOpacity(0.7)
+                      //                   : Color(DARK_COLOR).withOpacity(0.7),
+                      //             ),
+                      //           ),
+                      //           SizedBox(
+                      //             height: 4,
+                      //           ),
+                      //           Row(
+                      //             mainAxisAlignment:
+                      //                 MainAxisAlignment.spaceBetween,
+                      //             children: [
+                      //               Text(
+                      //                 userBankDetail!.otherDetails,
+                      //                 style: TextStyle(
+                      //                   fontSize: 20,
+                      //                   color: isDarkMode(context)
+                      //                       ? Colors.white.withOpacity(0.9)
+                      //                       : Color(DARK_COLOR)
+                      //                           .withOpacity(0.9),
+                      //                 ),
+                      //               ),
+                      //               Text(
+                      //                 userBankDetail!.branchName,
+                      //                 style: TextStyle(
+                      //                   fontSize: 18,
+                      //                   color: isDarkMode(context)
+                      //                       ? Colors.white.withOpacity(0.7)
+                      //                       : Color(DARK_COLOR)
+                      //                           .withOpacity(0.7),
+                      //                 ),
+                      //               ),
+                      //             ],
+                      //           ),
+                      //           SizedBox(
+                      //             height: 10,
+                      //           ),
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+                      // Row(
+                      //   children: [
+                      //     Padding(
+                      //       padding: const EdgeInsets.symmetric(
+                      //           horizontal: 20.0, vertical: 5),
+                      //       child: RichText(
+                      //         text: TextSpan(
+                      //           text: "Amount to Withdraw".tr(),
+                      //           style: TextStyle(
+                      //             fontSize: 16,
+                      //             color: isDarkMode(context)
+                      //                 ? Colors.white70
+                      //                 : Color(DARK_COLOR).withOpacity(0.7),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      // Form(
+                      //   key: _globalKey,
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.symmetric(
+                      //         horizontal: 20.0, vertical: 2),
+                      //     child: Padding(
+                      //       padding: const EdgeInsets.symmetric(
+                      //           vertical: 0.0, horizontal: 8),
+                      //       child: TextFormField(
+                      //         controller: _amountController,
+                      //         style: TextStyle(
+                      //           color: Color(COLOR_PRIMARY_DARK),
+                      //           fontSize: 20,
+                      //           fontWeight: FontWeight.w700,
+                      //         ),
+                      //         //initialValue:"50",
+                      //         maxLines: 1,
+                      //         validator: (value) {
+                      //           if (value!.isEmpty) {
+                      //             return "*required Field".tr();
+                      //           } else {
+                      //             if (double.parse(value) <= 0) {
+                      //               return "*Invalid Amount".tr();
+                      //             } else if (double.parse(value) >
+                      //                 double.parse(Constant
+                      //                     .userModel!.walletAmount
+                      //                     .toString())) {
+                      //               return "*withdraw is more then wallet balance"
+                      //                   .tr();
+                      //             } else {
+                      //               return null;
+                      //             }
+                      //           }
+                      //         },
+                      //         inputFormatters: [
+                      //           FilteringTextInputFormatter.allow(
+                      //               RegExp(r'^\d+\.?\d{0,2}')),
+                      //         ],
+                      //         keyboardType: TextInputType.numberWithOptions(
+                      //             decimal: true),
+                      //         decoration: InputDecoration(
+                      //           prefix: Padding(
+                      //             padding: const EdgeInsets.symmetric(
+                      //                 horizontal: 12.0, vertical: 2),
+                      //             child: Text(
+                      //               "${currencyData!.symbol}",
+                      //               style: TextStyle(
+                      //                 color: isDarkMode(context)
+                      //                     ? Colors.white
+                      //                     : Color(DARK_COLOR),
+                      //                 fontSize: 20,
+                      //                 fontWeight: FontWeight.w700,
+                      //               ),
+                      //             ),
+                      //           ),
+                      //           fillColor: Colors.grey[200],
+                      //           focusedBorder: OutlineInputBorder(
+                      //               borderRadius: BorderRadius.circular(5.0),
+                      //               borderSide: BorderSide(
+                      //                   color: Color(COLOR_PRIMARY),
+                      //                   width: 1.50)),
+                      //           errorBorder: OutlineInputBorder(
+                      //             borderSide: BorderSide(
+                      //                 color:
+                      //                     Theme.of(context).colorScheme.error),
+                      //             borderRadius: BorderRadius.circular(5.0),
+                      //           ),
+                      //           focusedErrorBorder: OutlineInputBorder(
+                      //             borderSide: BorderSide(
+                      //                 color:
+                      //                     Theme.of(context).colorScheme.error),
+                      //             borderRadius: BorderRadius.circular(5.0),
+                      //           ),
+                      //           enabledBorder: OutlineInputBorder(
+                      //             borderSide:
+                      //                 BorderSide(color: Colors.grey.shade400),
+                      //             borderRadius: BorderRadius.circular(5.0),
+                      //           ),
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+                      // Padding(
+                      //   padding: const EdgeInsets.symmetric(
+                      //       horizontal: 25, vertical: 10),
+                      //   child: TextFormField(
+                      //     controller: _noteController,
+                      //     style: TextStyle(
+                      //       color: Color(COLOR_PRIMARY_DARK),
+                      //       fontSize: 20,
+                      //       fontWeight: FontWeight.w700,
+                      //     ),
+                      //     //initialValue:"50",
+                      //     maxLines: 1,
+                      //     validator: (value) {
+                      //       if (value!.isEmpty) {
+                      //         return "*required Field".tr();
+                      //       }
+                      //       return null;
+                      //     },
+                      //     keyboardType: TextInputType.text,
+                      //     decoration: InputDecoration(
+                      //       hintText: 'Add note'.tr(),
+                      //       fillColor: Colors.grey[200],
+                      //       focusedBorder: OutlineInputBorder(
+                      //           borderRadius: BorderRadius.circular(5.0),
+                      //           borderSide: BorderSide(
+                      //               color: Color(COLOR_PRIMARY), width: 1.50)),
+                      //       errorBorder: OutlineInputBorder(
+                      //         borderSide: BorderSide(
+                      //             color: Theme.of(context).colorScheme.error),
+                      //         borderRadius: BorderRadius.circular(5.0),
+                      //       ),
+                      //       focusedErrorBorder: OutlineInputBorder(
+                      //         borderSide: BorderSide(
+                      //             color: Theme.of(context).colorScheme.error),
+                      //         borderRadius: BorderRadius.circular(5.0),
+                      //       ),
+                      //       enabledBorder: OutlineInputBorder(
+                      //         borderSide:
+                      //             BorderSide(color: Colors.grey.shade400),
+                      //         borderRadius: BorderRadius.circular(5.0),
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+                      // Padding(
+                      //   padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      //   child: buildButton(context, title: "WITHDRAW".tr(),
+                      //       onPress: () {
+                      //     if (_globalKey.currentState!.validate()) {
+                      //       print("------->");
+                      //       print(minimumAmountToWithdrawal);
+                      //       print(_amountController.text);
+                      //       if (double.parse(minimumAmountToWithdrawal) >
+                      //           double.parse(_amountController.text)) {
+                      //         showAlertDialog(
+                      //             context,
+                      //             "Failed!".tr(),
+                      //             '${"Withdraw amount must be greater or equal to".tr()} ${amountShow(amount: minimumAmountToWithdrawal)}'
+                      //                 .tr(),
+                      //             true);
+                      //       } else {
+                      //         withdrawRequest();
+                      //       }
+                      //     }
+                      //   }),
+                      // ),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          });
+                bottomNavigationBar: Container(
+                  color: isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: RoundedButtonFill(
+                      title: "Withdraw".tr(),
+                      height: 5.5,
+                      color: AppThemeData.primary300,
+                      textColor: AppThemeData.grey50,
+                      fontSizes: 16,
+                      onPress: () async {
+                        if (_amountController.text.isEmpty) {
+                          ShowToastDialog.showToast("Please enter amount".tr());
+                        } else if (double.parse(minimumAmountToWithdrawal) >
+                            double.parse(_amountController.text.trim())) {
+                          ShowToastDialog.showToast(
+                              "${'Withdraw amount must be greater or equal to'.tr()} ${Constant.amountShow(amount: minimumAmountToWithdrawal)}");
+                        } else {
+                          withdrawRequest();
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              );
+            }),
+          );
         });
   }
 

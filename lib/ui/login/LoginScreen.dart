@@ -1,454 +1,298 @@
-import 'dart:developer';
-
-import 'package:easy_localization/easy_localization.dart';
-import 'package:door_delights_driver/CabService/dashboard_cab_service.dart';
-import 'package:door_delights_driver/Parcel_service/parcel_service_dashboard.dart';
-import 'package:door_delights_driver/constants.dart';
-import 'package:door_delights_driver/main.dart';
-import 'package:door_delights_driver/model/User.dart';
-import 'package:door_delights_driver/rental_service/rental_service_dashboard.dart';
-import 'package:door_delights_driver/services/FirebaseHelper.dart';
-import 'package:door_delights_driver/services/helper.dart';
-import 'package:door_delights_driver/ui/container/ContainerScreen.dart';
-import 'package:door_delights_driver/ui/phoneAuth/PhoneNumberInputScreen.dart';
-import 'package:door_delights_driver/ui/resetPasswordScreen/ResetPasswordScreen.dart';
+import 'dart:io';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 
-class LoginScreen extends StatefulWidget {
-  @override
-  State createState() {
-    return _LoginScreen();
-  }
-}
+import '../../app/auth_screen/phone_number_screen.dart';
+import '../../app/auth_screen/signup_screen.dart';
+import '../../app/forgot_password_screen/forgot_password_screen.dart';
+import '../../constant/show_toast_dialog.dart';
+import '../../controllers/login_controller.dart';
+import '../../theme/app_them_data.dart';
+import '../../theme/responsive.dart';
+import '../../theme/round_button_fill.dart';
+import '../../themes/text_field_widget.dart';
+import '../../themes/theme_controller.dart';
 
-class _LoginScreen extends State<LoginScreen> {
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  AutovalidateMode _validate = AutovalidateMode.disabled;
-  GlobalKey<FormState> _key = GlobalKey();
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(
-            color: isDarkMode(context) ? Colors.white : Colors.black),
-        elevation: 0.0,
-      ),
-      body: Form(
-        key: _key,
-        autovalidateMode: _validate,
-        child: ListView(
-          children: <Widget>[
-            Padding(
-              padding:
-                  const EdgeInsets.only(top: 32.0, right: 16.0, left: 16.0),
-              child: Text(
-                'Log In'.tr(),
-                style: TextStyle(
-                    color: Color(COLOR_PRIMARY),
-                    fontSize: 25.0,
-                    fontWeight: FontWeight.bold),
-              ),
+    final themeController = Get.find<ThemeController>();
+    final isDark = themeController.isDark.value;
+    return GetX(
+        init: LoginController(),
+        builder: (controller) {
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor:
+                  isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
             ),
-
-            /// email address text field, visible when logging with email
-            /// and password
-            ConstrainedBox(
-              constraints: BoxConstraints(minWidth: double.infinity),
-              child: Padding(
-                padding:
-                    const EdgeInsets.only(top: 32.0, right: 24.0, left: 24.0),
-                child: TextFormField(
-                    textAlignVertical: TextAlignVertical.center,
+            body: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Log In to Your Account".tr,
+                    style: TextStyle(
+                        color:
+                            isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                        fontSize: 22,
+                        fontFamily: AppThemeData.semiBold),
+                  ),
+                  Text(
+                    "Sign in to access your eMart account and manage your deliveries seamlessly."
+                        .tr,
+                    style: TextStyle(
+                        color:
+                            isDark ? AppThemeData.grey50 : AppThemeData.grey500,
+                        fontFamily: AppThemeData.regular),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text.rich(
+                    TextSpan(
+                      children: [
+                        TextSpan(
+                            text: "Didn’t Have an account?".tr,
+                            style: TextStyle(
+                              color: isDark
+                                  ? AppThemeData.grey50
+                                  : AppThemeData.grey900,
+                              fontFamily: AppThemeData.medium,
+                              fontWeight: FontWeight.w500,
+                            )),
+                        const WidgetSpan(
+                            child: SizedBox(
+                          width: 10,
+                        )),
+                        TextSpan(
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Get.to(const SignupScreen());
+                              },
+                            text: 'Sign up'.tr,
+                            style: TextStyle(
+                                color: AppThemeData.primary300,
+                                fontFamily: AppThemeData.medium,
+                                fontWeight: FontWeight.w500,
+                                decoration: TextDecoration.underline,
+                                decorationColor: AppThemeData.primary300)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 32,
+                  ),
+                  TextFieldWidget(
+                    title: 'Email Address'.tr,
+                    controller: controller.emailEditingController.value,
+                    hintText: 'Enter email address'.tr,
+                    prefix: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: SvgPicture.asset(
+                        "assets/icons/ic_mail.svg",
+                        colorFilter: ColorFilter.mode(
+                          isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
                     textInputAction: TextInputAction.next,
-                    validator: validateEmail,
-                    controller: _emailController,
-                    style: TextStyle(fontSize: 18.0),
-                    keyboardType: TextInputType.emailAddress,
-                    cursorColor: Color(COLOR_PRIMARY),
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.only(left: 16, right: 16),
-                      hintText: 'Email Address'.tr(),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25.0),
-                          borderSide: BorderSide(
-                              color: Color(COLOR_PRIMARY), width: 2.0)),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.error),
-                        borderRadius: BorderRadius.circular(25.0),
+                  ),
+                  TextFieldWidget(
+                    title: 'Password'.tr,
+                    controller: controller.passwordEditingController.value,
+                    hintText: 'Enter password'.tr,
+                    obscureText: controller.passwordVisible.value,
+                    prefix: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: SvgPicture.asset(
+                        "assets/icons/ic_lock.svg",
+                        colorFilter: ColorFilter.mode(
+                          isDark ? AppThemeData.grey300 : AppThemeData.grey600,
+                          BlendMode.srcIn,
+                        ),
                       ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.error),
-                        borderRadius: BorderRadius.circular(25.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                        borderRadius: BorderRadius.circular(25.0),
-                      ),
-                    )),
-              ),
-            ),
-
-            /// password text field, visible when logging with email and
-            /// password
-            ConstrainedBox(
-              constraints: BoxConstraints(minWidth: double.infinity),
-              child: Padding(
-                padding:
-                    const EdgeInsets.only(top: 32.0, right: 24.0, left: 24.0),
-                child: TextFormField(
-                    textAlignVertical: TextAlignVertical.center,
-                    controller: _passwordController,
-                    obscureText: true,
-                    validator: validatePassword,
-                    onFieldSubmitted: (password) => _login(),
+                    ),
+                    suffix: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: InkWell(
+                          onTap: () {
+                            controller.passwordVisible.value =
+                                !controller.passwordVisible.value;
+                          },
+                          child: controller.passwordVisible.value
+                              ? SvgPicture.asset(
+                                  "assets/icons/ic_password_show.svg",
+                                  colorFilter: ColorFilter.mode(
+                                    isDark
+                                        ? AppThemeData.grey300
+                                        : AppThemeData.grey600,
+                                    BlendMode.srcIn,
+                                  ),
+                                )
+                              : SvgPicture.asset(
+                                  "assets/icons/ic_password_close.svg",
+                                  colorFilter: ColorFilter.mode(
+                                    isDark
+                                        ? AppThemeData.grey300
+                                        : AppThemeData.grey600,
+                                    BlendMode.srcIn,
+                                  ),
+                                )),
+                    ),
                     textInputAction: TextInputAction.done,
-                    style: TextStyle(fontSize: 18.0),
-                    cursorColor: Color(COLOR_PRIMARY),
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.only(left: 16, right: 16),
-                      hintText: 'Password'.tr(),
-                      focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(25.0),
-                          borderSide: BorderSide(
-                              color: Color(COLOR_PRIMARY), width: 2.0)),
-                      errorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.error),
-                        borderRadius: BorderRadius.circular(25.0),
-                      ),
-                      focusedErrorBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                            color: Theme.of(context).colorScheme.error),
-                        borderRadius: BorderRadius.circular(25.0),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.shade200),
-                        borderRadius: BorderRadius.circular(25.0),
-                      ),
-                    )),
-              ),
-            ),
-
-            /// forgot password text, navigates user to ResetPasswordScreen
-            /// and this is only visible when logging with email and password
-            Padding(
-              padding: const EdgeInsets.only(top: 16, right: 24),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () => push(context, ResetPasswordScreen()),
-                  child: Text(
-                    'Forgot password?'.tr(),
-                    style: TextStyle(
-                        color: Colors.lightBlue,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        letterSpacing: 1),
                   ),
-                ),
-              ),
-            ),
-
-            /// the main action button of the screen, this is hidden if we
-            /// received the code from firebase
-            /// the action and the title is base on the state,
-            /// * logging with email and password: send email and password to
-            /// firebase
-            /// * logging with phone number: submits the phone number to
-            /// firebase and await for code verification
-            Padding(
-              padding: const EdgeInsets.only(right: 40.0, left: 40.0, top: 40),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: double.infinity),
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(COLOR_PRIMARY),
-                    padding: EdgeInsets.only(top: 12, bottom: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25.0),
-                      side: BorderSide(
-                        color: Color(COLOR_PRIMARY),
+                  InkWell(
+                    onTap: () {
+                      Get.to(const ForgotPasswordScreen());
+                    },
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        "Forgot Password".tr,
+                        style: TextStyle(
+                            decoration: TextDecoration.underline,
+                            decorationColor: AppThemeData.primary300,
+                            color: isDark
+                                ? AppThemeData.primary300
+                                : AppThemeData.primary300,
+                            fontSize: 14,
+                            fontFamily: AppThemeData.medium),
                       ),
                     ),
                   ),
-                  child: Text(
-                    'Log In'.tr(),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode(context) ? Colors.black : Colors.white,
-                    ),
+                  const SizedBox(
+                    height: 30,
                   ),
-                  onPressed: () => _login(),
-                ),
+                ],
               ),
             ),
-            // Padding(
-            //   padding: const EdgeInsets.all(32.0),
-            //   child: Center(
-            //     child: Text(
-            //       'OR',
-            //       style: TextStyle(
-            //           color: isDarkMode(context) ? Colors.white : Colors.black),
-            //     ).tr(),
-            //   ),
-            // ),
-
-            /// facebook login button
-            // Padding(
-            //   padding: const EdgeInsets.only(right: 40.0, left: 40.0, bottom: 20),
-            //   child: ConstrainedBox(
-            //     constraints: const BoxConstraints(minWidth: double.infinity),
-            //     child: ElevatedButton.icon(
-            //         label: Expanded(
-            //           child: Text(
-            //             'Facebook Login',
-            //             textAlign: TextAlign.center,
-            //             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.grey.shade200),
-            //           ).tr(),
-            //         ),
-            //         icon: Padding(
-            //           padding: const EdgeInsets.symmetric(vertical: 8.0),
-            //           child: Image.asset(
-            //             'assets/images/facebook_logo.png',
-            //             color: Colors.grey.shade200,
-            //             height: 30,
-            //             width: 30,
-            //           ),
-            //         ),
-            //         style: ElevatedButton.styleFrom(
-            //           backgroundColor: Color(COLOR_PRIMARY),
-            //           shape: RoundedRectangleBorder(
-            //             borderRadius: BorderRadius.circular(25.0),
-            //             side: BorderSide(
-            //               color: Color(FACEBOOK_BUTTON_COLOR),
-            //             ),
-            //           ),
-            //         ),
-            //         onPressed: () async => loginWithFacebook()),
-            //   ),
-            // ),
-
-            // FutureBuilder<bool>(
-            //   future: apple.TheAppleSignIn.isAvailable(),
-            //   builder: (context, snapshot) {
-            //     if (snapshot.connectionState == ConnectionState.waiting) {
-            //       return CircularProgressIndicator.adaptive(
-            //         valueColor: AlwaysStoppedAnimation(
-            //           Color(COLOR_PRIMARY),
-            //         ),
-            //       );
-            //     }
-            //     if (!snapshot.hasData || (snapshot.data != true)) {
-            //       return Container();
-            //     } else {
-            //       return Padding(
-            //         padding: const EdgeInsets.only(
-            //             right: 40.0, left: 40.0, bottom: 20),
-            //         child: apple.AppleSignInButton(
-            //           cornerRadius: 25.0,
-            //           type: apple.ButtonType.signIn,
-            //           style: isDarkMode(context)
-            //               ? apple.ButtonStyle.white
-            //               : apple.ButtonStyle.black,
-            //           onPressed: () => loginWithApple(),
-            //         ),
-            //       );
-            //     }
-            //   },
-            // ),
-
-            /// switch between login with phone number and email login states
-            // InkWell(
-            //   onTap: () {
-            //     push(context, PhoneNumberInputScreen(login: true));
-            //   },
-            //   child: Padding(
-            //     padding: EdgeInsets.only(top: 10, right: 40, left: 40),
-            //     child: Container(
-            //         alignment: Alignment.bottomCenter,
-            //         padding: EdgeInsets.all(10),
-            //         decoration: BoxDecoration(
-            //             borderRadius: BorderRadius.circular(25),
-            //             border:
-            //                 Border.all(color: Color(COLOR_PRIMARY), width: 1)),
-            //         child: Row(
-            //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            //             children: [
-            //               Icon(
-            //                 Icons.phone,
-            //                 color: Color(COLOR_PRIMARY),
-            //               ),
-            //               Text(
-            //                 'Login with phone number'.tr(),
-            //                 style: TextStyle(
-            //                     color: Color(COLOR_PRIMARY),
-            //                     fontWeight: FontWeight.bold,
-            //                     fontSize: 17,
-            //                     letterSpacing: 1),
-            //               ),
-            //             ])),
-            //   ),
-            // )
-          ],
-        ),
-      ),
-    );
-  }
-
-  _login() async {
-    if (_key.currentState?.validate() ?? false) {
-      _key.currentState!.save();
-      await _loginWithEmailAndPassword(
-          _emailController.text.trim(), _passwordController.text.trim());
-    } else {
-      setState(() {
-        _validate = AutovalidateMode.onUserInteraction;
-      });
-    }
-  }
-
-  /// login with email and password with firebase
-  /// @param email user email
-  /// @param password user password
-  _loginWithEmailAndPassword(String email, String password) async {
-    await showProgress(context, 'Logging in, please wait...'.tr(), false);
-    dynamic result = await FireStoreUtils.loginWithEmailAndPassword(
-        email.trim(), password.trim());
-    await hideProgress();
-    print(result);
-    if (result != null && result is User && result.role == USER_ROLE_DRIVER) {
-      log("user data ${result.fcmToken}");
-      MyAppState.currentUser = result;
-      if (result.active == true) {
-        if (result.serviceType == "cab-service") {
-          pushAndRemoveUntil(
-              context,
-              DashBoardCabService(
-                user: result,
-              ),
-              false);
-        } else if (result.serviceType == "parcel_delivery") {
-          pushAndRemoveUntil(
-              context, ParcelServiceDashBoard(user: result), false);
-        } else if (result.serviceType == "rental-service") {
-          pushAndRemoveUntil(
-              context, RentalServiceDashBoard(user: result), false);
-        } else {
-          pushAndRemoveUntil(context, ContainerScreen(user: result), false);
-        }
-      } else {
-        showAlertDialog(
-            context,
-            'Failed'.tr(),
-            'This account is not active please contact administrator'.tr(),
-            true);
-      }
-    } else {
-      showAlertDialog(context, "Couldn't Authenticate".tr(),
-          "Email/Password is incorrect.", true);
-    }
-  }
-
-  ///dispose text editing controllers to avoid memory leaks
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
-
-  loginWithFacebook() async {
-    try {
-      await showProgress(context, 'Logging in, Please wait...'.tr(), false);
-      dynamic result = await FireStoreUtils.loginWithFacebook();
-      await hideProgress();
-      if (result != null && result.role == USER_ROLE_DRIVER) {
-        log("user data ${result.toJson()}");
-        if (result.active) {
-          MyAppState.currentUser = result;
-          if (result.serviceType == "cab-service") {
-            pushAndRemoveUntil(
-                context,
-                DashBoardCabService(
-                  user: result,
+            bottomNavigationBar: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                      vertical: Platform.isAndroid ? 10 : 30, horizontal: 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RoundedButtonFill(
+                        title: "Continue with Mobile Number".tr,
+                        textColor: isDark
+                            ? AppThemeData.grey100
+                            : AppThemeData.grey900,
+                        color: isDark
+                            ? AppThemeData.grey900
+                            : AppThemeData.grey100,
+                        icon: SvgPicture.asset(
+                          "assets/icons/ic_phone.svg",
+                          colorFilter: const ColorFilter.mode(
+                              AppThemeData.grey900, BlendMode.srcIn),
+                        ),
+                        isRight: false,
+                        onPress: () async {
+                          Get.to(const PhoneNumberScreen());
+                        },
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: RoundedButtonFill(
+                              title: Platform.isIOS
+                                  ? "with Google".tr
+                                  : 'Continue with Google'.tr,
+                              textColor: isDark
+                                  ? AppThemeData.grey100
+                                  : AppThemeData.grey900,
+                              color: isDark
+                                  ? AppThemeData.grey900
+                                  : AppThemeData.grey100,
+                              icon: SvgPicture.asset(
+                                  "assets/icons/ic_google.svg"),
+                              isRight: false,
+                              onPress: () async {
+                                controller.loginWithGoogle();
+                              },
+                            ),
+                          ),
+                          // if (Platform.isIOS)
+                          //   const SizedBox(
+                          //     width: 10,
+                          //   ),
+                          // Platform.isIOS
+                          //     ? Expanded(
+                          //         child: RoundedButtonFill(
+                          //           title: Platform.isIOS
+                          //               ? "with Apple".tr
+                          //               : 'Continue with Apple'.tr,
+                          //           textColor: isDark
+                          //               ? AppThemeData.grey100
+                          //               : AppThemeData.grey900,
+                          //           color: isDark
+                          //               ? AppThemeData.grey900
+                          //               : AppThemeData.grey100,
+                          //           icon: SvgPicture.asset(
+                          //               "assets/icons/ic_apple.svg"),
+                          //           isRight: false,
+                          //           onPress: () async {
+                          //             controller.loginWithApple();
+                          //           },
+                          //         ),
+                          //       )
+                          //     : const SizedBox(),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-                false);
-          } else if (result.serviceType == "rental-service") {
-            pushAndRemoveUntil(
-                context, RentalServiceDashBoard(user: result), false);
-          } else if (result.serviceType == "parcel_delivery") {
-            pushAndRemoveUntil(
-                context, ParcelServiceDashBoard(user: result), false);
-          } else {
-            pushAndRemoveUntil(context, ContainerScreen(user: result), false);
-          }
-        } else {
-          showAlertDialog(
-              context,
-              "Couldn't Log In".tr(),
-              'Driver is not activated yet. Please contact to admin to activate it. Thanks.',
-              true);
-        }
-      } else {
-        showAlertDialog(context, 'Error'.tr(), result.tr(), true);
-      }
-    } catch (e, s) {
-      await hideProgress();
-      print('_LoginScreen.loginWithFacebook $e $s');
-      showAlertDialog(
-          context, 'Error'.tr(), "Couldn't login with facebook.".tr(), true);
-    }
-  }
-
-  loginWithApple() async {
-    try {
-      await showProgress(context, 'Logging in, Please wait...'.tr(), false);
-      dynamic result = await FireStoreUtils.loginWithApple();
-      await hideProgress();
-      if (result != null && result is User && result.role == USER_ROLE_DRIVER) {
-        if (result.active) {
-          await FireStoreUtils.updateCurrentUser(result);
-          MyAppState.currentUser = result;
-          if (result.serviceType == "cab-service") {
-            pushAndRemoveUntil(
-                context,
-                DashBoardCabService(
-                  user: result,
+                InkWell(
+                  onTap: () {
+                    if (controller.emailEditingController.value.text
+                        .trim()
+                        .isEmpty) {
+                      ShowToastDialog.showToast("Please enter valid email".tr);
+                    } else if (controller.passwordEditingController.value.text
+                        .trim()
+                        .isEmpty) {
+                      ShowToastDialog.showToast(
+                          "Please enter valid password".tr);
+                    } else {
+                      controller.loginWithEmailAndPassword();
+                    }
+                  },
+                  child: Container(
+                    color: AppThemeData.primary300,
+                    width: Responsive.width(100, context),
+                    height: Responsive.width(16, context),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        "Log in".tr,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey50,
+                          fontSize: 16,
+                          fontFamily: AppThemeData.medium,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
-                false);
-          } else if (result.serviceType == "parcel_delivery") {
-            pushAndRemoveUntil(
-                context, ParcelServiceDashBoard(user: result), false);
-          } else if (result.serviceType == "rental-service") {
-            pushAndRemoveUntil(
-                context, RentalServiceDashBoard(user: result), false);
-          } else {
-            pushAndRemoveUntil(context, ContainerScreen(user: result), false);
-          }
-        } else {
-          showAlertDialog(
-              context,
-              "Couldn't Log In".tr(),
-              'Driver is not activated yet. Please contact to admin to activate it. Thanks.',
-              true);
-        }
-      } else if (result != null && result is String) {
-        showAlertDialog(context, 'Error'.tr(), result.tr(), true);
-      } else {
-        showAlertDialog(
-            context, 'Error'.tr(), "Couldn't login with apple.".tr(), true);
-      }
-    } catch (e, s) {
-      await hideProgress();
-      print('_LoginScreen.loginWithApple $e $s');
-      showAlertDialog(
-          context, 'Error'.tr(), "Couldn't login with apple.".tr(), true);
-    }
+              ],
+            ),
+          );
+        });
   }
 }

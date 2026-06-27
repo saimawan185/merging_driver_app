@@ -9,6 +9,8 @@ import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:the_apple_sign_in/the_apple_sign_in.dart' as apple;
 
+import '../../constant/constant.dart';
+
 enum AuthProviders { PASSWORD, PHONE, FACEBOOK, APPLE }
 
 class ReAuthUserScreen extends StatefulWidget {
@@ -216,7 +218,7 @@ class _ReAuthUserScreenState extends State<ReAuthUserScreen> {
       try {
         auth.UserCredential? result = await FireStoreUtils.reAuthUser(
             widget.provider,
-            email: MyAppState.currentUser!.email,
+            email: Constant.userModel!.email,
             password: _passwordController.text);
         if (result == null) {
           await hideProgress();

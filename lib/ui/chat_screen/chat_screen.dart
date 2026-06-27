@@ -7,7 +7,6 @@ import 'package:easy_localization/easy_localization.dart' as easyLocal;
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/main.dart';
 import 'package:door_delights_driver/model/ChatVideoContainer.dart';
-import 'package:door_delights_driver/model/User.dart';
 import 'package:door_delights_driver/model/conversation_model.dart';
 import 'package:door_delights_driver/model/inbox_model.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
@@ -20,6 +19,9 @@ import 'package:flutterflow_paginate_firestore/paginate_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
+
+import '../../constant/constant.dart';
+import '../../models/user_model.dart';
 
 class ChatScreens extends StatefulWidget {
   final String? orderId;
@@ -104,11 +106,10 @@ class _ChatScreensState extends State<ChatScreens> {
                         documentSnapshots[index].data()
                             as Map<String, dynamic>);
                     print(index);
-                    print(MyAppState.currentUser!.userID);
-                    print(
-                        inboxModel.senderId == MyAppState.currentUser!.userID);
+                    print(Constant.userModel!.id);
+                    print(inboxModel.senderId == Constant.userModel!.id);
                     return chatItemView(
-                        inboxModel.senderId == MyAppState.currentUser!.userID,
+                        inboxModel.senderId == Constant.userModel!.id,
                         inboxModel);
                   },
                   onEmpty: Center(child: Text("No Conversion found")),
@@ -242,8 +243,7 @@ class _ChatScreensState extends State<ChatScreens> {
                           child: Text(
                             data.message.toString(),
                             style: TextStyle(
-                                color: data.senderId ==
-                                        MyAppState.currentUser!.userID
+                                color: data.senderId == Constant.userModel!.id
                                     ? Colors.white
                                     : Colors.black),
                           ),
@@ -332,8 +332,7 @@ class _ChatScreensState extends State<ChatScreens> {
                             child: Text(
                               data.message.toString(),
                               style: TextStyle(
-                                  color: data.senderId ==
-                                          MyAppState.currentUser!.userID
+                                  color: data.senderId == Constant.userModel!.id
                                       ? Colors.white
                                       : Colors.black),
                             ),
@@ -438,15 +437,15 @@ class _ChatScreensState extends State<ChatScreens> {
     if (url != null && url.mime.toString().isNotEmpty) {
       if (url.mime.contains('image')) {
         conversationModel.message = "sent An Image".tr(args: [
-          '${MyAppState.currentUser!.firstName} ${MyAppState.currentUser!.lastName}'
+          '${Constant.userModel!.firstName} ${Constant.userModel!.lastName}'
         ]);
       } else if (url.mime.contains('video')) {
         conversationModel.message = "sent A Video".tr(args: [
-          '${MyAppState.currentUser!.firstName} ${MyAppState.currentUser!.lastName}'
+          '${Constant.userModel!.firstName} ${Constant.userModel!.lastName}'
         ]);
       } else if (url.mime.contains('audio')) {
         conversationModel.message = "sent A VoiceMessage".tr(args: [
-          '${MyAppState.currentUser!.firstName} ${MyAppState.currentUser!.lastName}'
+          '${Constant.userModel!.firstName} ${Constant.userModel!.lastName}'
         ]);
       }
     } else if (messageType.toString() != "text") {
@@ -462,7 +461,7 @@ class _ChatScreensState extends State<ChatScreens> {
     }
     Map<String, dynamic> payLoad = {};
     if (widget.type == "cab_parcel_chat") {
-      User? customer =
+      UserModel? customer =
           await FireStoreUtils.getCurrentUser(widget.customerId.toString());
       token = customer!.fcmToken;
       payLoad = {
@@ -478,7 +477,7 @@ class _ChatScreensState extends State<ChatScreens> {
         "chatType": widget.chatType,
       };
     } else if (widget.type == "vendor_chat") {
-      User? customer =
+      UserModel? customer =
           await FireStoreUtils.getCurrentUser(widget.customerId.toString());
       token = customer!.fcmToken;
       payLoad = {
@@ -495,7 +494,7 @@ class _ChatScreensState extends State<ChatScreens> {
       };
     } else {
       ///Inbox
-      User? customer =
+      UserModel? customer =
           await FireStoreUtils.getCurrentUser(widget.customerId.toString());
       token = customer!.fcmToken;
       payLoad = {
@@ -511,7 +510,7 @@ class _ChatScreensState extends State<ChatScreens> {
       };
     }
     FireStoreUtils.sendChatFcmMessage(
-        "${MyAppState.currentUser!.fullName()} ${messageType == "image" ? "sent image to you" : messageType == "video" ? "sent video to you" : "sent message to you"}",
+        "${Constant.userModel!.fullName()} ${messageType == "image" ? "sent image to you" : messageType == "video" ? "sent video to you" : "sent message to you"}",
         conversationModel.message.toString(),
         token.toString(),
         payLoad);

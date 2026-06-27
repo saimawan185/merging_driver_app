@@ -5,12 +5,14 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/main.dart';
-import 'package:door_delights_driver/model/User.dart';
 import 'package:door_delights_driver/model/inbox_model.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/ui/chat_screen/chat_screen.dart';
 import 'package:flutterflow_paginate_firestore/paginate_firestore.dart';
+
+import '../../constant/constant.dart';
+import '../../models/user_model.dart';
 
 class InboxScreen extends StatefulWidget {
   const InboxScreen({Key? key}) : super(key: key);
@@ -33,18 +35,22 @@ class _InboxScreenState extends State<InboxScreen> {
             onTap: () async {
               ShowToastDialog.showLoader('Please wait...'.tr());
 
-              User? customer = await FireStoreUtils.getCurrentUser(inboxModel.customerId.toString());
-              User? driver = await FireStoreUtils.getCurrentUser(inboxModel.restaurantId.toString());
+              UserModel? customer = await FireStoreUtils.getCurrentUser(
+                  inboxModel.customerId.toString());
+              UserModel? driver = await FireStoreUtils.getCurrentUser(
+                  inboxModel.restaurantId.toString());
               // hideProgress();
-               ShowToastDialog.closeLoader();
+              ShowToastDialog.closeLoader();
               push(
                   context,
                   ChatScreens(
-                    customerName: '${customer!.firstName + " " + customer.lastName}',
-                    restaurantName: '${driver!.firstName + " " + driver.lastName}',
+                    customerName:
+                        '${(customer!.firstName ?? '') + " " + (customer.lastName ?? '')}',
+                    restaurantName:
+                        '${(driver!.firstName ?? '') + " " + (driver.lastName ?? '')}',
                     orderId: inboxModel.orderId,
-                    restaurantId: driver.userID,
-                    customerId: customer.userID,
+                    restaurantId: driver.id,
+                    customerId: customer.id,
                     customerProfileImage: customer.profilePictureURL,
                     restaurantProfileImage: driver.profilePictureURL,
                     token: customer.fcmToken,
@@ -76,7 +82,11 @@ class _InboxScreenState extends State<InboxScreen> {
               title: Row(
                 children: [
                   Expanded(child: Text(inboxModel.customerName.toString())),
-                  Text(DateFormat('MMM d, yyyy').format(DateTime.fromMillisecondsSinceEpoch(inboxModel.createdAt!.millisecondsSinceEpoch)), style: TextStyle(color: Colors.grey, fontSize: 14)),
+                  Text(
+                      DateFormat('MMM d, yyyy').format(
+                          DateTime.fromMillisecondsSinceEpoch(
+                              inboxModel.createdAt!.millisecondsSinceEpoch)),
+                      style: TextStyle(color: Colors.grey, fontSize: 14)),
                 ],
               ),
               subtitle: Text("Order Id : #" + inboxModel.orderId.toString()),
@@ -86,7 +96,10 @@ class _InboxScreenState extends State<InboxScreen> {
         shrinkWrap: true,
         onEmpty: Center(child: Text("No Conversion found")),
         // orderBy is compulsory to enable pagination
-        query: FirebaseFirestore.instance.collection('chat_driver').where("restaurantId", isEqualTo: MyAppState.currentUser!.userID).orderBy('createdAt', descending: true),
+        query: FirebaseFirestore.instance
+            .collection('chat_driver')
+            .where("restaurantId", isEqualTo: Constant.userModel!.id)
+            .orderBy('createdAt', descending: true),
         //Change types customerId
         itemBuilderType: PaginateBuilderType.listView,
         initialLoader: CircularProgressIndicator(),

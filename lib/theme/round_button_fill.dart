@@ -1,5 +1,5 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'app_them_data.dart';
 import 'responsive.dart';
@@ -9,33 +9,35 @@ class RoundedButtonFill extends StatelessWidget {
   final double? width;
   final double? height;
   final double? fontSizes;
-  final double? radius;
+  final double? borderRadius;
   final Color? color;
   final Color? textColor;
   final Widget? icon;
   final bool? isRight;
+  final bool? isCenter;
   final Function()? onPress;
 
-  const RoundedButtonFill(
-      {Key? key,
-      required this.title,
-      this.height,
-      required this.onPress,
-      this.width,
-      this.color,
-      this.icon,
-      this.fontSizes,
-      this.textColor,
-      this.isRight,
-      this.radius})
-      : super(key: key);
+  const RoundedButtonFill({
+    super.key,
+    required this.title,
+    this.borderRadius,
+    this.height,
+    required this.onPress,
+    this.width,
+    this.color,
+    this.isCenter,
+    this.icon,
+    this.fontSizes,
+    this.textColor,
+    this.isRight,
+  });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
         FocusManager.instance.primaryFocus?.unfocus();
-        onPress!();
+        onPress?.call();
       },
       child: Container(
         width: Responsive.width(width ?? 100, context),
@@ -43,28 +45,40 @@ class RoundedButtonFill extends StatelessWidget {
         decoration: ShapeDecoration(
           color: color,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(radius ?? 200),
-          ),
+              borderRadius: BorderRadius.circular(borderRadius ?? 50)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            (isRight == false)
-                ? Padding(padding: const EdgeInsets.only(right: 5), child: icon)
-                : const SizedBox(),
-            Text(
-              title.tr().toString(),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppThemeData.semiBold,
-                color: textColor ?? AppThemeData.grey800,
-                fontSize: fontSizes ?? 14,
-              ),
-            ),
-            (isRight == true)
-                ? Padding(padding: const EdgeInsets.only(left: 5), child: icon)
-                : const SizedBox(),
+            if (isRight == false)
+              Padding(
+                  padding: const EdgeInsets.only(right: 10, left: 10),
+                  child: icon),
+            isCenter == true
+                ? Text(
+                    title.tr,
+                    textAlign: TextAlign.center,
+                    style: AppThemeData.semiBoldTextStyle(
+                        fontSize: fontSizes ?? 16,
+                        color: textColor ?? AppThemeData.grey50),
+                  )
+                : Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: isRight == null ? 0 : 30),
+                      child: Text(
+                        title.tr,
+                        textAlign: TextAlign.center,
+                        style: AppThemeData.semiBoldTextStyle(
+                            fontSize: fontSizes ?? 16,
+                            color: textColor ?? AppThemeData.grey50),
+                      ),
+                    ),
+                  ),
+            if (isRight == true)
+              Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: icon),
           ],
         ),
       ),

@@ -1,7 +1,7 @@
 import 'dart:developer';
+import 'package:door_delights_driver/constant/constant.dart';
 import 'package:flutter/material.dart';
 import '../../constants.dart';
-import '../../main.dart';
 import '../../model/card_model.dart';
 import '../../model/onePaySettingsModel.dart';
 import '../../services/FirebaseHelper.dart';
@@ -74,9 +74,9 @@ class _CardManagementScreenState extends State<CardManagementScreen> {
 
   Future<String?> _ensureCustomerExists() async {
     // If customer already exists, return it
-    if (MyAppState.currentUser?.paymentCutomerId != null &&
-        MyAppState.currentUser!.paymentCutomerId!.isNotEmpty) {
-      return MyAppState.currentUser!.paymentCutomerId;
+    if (Constant.userModel?.paymentCutomerId != null &&
+        Constant.userModel!.paymentCutomerId!.isNotEmpty) {
+      return Constant.userModel!.paymentCutomerId;
     }
 
     // Create new customer
@@ -86,13 +86,13 @@ class _CardManagementScreenState extends State<CardManagementScreen> {
 
     try {
       final newCustomerId = await geniePayment.createCustomerIfNeeded(
-        user: MyAppState.currentUser!,
+        user: Constant.userModel!,
       );
 
       if (newCustomerId != null) {
         // Update user in Firestore and local state
-        MyAppState.currentUser!.paymentCutomerId = newCustomerId;
-        await FireStoreUtils.updateCurrentUser(MyAppState.currentUser!);
+        Constant.userModel!.paymentCutomerId = newCustomerId;
+        await FireStoreUtils.updateCurrentUser(Constant.userModel!);
 
         log('Customer created successfully: $newCustomerId');
         return newCustomerId;
@@ -314,7 +314,7 @@ class _CardManagementScreenState extends State<CardManagementScreen> {
       log('Step 1: Creating payment transaction...');
       final Map<String, String>? paymentData = await geniePayment.createPayment(
         context: context,
-        user: MyAppState.currentUser!,
+        user: Constant.userModel!,
         amount: widget.amount,
         onePaySettingData: onePaySettingData,
         customerId: customerId,
@@ -431,7 +431,7 @@ class _CardManagementScreenState extends State<CardManagementScreen> {
 
       final Map<String, String>? paymentData = await geniePayment.createPayment(
         context: context,
-        user: MyAppState.currentUser!,
+        user: Constant.userModel!,
         amount: widget.amount,
         onePaySettingData: onePaySettingData,
         customerId: customerId,
@@ -443,8 +443,8 @@ class _CardManagementScreenState extends State<CardManagementScreen> {
             paymentData['customerId']!.isNotEmpty &&
             customerId == null) {
           customerId = paymentData['customerId']!;
-          MyAppState.currentUser!.paymentCutomerId = customerId!;
-          await FireStoreUtils.updateCurrentUser(MyAppState.currentUser!);
+          Constant.userModel!.paymentCutomerId = customerId!;
+          await FireStoreUtils.updateCurrentUser(Constant.userModel!);
         }
 
         // Redirect to payment page

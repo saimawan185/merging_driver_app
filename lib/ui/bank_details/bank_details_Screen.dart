@@ -1,9 +1,11 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/main.dart';
-import 'package:door_delights_driver/model/User.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/ui/bank_details/enter_bank_details_screen.dart';
 import 'package:flutter/material.dart';
+
+import '../../constant/constant.dart';
+import '../../models/user_model.dart';
 
 class BankDetailsScreen extends StatefulWidget {
   const BankDetailsScreen({Key? key}) : super(key: key);
@@ -17,14 +19,15 @@ class _BankDetailsScreenState extends State<BankDetailsScreen> {
   bool isBankDetailsAdded = false;
 
   void initState() {
-    userBankDetails = MyAppState.currentUser!.userBankDetails;
+    userBankDetails = Constant.userModel!.userBankDetails;
     isBankDetailsAdded = userBankDetails!.accountNumber.isNotEmpty;
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: isBankDetailsAdded ? showBankDetails() : addBankDetail(context));
+    return Scaffold(
+        body: isBankDetailsAdded ? showBankDetails() : addBankDetail(context));
   }
 
   showBankDetails() {
@@ -90,11 +93,11 @@ class _BankDetailsScreenState extends State<BankDetailsScreen> {
             )));
     print("--->" + result.toString());
     if (result) {
-      User? user = await FireStoreUtils.getCurrentUser(MyAppState.currentUser!.userID);
+      UserModel? user =
+          await FireStoreUtils.getCurrentUser(Constant.userModel!.id!);
       setState(() {
-        MyAppState.currentUser = user;
-        userBankDetails = MyAppState.currentUser!.userBankDetails;
-        print(MyAppState.currentUser!.userBankDetails.bankName);
+        Constant.userModel = user;
+        userBankDetails = Constant.userModel!.userBankDetails;
         isBankDetailsAdded = true;
       });
     }
@@ -111,7 +114,8 @@ class _BankDetailsScreenState extends State<BankDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 30.0, horizontal: 0),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 30.0, horizontal: 0),
               child: Image.asset(
                 "assets/images/add_bank_image.png",
                 height: size.height * 0.48,
@@ -122,7 +126,8 @@ class _BankDetailsScreenState extends State<BankDetailsScreen> {
             Opacity(
               opacity: 0.7,
               child: Text(
-                "You have not added bank account\n".tr() + "please add your bank account".tr(),
+                "You have not added bank account\n".tr() +
+                    "please add your bank account".tr(),
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 17,
@@ -143,7 +148,8 @@ class _BankDetailsScreenState extends State<BankDetailsScreen> {
     );
   }
 
-  buildDetails({required String title, required IconData icon, required String value}) {
+  buildDetails(
+      {required String title, required IconData icon, required String value}) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(

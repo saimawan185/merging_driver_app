@@ -5,27 +5,37 @@ import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/services/show_toast_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/main.dart';
-import 'package:door_delights_driver/model/OrderModel.dart';
-import 'package:door_delights_driver/model/User.dart';
 import 'package:door_delights_driver/model/VendorModel.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/ui/chat_screen/chat_screen.dart';
-import 'package:door_delights_driver/ui/home/pick_order.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/instance_manager.dart';
+import 'package:get/state_manager.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
 
+import '../../models/order_model.dart';
+import '../../models/user_model.dart';
+import '../../theme/app_them_data.dart';
+import '../../themes/theme_controller.dart';
+import 'pick_order.dart';
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({
+    Key? key,
+    required this.isAppBarShow,
+  }) : super(key: key);
+  final bool isAppBarShow;
 
   @override
   HomeScreenState createState() => HomeScreenState();
@@ -108,7 +118,7 @@ class HomeScreenState extends State<HomeScreen> {
     orders.forEach((element) {
       OrderModel orderModel = element;
       print('---->${orderModel.id}');
-      orderModel.trigger_delevery = Timestamp.now();
+      orderModel.triggerDelivery = Timestamp.now();
       FirebaseFirestore.instance
           .collection(ORDERS)
           .doc(element.id)
@@ -123,7 +133,6 @@ class HomeScreenState extends State<HomeScreen> {
     setIcons();
     getLocation();
     updateDriverOrder();
-    setSound();
 
     super.initState();
   }
@@ -151,7 +160,7 @@ class HomeScreenState extends State<HomeScreen> {
     deliverExec = true;
 
     await FireStoreUtils()
-        .getVendorByVendorID(requestedOrder!.vendorID)
+        .getVendorByVendorID(requestedOrder!.vendorID!)
         .then((value) {
       vendorModel = value;
     });
@@ -159,48 +168,11 @@ class HomeScreenState extends State<HomeScreen> {
     setState(() {});
   }
 
-  setSound() async {
-    if (Platform.isAndroid) {
-      final path = await rootBundle
-          .load("assets/audio/mixkit-happy-bells-notification-937.mp3");
-
-      print("--------->${MyAppState.audioPlayer.state}");
-      MyAppState.audioPlayer.setSourceBytes(path.buffer.asUint8List());
-      MyAppState.audioPlayer.setReleaseMode(ReleaseMode.loop);
-      MyAppState.audioPlayer.play(BytesSource(path.buffer.asUint8List()),
-          ctx: AudioContext(
-              android: AudioContextAndroid(
-                  contentType: AndroidContentType.music,
-                  isSpeakerphoneOn: true,
-                  stayAwake: false,
-                  usageType: AndroidUsageType.notification,
-                  audioFocus: AndroidAudioFocus.gainTransient),
-              iOS: AudioContextIOS(category: AVAudioSessionCategory.playback)));
-    } else {
-      await MyAppState.audioPlayer
-          .setSourceAsset("audio/mixkit-happy-bells-notification-937.mp3");
-      await MyAppState.audioPlayer.setReleaseMode(ReleaseMode.loop);
-      await MyAppState.audioPlayer
-          .play(AssetSource('audio/mixkit-happy-bells-notification-937.mp3'));
-    }
-
-    playSound(false);
-  }
-
-  playSound(bool isPlay) async {
-    if (isPlay) {
-      await MyAppState.audioPlayer.resume();
-    } else {
-      await MyAppState.audioPlayer.stop();
-    }
-    print("0--------->${MyAppState.audioPlayer.state}");
-  }
-
   late Stream<OrderModel?> ordersFuture;
   OrderModel? currentOrder;
 
-  late Stream<User> driverStream;
-  User? _driverModel = User();
+  late Stream<UserModel> driverStream;
+  UserModel? _driverModel = UserModel();
   double kilometer = 0.0;
 
   // Add this variable
@@ -209,7 +181,7 @@ class HomeScreenState extends State<HomeScreen> {
 
   getCurrentOrder() async {
     ordersFuture = FireStoreUtils()
-        .getOrderByID(MyAppState.currentUser!.inProgressOrderID.toString());
+        .getOrderByID(Constant.userModel!.inProgressOrderID.toString());
     ordersFuture.listen((event) {
       currentOrder = event;
       if (currentOrder!.status == ORDER_STATUS_DRIVER_REJECTED ||
@@ -219,8 +191,8 @@ class HomeScreenState extends State<HomeScreen> {
       }
 
       if (currentOrder!.status == ORDER_STATUS_COMPLETED) {
-        MyAppState.currentUser!.inProgressOrderID = null;
-        FireStoreUtils.updateCurrentUser(MyAppState.currentUser!);
+        Constant.userModel!.inProgressOrderID = null;
+        FireStoreUtils.updateCurrentUser(Constant.userModel!);
       }
 
       // Only call getDirections if status changed or it's first load
@@ -238,7 +210,7 @@ class HomeScreenState extends State<HomeScreen> {
 
   Timer? _timer;
 
-  void startTimer(User _driverModel) {
+  void startTimer(UserModel _driverModel) {
     const oneSec = const Duration(seconds: 1);
     _timer = new Timer.periodic(
       oneSec,
@@ -256,29 +228,16 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   getDriver() async {
-    driverStream = FireStoreUtils().getDriver(MyAppState.currentUser!.userID);
+    driverStream = FireStoreUtils().getDriver(Constant.userModel!.id!);
     driverStream.listen((event) async {
-      print("--->${event.location.latitude} ${event.location.longitude}");
       _driverModel = event;
       setState(() {
-        MyAppState.currentUser = _driverModel;
+        Constant.userModel = _driverModel;
       });
 
       getDirections();
-      if (_driverModel!.isActive) {
-        if (_driverModel!.orderRequestData != null) {
-          playSound(true);
-        }
-      }
       if (_driverModel!.inProgressOrderID != null) {
         getCurrentOrder();
-      }
-      if (_driverModel!.orderRequestData == null) {
-        playSound(false);
-        // setState(() {
-        // _markers.clear();
-        // polyLines.clear();
-        // });
       }
     });
   }
@@ -291,7 +250,6 @@ class HomeScreenState extends State<HomeScreen> {
     }
     FireStoreUtils().ordersStreamController.close();
     FireStoreUtils().ordersStreamSub.cancel();
-    playSound(false);
     if (_timer != null) {
       _timer!.cancel();
     }
@@ -308,87 +266,111 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    isDarkMode(context)
-        ? _mapController?.setMapStyle('[{"featureType": "all","'
-            'elementType": "'
-            'geo'
-            'met'
-            'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]')
-        : _mapController?.setMapStyle(null);
+    final themeController = Get.find<ThemeController>();
 
-    return Scaffold(
-      body: Column(
-        children: [
-          Visibility(
-            visible: _driverModel!.inProgressOrderID == null &&
-                double.parse(_driverModel!.walletAmount.toString()) <
-                    double.parse(minimumDepositToRideAccept),
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                color: Colors.black,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                      "${"You have to minimum ".tr()}${amountShow(amount: minimumDepositToRideAccept.toString())} ${"wallet amount to receiving Order".tr()}",
-                      style: TextStyle(color: Colors.white),
-                      textAlign: TextAlign.center),
+    return Obx(() {
+      final isDark = themeController.isDark.value;
+
+      isDark
+          ? _mapController?.setMapStyle('[{"featureType": "all","'
+              'elementType": "'
+              'geo'
+              'met'
+              'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]')
+          : _mapController?.setMapStyle(null);
+
+      return Scaffold(
+        appBar: widget.isAppBarShow == true
+            ? AppBar(
+                backgroundColor:
+                    isDark ? AppThemeData.grey900 : AppThemeData.grey50,
+                centerTitle: false,
+                iconTheme:
+                    const IconThemeData(color: AppThemeData.grey900, size: 20),
+                title: Text(
+                  "Order".tr(),
+                  style: TextStyle(
+                      color:
+                          isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                      fontSize: 18,
+                      fontFamily: AppThemeData.medium),
+                ),
+              )
+            : null,
+        body: Column(
+          children: [
+            Visibility(
+              visible: _driverModel!.inProgressOrderID == null &&
+                  (double.tryParse(_driverModel!.walletAmount.toString()) ??
+                          0) <
+                      double.parse(minimumDepositToRideAccept),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Container(
+                  color: Colors.black,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                        "${"You have to minimum ".tr()}${amountShow(amount: minimumDepositToRideAccept.toString())} ${"wallet amount to receiving Order".tr()}",
+                        style: TextStyle(color: Colors.white),
+                        textAlign: TextAlign.center),
+                  ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: GoogleMap(
-              onMapCreated: _onMapCreated,
-              myLocationEnabled:
-                  _driverModel!.inProgressOrderID != null ? false : true,
-              myLocationButtonEnabled: true,
-              mapType: MapType.terrain,
-              zoomControlsEnabled: false,
-              polylines: Set<Polyline>.of(polyLines.values),
-              markers: _markers.values.toSet(),
-              initialCameraPosition: CameraPosition(
-                zoom: 15,
-                target: LatLng(_driverModel!.location.latitude,
-                    _driverModel!.location.longitude),
+            Expanded(
+              child: GoogleMap(
+                onMapCreated: _onMapCreated,
+                myLocationEnabled:
+                    _driverModel!.inProgressOrderID != null ? false : true,
+                myLocationButtonEnabled: true,
+                mapType: MapType.terrain,
+                zoomControlsEnabled: false,
+                polylines: Set<Polyline>.of(polyLines.values),
+                markers: _markers.values.toSet(),
+                initialCameraPosition: CameraPosition(
+                  zoom: 15,
+                  target: LatLng(_driverModel!.location?.latitude ?? 0,
+                      _driverModel!.location?.longitude ?? 0),
+                ),
               ),
             ),
-          ),
-          _driverModel!.inProgressOrderID != null &&
-                  currentOrder != null &&
-                  isShow == true
-              ? buildOrderActionsCard()
-              : Container(),
-          _driverModel!.orderRequestData != null
-              ? showDriverBottomSheet()
-              : Container()
-        ],
-      ),
-      floatingActionButton: _driverModel!.orderRequestData != null ||
-              _driverModel!.inProgressOrderID == null
-          ? null
-          : FloatingActionButton(
-              onPressed: () {
-                getCurrentOrder();
-                setState(() {
-                  if (isShow == true) {
-                    isShow = false;
-                  } else {
-                    isShow = true;
-                  }
-                });
-              },
-              child: Icon(
-                isShow ? Icons.close : Icons.remove_red_eye,
-                color: Colors.white,
-                size: 29,
+            _driverModel!.inProgressOrderID != null &&
+                    currentOrder != null &&
+                    isShow == true
+                ? buildOrderActionsCard()
+                : Container(),
+            _driverModel!.orderRequestData != null
+                ? showDriverBottomSheet()
+                : Container()
+          ],
+        ),
+        floatingActionButton: _driverModel!.orderRequestData != null ||
+                _driverModel!.inProgressOrderID == null
+            ? null
+            : FloatingActionButton(
+                onPressed: () {
+                  getCurrentOrder();
+                  setState(() {
+                    if (isShow == true) {
+                      isShow = false;
+                    } else {
+                      isShow = true;
+                    }
+                  });
+                },
+                child: Icon(
+                  isShow ? Icons.close : Icons.remove_red_eye,
+                  color: Colors.white,
+                  size: 29,
+                ),
+                backgroundColor: Colors.black,
+                tooltip: 'Capture Picture',
+                elevation: 5,
+                splashColor: Colors.grey,
               ),
-              backgroundColor: Colors.black,
-              tooltip: 'Capture Picture',
-              elevation: 5,
-              splashColor: Colors.grey,
-            ),
-    );
+      );
+    });
   }
 
   // OPTIMIZED ROUTE CALCULATION METHODS
@@ -411,23 +393,23 @@ class HomeScreenState extends State<HomeScreen> {
     if (currentOrder != null) {
       if (currentOrder!.status == ORDER_STATUS_SHIPPED ||
           currentOrder!.status == ORDER_STATUS_DRIVER_ACCEPTED) {
-        origin = LatLng(
-            _driverModel!.location.latitude, _driverModel!.location.longitude);
+        origin = LatLng(_driverModel!.location!.latitude!,
+            _driverModel!.location!.longitude!);
         destination = LatLng(
-            currentOrder!.vendor.latitude, currentOrder!.vendor.longitude);
+            currentOrder!.vendor!.latitude!, currentOrder!.vendor!.longitude!);
       } else if (currentOrder!.status == ORDER_STATUS_IN_TRANSIT) {
-        origin = LatLng(
-            _driverModel!.location.latitude, _driverModel!.location.longitude);
-        destination = LatLng(currentOrder!.address.location!.latitude,
-            currentOrder!.address.location!.longitude);
+        origin = LatLng(_driverModel!.location!.latitude!,
+            _driverModel!.location!.longitude!);
+        destination = LatLng(currentOrder!.address!.location!.latitude!,
+            currentOrder!.address!.location!.longitude!);
       } else {
         return;
       }
     } else if (_driverModel!.orderRequestData != null) {
-      origin = LatLng(
-          _driverModel!.location.latitude, _driverModel!.location.longitude);
-      destination = LatLng(_driverModel!.orderRequestData!.vendor.latitude,
-          _driverModel!.orderRequestData!.vendor.longitude);
+      origin = LatLng(_driverModel!.location!.latitude!,
+          _driverModel!.location!.longitude!);
+      destination = LatLng(_driverModel!.orderRequestData!.vendor!.latitude!,
+          _driverModel!.orderRequestData!.vendor!.longitude!);
     } else {
       return;
     }
@@ -456,7 +438,7 @@ class HomeScreenState extends State<HomeScreen> {
     // Recalculate if driver location changed significantly (more than 100 meters)
     if (_lastRouteOrigin != null && _driverModel != null) {
       final currentOrigin =
-          "${_driverModel!.location.latitude},${_driverModel!.location.longitude}";
+          "${_driverModel!.location!.latitude},${_driverModel!.location!.longitude}";
       if (_lastRouteOrigin != currentOrigin) {
         double distance = _calculateDistance(_lastRouteOrigin!, currentOrigin);
         log("Driver moved: ${distance.toStringAsFixed(2)} km");
@@ -520,8 +502,8 @@ class HomeScreenState extends State<HomeScreen> {
         _markers['Driver'] = Marker(
           markerId: const MarkerId('Driver'),
           infoWindow: const InfoWindow(title: "Driver"),
-          position: LatLng(_driverModel!.location.latitude,
-              _driverModel!.location.longitude),
+          position: LatLng(_driverModel!.location!.latitude!,
+              _driverModel!.location!.longitude!),
           icon: taxiIcon!,
           rotation: double.parse(_driverModel!.rotation.toString()),
         );
@@ -534,18 +516,18 @@ class HomeScreenState extends State<HomeScreen> {
           // Going to vendor
           _markers['Vendor'] = Marker(
             markerId: const MarkerId('Vendor'),
-            infoWindow: InfoWindow(title: currentOrder!.vendor.title),
-            position: LatLng(
-                currentOrder!.vendor.latitude, currentOrder!.vendor.longitude),
+            infoWindow: InfoWindow(title: currentOrder!.vendor!.title),
+            position: LatLng(currentOrder!.vendor!.latitude!,
+                currentOrder!.vendor!.longitude!),
             icon: departureIcon!,
           );
         } else if (currentOrder!.status == ORDER_STATUS_IN_TRANSIT) {
           // Going to customer
           _markers['Customer'] = Marker(
             markerId: const MarkerId('Customer'),
-            infoWindow: InfoWindow(title: currentOrder!.author.fullName()),
-            position: LatLng(currentOrder!.address.location!.latitude,
-                currentOrder!.address.location!.longitude),
+            infoWindow: InfoWindow(title: currentOrder!.author!.fullName()),
+            position: LatLng(currentOrder!.address!.location!.latitude!,
+                currentOrder!.address!.location!.longitude!),
             icon: destinationIcon!,
           );
         }
@@ -554,9 +536,9 @@ class HomeScreenState extends State<HomeScreen> {
         _markers['Vendor'] = Marker(
           markerId: const MarkerId('Vendor'),
           infoWindow:
-              InfoWindow(title: _driverModel!.orderRequestData!.vendor.title),
-          position: LatLng(_driverModel!.orderRequestData!.vendor.latitude,
-              _driverModel!.orderRequestData!.vendor.longitude),
+              InfoWindow(title: _driverModel!.orderRequestData!.vendor!.title),
+          position: LatLng(_driverModel!.orderRequestData!.vendor!.latitude!,
+              _driverModel!.orderRequestData!.vendor!.longitude!),
           icon: departureIcon!,
         );
       }
@@ -589,23 +571,23 @@ class HomeScreenState extends State<HomeScreen> {
   // Keep all your existing methods below - they don't need changes
   openChatWithCustomer() async {
     ShowToastDialog.showLoader("Please wait".tr());
-    User? customer =
-        await FireStoreUtils.getCurrentUser(currentOrder!.authorID);
+    UserModel? customer =
+        await FireStoreUtils.getCurrentUser(currentOrder!.authorID!);
     print(currentOrder!.driverID);
 
-    User? driver =
+    UserModel? driver =
         await FireStoreUtils.getCurrentUser(currentOrder!.driverID.toString());
     ShowToastDialog.closeLoader();
     push(
         context,
         ChatScreens(
           type: "vendor_chat",
-          customerName: customer!.firstName + " " + customer.lastName,
-          restaurantName: driver!.firstName + " " + driver.lastName,
+          customerName: customer!.firstName! + " " + customer.lastName!,
+          restaurantName: driver!.firstName! + " " + driver.lastName!,
           orderId: currentOrder!.id,
-          restaurantId: driver.userID,
-          customerId: customer.userID,
-          customerProfileImage: customer.profilePictureURL,
+          restaurantId: driver.id!,
+          customerId: customer.id!,
+          customerProfileImage: customer.profilePictureURL!,
           restaurantProfileImage: driver.profilePictureURL,
           token: customer.fcmToken,
           chatType: 'Driver',
@@ -614,10 +596,11 @@ class HomeScreenState extends State<HomeScreen> {
 
   Widget showDriverBottomSheet() {
     double distanceInMeters = Geolocator.distanceBetween(
-        _driverModel!.orderRequestData!.vendor.latitude,
-        _driverModel!.orderRequestData!.vendor.longitude,
-        _driverModel!.orderRequestData!.address.location!.latitude,
-        _driverModel!.orderRequestData!.address.location!.longitude);
+      _driverModel!.orderRequestData!.vendor!.latitude!,
+      _driverModel!.orderRequestData!.vendor!.longitude!,
+      _driverModel!.orderRequestData!.address!.location!.latitude!,
+      _driverModel!.orderRequestData!.address!.location!.longitude!,
+    );
     double kilometer = distanceInMeters / 1000;
 
     if (_driverModel!.orderRequestData != null) {
@@ -700,7 +683,7 @@ class HomeScreenState extends State<HomeScreen> {
                         SizedBox(
                           width: 270,
                           child: Text(
-                            "${_driverModel!.orderRequestData!.vendor.location} ",
+                            "${_driverModel!.orderRequestData!.vendor!.location} ",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -713,7 +696,7 @@ class HomeScreenState extends State<HomeScreen> {
                         SizedBox(
                           width: 270,
                           child: Text(
-                            "${_driverModel!.orderRequestData!.address.getFullAddress()} ",
+                            "${_driverModel!.orderRequestData!.address!.getFullAddress()} ",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -754,11 +737,6 @@ class HomeScreenState extends State<HomeScreen> {
                           letterSpacing: 0.5),
                     ),
                     onPressed: () async {
-                      if (Platform.isAndroid) {
-                        await playSound(false);
-                      } else {
-                        playSound(false);
-                      }
                       showProgress(context, 'Rejecting order...'.tr(), false);
                       try {
                         if (_timer != null) {
@@ -795,11 +773,6 @@ class HomeScreenState extends State<HomeScreen> {
                             letterSpacing: 0.5),
                       ),
                       onPressed: () async {
-                        if (Platform.isAndroid) {
-                          await playSound(false);
-                        } else {
-                          playSound(false);
-                        }
                         showProgress(context, 'Accepting order...'.tr(), false);
                         if (_timer != null) {
                           _timer!.cancel();
@@ -861,25 +834,25 @@ class HomeScreenState extends State<HomeScreen> {
     double totalPrice = 0.0;
     if (currentOrder!.status == ORDER_STATUS_SHIPPED ||
         currentOrder!.status == ORDER_STATUS_DRIVER_ACCEPTED) {
-      if (currentOrder!.preprationTime != null &&
-          currentOrder!.preprationTime!.isNotEmpty) {
+      if (currentOrder!.estimatedTimeToPrepare != null &&
+          currentOrder!.estimatedTimeToPrepare!.isNotEmpty) {
         _calculateTargetTime(
-          currentOrder!.preprationTime!,
-          currentOrder!.createdAt.toDate(),
+          currentOrder!.estimatedTimeToPrepare!,
+          currentOrder!.createdAt!.toDate(),
         );
         _startTimer();
       }
-      title = '${currentOrder!.vendor.title}';
+      title = '${currentOrder!.vendor!.title}';
       buttonText = 'REACHED STORE FOR PICKUP'.tr();
       googleMapUrl =
-          'https://www.google.com/maps/dir/?api=1&origin=${_driverModel!.location.latitude},${_driverModel!.location.longitude}&destination=${currentOrder!.vendor.latitude},${currentOrder!.vendor.longitude}&travelmode=driving';
+          'https://www.google.com/maps/dir/?api=1&origin=${_driverModel!.location!.latitude},${_driverModel!.location!.longitude}&destination=${currentOrder!.vendor!.latitude},${currentOrder!.vendor!.longitude}&travelmode=driving';
     } else if (currentOrder!.status == ORDER_STATUS_IN_TRANSIT) {
-      title = 'Deliver to {}'.tr(args: ['${currentOrder!.author.firstName}']);
+      title = 'Deliver to {}'.tr(args: ['${currentOrder!.author!.firstName}']);
       buttonText = 'REACHED CUSTOMER DOOR STEP'.tr();
       googleMapUrl =
-          'https://www.google.com/maps/dir/?api=1&origin=${_driverModel!.location.latitude},${_driverModel!.location.longitude}&destination=${currentOrder!.address.location!.latitude},${currentOrder!.address.location!.longitude}&travelmode=driving';
+          'https://www.google.com/maps/dir/?api=1&origin=${_driverModel!.location!.latitude},${_driverModel!.location!.longitude}&destination=${currentOrder!.address!.location!.latitude},${currentOrder!.address!.location!.longitude}&travelmode=driving';
 
-      for (var product in currentOrder!.products) {
+      for (var product in currentOrder!.products!) {
         if (product.extras_price != null &&
             product.extras_price!.isNotEmpty &&
             double.parse(product.extras_price!) != 0.0) {
@@ -906,11 +879,11 @@ class HomeScreenState extends State<HomeScreen> {
                       .toString())
               : 0);
       totalPrice = totalPrice +
-          double.parse(currentOrder!.tipValue ?? '0.0') +
+          double.parse(currentOrder!.tipAmount ?? '0.0') +
           double.parse(currentOrder!.serviceCharges!.toString());
 
       totalPrice =
-          totalPrice - double.parse(currentOrder!.deliveryDiscount!.toString());
+          totalPrice - double.parse(currentOrder!.deliveryCharge!.toString());
 
       totalPrice = double.parse(totalPrice.toStringAsFixed(2));
     }
@@ -946,7 +919,7 @@ class HomeScreenState extends State<HomeScreen> {
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
-                        '${currentOrder!.vendor.location}',
+                        '${currentOrder!.vendor!.location}',
                         maxLines: 2,
                         style: TextStyle(
                             color: isDarkMode(context)
@@ -969,10 +942,10 @@ class HomeScreenState extends State<HomeScreen> {
                         ),
                         onPressed: () {
                           print(
-                              "=========Phone Number : ${currentOrder!.vendor.phonenumber}");
+                              "=========Phone Number : ${currentOrder!.vendor!.phonenumber}");
 
                           UrlLauncher.launchUrl(Uri.parse(
-                              "tel://${currentOrder!.vendor.phonenumber}"));
+                              "tel://${currentOrder!.vendor!.phonenumber}"));
                         },
                         icon: Image.asset(
                           'assets/images/call3x.png',
@@ -990,8 +963,8 @@ class HomeScreenState extends State<HomeScreen> {
                   if ((currentOrder!.status == ORDER_STATUS_SHIPPED ||
                           currentOrder!.status ==
                               ORDER_STATUS_DRIVER_ACCEPTED) &&
-                      currentOrder!.preprationTime != null &&
-                      currentOrder!.preprationTime!.isNotEmpty)
+                      currentOrder!.estimatedTimeToPrepare != null &&
+                      currentOrder!.estimatedTimeToPrepare!.isNotEmpty)
                     ListTile(
                       tileColor: Color(0xffF1F4F8),
                       contentPadding: EdgeInsets.symmetric(horizontal: 32),
@@ -1041,7 +1014,7 @@ class HomeScreenState extends State<HomeScreen> {
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
-                        '${currentOrder!.payment_method.toUpperCase().toString()}',
+                        '${currentOrder!.paymentMethod!.toUpperCase().toString()}',
                         style: TextStyle(
                             color: isDarkMode(context)
                                 ? Color(0xffFFFFFF)
@@ -1086,7 +1059,7 @@ class HomeScreenState extends State<HomeScreen> {
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
-                        '${currentOrder!.author.fullName()}',
+                        '${currentOrder!.author!.fullName()}',
                         style: TextStyle(
                             color: isDarkMode(context)
                                 ? Color(0xffFFFFFF)
@@ -1109,7 +1082,7 @@ class HomeScreenState extends State<HomeScreen> {
                       color: Color(COLOR_PRIMARY),
                     ),
                     title: Text(
-                      '${currentOrder!.author.fullName()}',
+                      '${currentOrder!.author!.fullName()}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1166,7 +1139,7 @@ class HomeScreenState extends State<HomeScreen> {
                             ),
                             onPressed: () {
                               UrlLauncher.launchUrl(Uri.parse(
-                                  "tel://${currentOrder!.author.phoneNumber}"));
+                                  "tel://${currentOrder!.author!.phoneNumber}"));
                             },
                             icon: Image.asset(
                               'assets/images/call3x.png',
@@ -1200,7 +1173,7 @@ class HomeScreenState extends State<HomeScreen> {
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
-                        '${currentOrder!.address.getFullAddress()}',
+                        '${currentOrder!.address!.getFullAddress()}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -1251,7 +1224,7 @@ class HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     trailing: Text(
-                      '${currentOrder!.payment_method.toUpperCase().toString()}',
+                      '${currentOrder!.paymentMethod!.toUpperCase().toString()}',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -1366,7 +1339,7 @@ class HomeScreenState extends State<HomeScreen> {
                                                 ),
                                                 onPressed: () {
                                                   UrlLauncher.launchUrl(Uri.parse(
-                                                      "tel://${currentOrder!.author.phoneNumber}"));
+                                                      "tel://${currentOrder!.author!.phoneNumber}"));
                                                 },
                                                 icon: Image.asset(
                                                   'assets/images/call3x.png',
@@ -1383,7 +1356,7 @@ class HomeScreenState extends State<HomeScreen> {
                                           ],
                                         ),
                                         Text(
-                                          '${currentOrder!.author.fullName()}',
+                                          '${currentOrder!.author!.fullName()}',
                                           style: TextStyle(
                                               color: Color(0xff333333),
                                               fontFamily: "Poppinsm",
@@ -1393,7 +1366,7 @@ class HomeScreenState extends State<HomeScreen> {
                                           padding:
                                               const EdgeInsets.only(top: 4.0),
                                           child: Text(
-                                            '${currentOrder!.address.getFullAddress()},',
+                                            '${currentOrder!.address!.getFullAddress()},',
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
@@ -1416,12 +1389,12 @@ class HomeScreenState extends State<HomeScreen> {
                                   SizedBox(height: 24),
                                   ListView.builder(
                                       shrinkWrap: true,
-                                      itemCount: currentOrder!.products.length,
+                                      itemCount: currentOrder!.products!.length,
                                       physics: NeverScrollableScrollPhysics(),
                                       itemBuilder: (context, index) {
                                         String adOns = '';
                                         dynamic extra = currentOrder!
-                                            .products[index].extras;
+                                            .products![index].extras;
                                         for (int i = 0;
                                             i < extra!.length;
                                             i++) {
@@ -1446,7 +1419,7 @@ class HomeScreenState extends State<HomeScreen> {
                                                       child: CachedNetworkImage(
                                                           height: 55,
                                                           imageUrl:
-                                                              '${currentOrder!.products[index].photo}',
+                                                              '${currentOrder!.products![index].photo}',
                                                           imageBuilder: (context,
                                                                   imageProvider) =>
                                                               Container(
@@ -1480,7 +1453,7 @@ class HomeScreenState extends State<HomeScreen> {
                                                                   .spaceBetween,
                                                           children: [
                                                             Text(
-                                                              '${currentOrder!.products[index].name}',
+                                                              '${currentOrder!.products![index].name}',
                                                               style: TextStyle(
                                                                   fontFamily:
                                                                       'Poppinsr',
@@ -1503,7 +1476,7 @@ class HomeScreenState extends State<HomeScreen> {
                                                                       COLOR_PRIMARY),
                                                                 ),
                                                                 Text(
-                                                                    '${currentOrder!.products[index].quantity}',
+                                                                    '${currentOrder!.products![index].quantity}',
                                                                     style:
                                                                         TextStyle(
                                                                       fontFamily:
@@ -1559,7 +1532,7 @@ class HomeScreenState extends State<HomeScreen> {
                                       ),
                                       title: Text(
                                         "Given".tr() +
-                                            " ${currentOrder!.products.length} " +
+                                            " ${currentOrder!.products!.length} " +
                                             "item to customer".tr(),
                                         style: TextStyle(
                                             color: Color(0xff3DAE7D),
@@ -1585,7 +1558,7 @@ class HomeScreenState extends State<HomeScreen> {
                                             letterSpacing: 0.5),
                                       ),
                                       trailing: Text(
-                                        "${currentOrder!.payment_method.toUpperCase().toString()}",
+                                        "${currentOrder!.paymentMethod!.toUpperCase().toString()}",
                                         style: TextStyle(
                                             color: Color(0xff3DAE7D),
                                             fontFamily: 'Poppinsm',
@@ -1595,12 +1568,12 @@ class HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                   ),
-                                  if (currentOrder!.payment_method
+                                  if (currentOrder!.paymentMethod!
                                               .toLowerCase() ==
                                           'cod' &&
                                       totalPrice != 0.0)
-                                    SizedBox(height: 26),
-                                  if (currentOrder!.payment_method
+                                    const SizedBox(height: 26),
+                                  if (currentOrder!.paymentMethod!
                                               .toLowerCase() ==
                                           'cod' &&
                                       totalPrice != 0.0)
@@ -1726,9 +1699,8 @@ class HomeScreenState extends State<HomeScreen> {
         await FireStoreUtils.updateCurrentUser(_driverModel!);
 
         orderModel.status = ORDER_STATUS_ACCEPTED;
-        orderModel.driverID = _driverModel!.userID;
+        orderModel.driverID = _driverModel!.id;
         orderModel.driver = _driverModel!;
-        orderModel.acceptedAt = Timestamp.now();
 
         await FireStoreUtils.updateOrder(orderModel);
 
@@ -1766,6 +1738,67 @@ class HomeScreenState extends State<HomeScreen> {
 
   bool orderProgress = false;
 
+  Future<void> updateWallateAmount(OrderModel orderModel,
+      {int maxRetries = 3, int retryDelay = 2}) async {
+    try {
+      double total = 0.0;
+      double discount = 0.0;
+      double specialDiscount = 0.0;
+      double taxAmount = 0.0;
+      orderModel.products!.forEach((element) {
+        if (element.extras_price != null &&
+            element.extras_price!.isNotEmpty &&
+            double.parse(element.extras_price!) != 0.0) {
+          total += element.quantity * double.parse(element.extras_price!);
+        }
+        total += element.quantity * double.parse(element.price);
+      });
+
+      if (orderModel.specialDiscount != null ||
+          orderModel.specialDiscount!['special_discount'] != null) {
+        specialDiscount = double.parse(
+            orderModel.specialDiscount!['special_discount'].toString());
+      }
+
+      if (orderModel.discount != null) {
+        discount = double.parse(orderModel.discount.toString());
+      }
+
+      var totalamount = total - discount - specialDiscount;
+
+      if (orderModel.taxSetting != null) {
+        for (var element in orderModel.taxSetting!) {
+          taxAmount = taxAmount +
+              calculateTax(amount: totalamount.toString(), taxModel: element);
+        }
+      }
+
+      double driverAmount = 0;
+      if (orderModel.paymentMethod!.toLowerCase() != "cod") {
+        driverAmount += (double.parse(orderModel.deliveryCharge!) +
+            double.parse(orderModel.tipAmount ?? '0.0'));
+      } else {
+        driverAmount += (-totalamount - taxAmount);
+      }
+
+      if (orderModel.paymentMethod!.toLowerCase() == "cod") {
+        driverAmount =
+            driverAmount - orderModel.serviceCharges! + orderModel.discount!;
+      }
+
+      await FireStoreUtils.updateWalletAmount(
+          userId: orderModel.driverID!,
+          amount: double.parse(driverAmount.toStringAsFixed(2)));
+    } catch (e) {
+      if (maxRetries > 0) {
+        await Future.delayed(Duration(seconds: retryDelay));
+        await updateWallateAmount(orderModel, maxRetries: maxRetries - 1);
+      } else {
+        log("Failed to update wallet after 3 attempts: $e");
+      }
+    }
+  }
+
   completeOrder() async {
     if (orderProgress) return;
 
@@ -1778,7 +1811,6 @@ class HomeScreenState extends State<HomeScreen> {
     while (retryCount <= maxRetries) {
       try {
         currentOrder!.status = ORDER_STATUS_COMPLETED;
-        currentOrder!.deliveredAt = Timestamp.now();
 
         await FireStoreUtils.updateOrder(currentOrder!);
 
@@ -1793,7 +1825,7 @@ class HomeScreenState extends State<HomeScreen> {
 
         await FireStoreUtils.sendFcmMessage(
           driverCompleted,
-          currentOrder!.author.fcmToken,
+          currentOrder!.author!.fcmToken ?? '',
           payLoad,
         );
 
@@ -1864,7 +1896,7 @@ class HomeScreenState extends State<HomeScreen> {
     if (orderModel.rejectedByDrivers == null) {
       orderModel.rejectedByDrivers = [];
     }
-    orderModel.rejectedByDrivers!.add(_driverModel!.userID);
+    orderModel.rejectedByDrivers!.add(_driverModel!.id);
     orderModel.status = ORDER_STATUS_DRIVER_REJECTED;
     await FireStoreUtils.updateOrder(orderModel);
     _driverModel!.orderRequestData = null;

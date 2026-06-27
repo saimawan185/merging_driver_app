@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'package:door_delights_driver/models/user_model.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../constants.dart';
-import '../../model/User.dart';
 import '../../model/card_model.dart';
 import '../../model/onePaySettingsModel.dart';
 
@@ -24,7 +24,7 @@ class GeniePayment {
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcHBJZCI6ImFjYjhmMzI2LThlMjItNGU0MC05YWQ1LTEzYmFmMzliYTczZSIsImNvbXBhbnlJZCI6IjY4ZGJhZDhhZGE4ZjVlMmYyM2RmNWFmZCIsImlhdCI6MTc1OTkzODEyNSwiZXhwIjo0OTE1NjExNzI1fQ.ddIQ_sitBrLADbskk_ueBy3_JeK7D3XUtiWTpcKf6dM';
 
   // Create customer if doesn't exist
-  Future<String?> createCustomerIfNeeded({required User user}) async {
+  Future<String?> createCustomerIfNeeded({required UserModel user}) async {
     try {
       // If user already has customer ID, return it
       if (user.paymentCutomerId != null && user.paymentCutomerId!.isNotEmpty) {
@@ -46,7 +46,7 @@ class GeniePayment {
     }
   }
 
-  Future<String?> createCustomer({required User user}) async {
+  Future<String?> createCustomer({required UserModel user}) async {
     try {
       final url = Uri.parse('$apiUrl/public-customers/');
       final headers = {
@@ -175,7 +175,7 @@ class GeniePayment {
   Future<Map<String, String>?> createPayment({
     required BuildContext context,
     required String amount,
-    required User user,
+    required UserModel user,
     required OnePaySettingData? onePaySettingData,
     String? customerId,
   }) async {

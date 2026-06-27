@@ -12,6 +12,8 @@ class AppThemeData {
   static const Color surface = Color(0xFFF9FAFB);
   static const Color surfaceDark = Color(0xFF030712);
 
+  static Color driverApp300 = const Color(0xFF5BC236);
+
   static const Color info50 = Color(0xFFE5F9FF);
   static const Color info100 = Color(0xFFACECFF);
   static const Color info200 = Color(0xFF72DEFF);
@@ -63,8 +65,99 @@ class AppThemeData {
   static const Color grey800 = Color(0xFF1F2937);
   static const Color grey900 = Color(0xFF111827);
 
+  // === Car-Rent (Light) ===
+  static const Color carRent50 = Color(0xFFEBFAF2);
+  static const Color carRent100 = Color(0xFFB7EBCE);
+  static const Color carRent200 = Color(0xFF83DDAB);
+  static const Color carRent300 = Color(0xFF47CF88);
+  static const Color carRent400 = Color(0xFF37905E);
+  static const Color carRent500 = Color(0xFF1E5235);
+  static const Color carRent600 = Color(0xFF05140C);
+
+  // === Car-Rent (Dark) ===
+  static const Color carRentDark50 = Color(0xFF05140C);
+  static const Color carRentDark100 = Color(0xFF1E5235);
+  static const Color carRentDark200 = Color(0xFF37905E);
+  static const Color carRentDark300 = Color(0xFF4FCF88);
+  static const Color carRentDark400 = Color(0xFF83DDAB);
+  static const Color carRentDark500 = Color(0xFFB7EBCE);
+  static const Color carRentDark600 = Color(0xFFEBFAF2);
+
+  static const Color greyDark50 = Color(0xFF0C111C);
+  static const Color greyDark100 = Color(0xFF1F2937);
+  static const Color greyDark200 = Color(0xFF374151);
+  static const Color greyDark300 = Color(0xFF4B5563);
+  static const Color greyDark400 = Color(0xFF6B7280);
+  static const Color greyDark500 = Color(0xFF9CA3AF);
+  static const Color greyDark600 = Color(0xFFD1D5DB);
+  static const Color greyDark700 = Color(0xFFE5E7EB);
+  static const Color greyDark800 = Color(0xFFF3F4F6);
+  static const Color greyDark900 = Color(0xFFF9FAFB);
+
+  static const String fontFamily = 'Poppinsr';
+
   static const String regular = 'RadioCanadaBig-Regular';
   static const String medium = 'RadioCanadaBig-Medium';
   static const String bold = 'RadioCanadaBig-Bold';
   static const String semiBold = 'RadioCanadaBig-SemiBold';
+
+  static TextStyle boldTextStyle({
+    double? fontSize,
+    Color? color,
+    TextDecoration? decoration,
+    Color? decorationColor,
+    TextDecorationStyle? decorationStyle,
+    double? decorationThickness,
+  }) {
+    return TextStyle(
+      fontSize: fontSize ?? 22,
+      color: color ?? grey900,
+      fontFamily: fontFamily,
+      fontWeight: FontWeight.w700,
+      decoration: decoration ?? TextDecoration.none,
+      decorationColor: decorationColor ?? color ?? grey900,
+      decorationStyle: decorationStyle,
+      decorationThickness: decorationThickness,
+    );
+  }
+
+  static TextStyle semiBoldTextStyle({
+    double? fontSize,
+    Color? color,
+    TextDecoration? decoration,
+    Color? decorationColor,
+    TextDecorationStyle? decorationStyle,
+    double? decorationThickness,
+  }) {
+    return TextStyle(
+      fontSize: fontSize ?? 14,
+      color: color ?? grey900,
+      fontFamily: fontFamily,
+      fontWeight: FontWeight.w600,
+      decoration: decoration ?? TextDecoration.none,
+      decorationColor: decorationColor ?? color ?? grey900,
+      decorationStyle: decorationStyle,
+      decorationThickness: decorationThickness,
+    );
+  }
+
+  static TextStyle mediumTextStyle({
+    double? fontSize,
+    Color? color,
+    TextDecoration? decoration,
+    Color? decorationColor,
+    TextDecorationStyle? decorationStyle,
+    double? decorationThickness,
+  }) {
+    return TextStyle(
+      fontSize: fontSize ?? 14,
+      color: color ?? grey900,
+      fontFamily: fontFamily,
+      fontWeight: FontWeight.w500,
+      decoration: decoration ?? TextDecoration.none,
+      decorationColor: decorationColor ?? color ?? grey900,
+      decorationStyle: decorationStyle,
+      decorationThickness: decorationThickness,
+    );
+  }
 }

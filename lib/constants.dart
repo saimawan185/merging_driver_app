@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crypto/crypto.dart';
-import 'package:door_delights_driver/model/TaxModel.dart';
 import 'package:door_delights_driver/model/mail_setting.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,6 +14,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import 'model/CurrencyModel.dart';
+import 'models/tax_model.dart';
 
 const FINISHED_ON_BOARDING = 'finishedOnBoarding';
 LocationData? locationDataFinal;

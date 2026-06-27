@@ -5,6 +5,8 @@ import 'package:door_delights_driver/main.dart';
 import 'package:door_delights_driver/model/topupTranHistory.dart';
 import 'package:flutter/material.dart';
 
+import '../../constant/constant.dart';
+
 class TopUpScreen extends StatefulWidget {
   const TopUpScreen({Key? key}) : super(key: key);
 
@@ -15,7 +17,7 @@ class TopUpScreen extends StatefulWidget {
 class TopUpScreenState extends State<TopUpScreen> {
   Stream<QuerySnapshot>? topupHistoryQuery;
   static FirebaseFirestore fireStore = FirebaseFirestore.instance;
-  final userId = MyAppState.currentUser!.userID;
+  final userId = Constant.userModel!.id;
 
   @override
   void initState() {

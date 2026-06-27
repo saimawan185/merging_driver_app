@@ -10,7 +10,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'model/MercadoPagoSettingsModel.dart';
 import 'model/paypalSettingData.dart';
 import 'model/razorpayKeyModel.dart';
-import 'model/stripeSettingData.dart';
 
 class UserPreference {
   static late SharedPreferences _preferences;

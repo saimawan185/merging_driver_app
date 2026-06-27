@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:door_delights_driver/constants.dart';
-import 'package:door_delights_driver/model/User.dart';
 import 'package:door_delights_driver/model/onePaySettingsModel.dart';
+import 'package:door_delights_driver/models/user_model.dart';
 // import 'package:flutterwave_standard/view/view_utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:crypto/crypto.dart';
@@ -21,7 +21,7 @@ class OnePayPayment {
   }
 
   static String createRequestBody(
-      {required String amount, required User user}) {
+      {required String amount, required UserModel user}) {
     final body = {
       'amount': '${amount}',
       'currency': currencyData?.code ?? 'LKR',
@@ -40,7 +40,7 @@ class OnePayPayment {
 
   static Future<String> makeApiCall(context,
       {required String amount,
-      required User user,
+      required UserModel user,
       required OnePaySettingData? onePaySettingData}) async {
     app_id = onePaySettingData?.appId ?? '';
     app_token = onePaySettingData?.appToken ?? '';

@@ -2,11 +2,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
-import 'package:door_delights_driver/model/OrderModel.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/services/show_toast_dialog.dart';
 import 'package:flutter/material.dart';
+
+import '../../models/order_model.dart';
 
 class PickOrder extends StatefulWidget {
   final OrderModel? currentOrder;
@@ -90,11 +91,12 @@ class _PickOrderState extends State<PickOrder> {
               SizedBox(height: 24),
               ListView.builder(
                   shrinkWrap: true,
-                  itemCount: widget.currentOrder!.products.length,
+                  itemCount: widget.currentOrder!.products!.length,
                   physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     String adOns = '';
-                    dynamic extra = widget.currentOrder!.products[index].extras;
+                    dynamic extra =
+                        widget.currentOrder!.products![index].extras;
                     for (int i = 0; i < extra!.length; i++) {
                       List adon =
                           extra[i].toString().replaceAll("\"", "").split('_');
@@ -115,7 +117,7 @@ class _PickOrderState extends State<PickOrder> {
                                       height: 55,
                                       // width: 50,
                                       imageUrl:
-                                          '${widget.currentOrder!.products[index].photo}',
+                                          '${widget.currentOrder!.products![index].photo}',
                                       imageBuilder: (context, imageProvider) =>
                                           Container(
                                             decoration: BoxDecoration(
@@ -138,7 +140,7 @@ class _PickOrderState extends State<PickOrder> {
                                           MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
-                                          '${widget.currentOrder!.products[index].name}',
+                                          '${widget.currentOrder!.products![index].name}',
                                           style: TextStyle(
                                               fontFamily: 'Poppinsr',
                                               letterSpacing: 0.5,
@@ -153,7 +155,7 @@ class _PickOrderState extends State<PickOrder> {
                                                 size: 15,
                                                 color: Color(COLOR_PRIMARY)),
                                             Text(
-                                                '${widget.currentOrder!.products[index].quantity}',
+                                                '${widget.currentOrder!.products![index].quantity}',
                                                 style: TextStyle(
                                                   fontFamily: 'Poppinsm',
                                                   fontSize: 17,
@@ -254,14 +256,14 @@ class _PickOrderState extends State<PickOrder> {
                     ),
                     ListTile(
                       title: Text(
-                        '${widget.currentOrder!.author.fullName()}',
+                        '${widget.currentOrder!.author!.fullName()}',
                         style: TextStyle(
                           color: Color(0xff333333),
                           fontFamily: "Poppinsm",
                         ),
                       ),
                       subtitle: Text(
-                        '${widget.currentOrder!.address.getFullAddress()}',
+                        '${widget.currentOrder!.address!.getFullAddress()}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -300,14 +302,13 @@ class _PickOrderState extends State<PickOrder> {
               if (_value) {
                 showProgress(context, 'Updating order...', false);
                 widget.currentOrder!.status = ORDER_STATUS_IN_TRANSIT;
-                widget.currentOrder!.reachedStoreAt = Timestamp.now();
                 await FireStoreUtils.updateOrder(widget.currentOrder!);
                 Map<String, dynamic> payLoad = <String, dynamic>{
                   "type": "vendor_order",
                   "orderId": widget.currentOrder!.id
                 };
                 await FireStoreUtils.sendFcmMessage(driverAccepted,
-                    widget.currentOrder!.author.fcmToken, payLoad);
+                    widget.currentOrder!.author!.fcmToken ?? '', payLoad);
                 hideProgress();
                 setState(() {});
                 Navigator.pop(context);

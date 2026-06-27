@@ -1,14 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:door_delights_driver/model/TaxModel.dart';
-import 'package:door_delights_driver/model/User.dart';
 import 'package:door_delights_driver/model/VehicleType.dart';
+
+import '../models/tax_model.dart';
+import '../models/user_model.dart';
 
 class CabOrderModel {
   String authorID;
   String paymentMethod;
   bool paymentStatus;
-  User author;
-  User? driver;
+  UserModel author;
+  UserModel? driver;
   String? driverID;
   String? otpCode;
   Timestamp createdAt;
@@ -93,7 +94,7 @@ class CabOrderModel {
     this.stops = const [],
     this.stopNames = const [],
     int this.currentStopIndex = 0,
-  })  : author = author ?? User(),
+  })  : author = author ?? UserModel(),
         sourceLocation = sourceLocation ?? UserLocationData(),
         this.trigger_delevery = trigger_delevery ?? Timestamp.now(),
         destinationLocation = destinationLocation ?? UserLocationData(),
@@ -138,8 +139,8 @@ class CabOrderModel {
       stopNames: stopNames ?? [],
       currentStopIndex: parsedJson['currentStopIndex'] ?? 0,
       author: parsedJson.containsKey('author')
-          ? User.fromJson(parsedJson['author'])
-          : User(),
+          ? UserModel.fromJson(parsedJson['author'])
+          : UserModel(),
       authorID: parsedJson['authorID'] ?? '',
       createdAt: parsedJson['createdAt'] ?? Timestamp.now(),
       startTime: parsedJson['startTime'] ?? Timestamp.now(),
@@ -155,7 +156,7 @@ class CabOrderModel {
       couponCode: parsedJson['couponCode'] ?? '',
       couponId: parsedJson['couponId'] ?? '',
       driver: parsedJson.containsKey('driver')
-          ? User.fromJson(parsedJson['driver'])
+          ? UserModel.fromJson(parsedJson['driver'])
           : null,
       driverID:
           parsedJson.containsKey('driverID') ? parsedJson['driverID'] : null,

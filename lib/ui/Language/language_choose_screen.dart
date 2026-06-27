@@ -5,7 +5,7 @@ import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'language_model.dart';
+import '../../models/language_model.dart';
 
 class LanguageChooseScreen extends StatefulWidget {
   final bool isContainer;
@@ -78,9 +78,9 @@ class _LanguageChooceScreenState extends State<LanguageChooseScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       child: Row(
                         children: [
-                          languageList[index].flag != null
+                          languageList[index].image != null
                               ? Image.network(
-                                  languageList[index].flag.toString(),
+                                  languageList[index].image.toString(),
                                   height: 60,
                                   width: 60,
                                 )
