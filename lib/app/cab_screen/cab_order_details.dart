@@ -84,18 +84,20 @@ class CabOrderDetails extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "${'Booking Date:'.tr}${controller.formatDate(controller.cabOrder.value.scheduleDateTime!)}"
-                                  .tr,
-                              textAlign: TextAlign.start,
-                              style: TextStyle(
-                                fontFamily: AppThemeData.semiBold,
-                                fontSize: 18,
-                                color: isDark
-                                    ? AppThemeData.grey50
-                                    : AppThemeData.grey900,
+                            if (controller.cabOrder.value.scheduleDateTime !=
+                                null)
+                              Text(
+                                "${'Booking Date:'.tr}${controller.formatDate(controller.cabOrder.value.scheduleDateTime!)}"
+                                    .tr,
+                                textAlign: TextAlign.start,
+                                style: TextStyle(
+                                  fontFamily: AppThemeData.semiBold,
+                                  fontSize: 18,
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                ),
                               ),
-                            ),
                             SizedBox(height: 10),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,9 +231,9 @@ class CabOrderDetails extends StatelessWidget {
                                   options: fm.MapOptions(
                                     initialCenter: osm.LatLng(
                                         controller.cabOrder.value
-                                            .sourceLocation!.latitude!,
+                                            .sourceLocation!.latitude,
                                         controller.cabOrder.value
-                                            .sourceLocation!.longitude!),
+                                            .sourceLocation!.longitude),
                                     initialZoom: 13,
                                   ),
                                   children: [
@@ -256,9 +258,9 @@ class CabOrderDetails extends StatelessWidget {
                                         fm.Marker(
                                           point: osm.LatLng(
                                               controller.cabOrder.value
-                                                  .sourceLocation!.latitude!,
+                                                  .sourceLocation!.latitude,
                                               controller.cabOrder.value
-                                                  .sourceLocation!.longitude!),
+                                                  .sourceLocation!.longitude),
                                           width: 20,
                                           height: 20,
                                           child: Image.asset(
@@ -269,12 +271,9 @@ class CabOrderDetails extends StatelessWidget {
                                         fm.Marker(
                                           point: osm.LatLng(
                                             controller.cabOrder.value
-                                                .destinationLocation!.latitude!,
-                                            controller
-                                                .cabOrder
-                                                .value
-                                                .destinationLocation!
-                                                .longitude!,
+                                                .destinationLocation!.latitude,
+                                            controller.cabOrder.value
+                                                .destinationLocation!.longitude,
                                           ),
                                           width: 20,
                                           height: 20,
@@ -291,9 +290,9 @@ class CabOrderDetails extends StatelessWidget {
                                   initialCameraPosition: gmap.CameraPosition(
                                     target: gmap.LatLng(
                                         controller.cabOrder.value
-                                            .sourceLocation!.latitude!,
+                                            .sourceLocation!.latitude,
                                         controller.cabOrder.value
-                                            .sourceLocation!.longitude!),
+                                            .sourceLocation!.longitude),
                                     zoom: 13,
                                   ),
                                   polylines: controller.googlePolylines.toSet(),

@@ -1,21 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 import 'dart:developer' as log;
-import 'package:audioplayers/audioplayers.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/models/user_model.dart';
 import 'package:door_delights_driver/services/show_toast_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
-import 'package:door_delights_driver/main.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/ui/chat_screen/chat_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:geolocator/geolocator.dart';
@@ -53,7 +49,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   final Map<String, Marker> _markers = {};
 
   String? _lastRouteOrigin;
-  String? _lastRouteDestination;
+  // String? _lastRouteDestination;
   String? _lastOrderStatus;
   List<String>? _lastStopCoordinates;
   bool _isFirstOrderLoad = true;
@@ -675,8 +671,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
       // Cache the current route information
       _lastRouteOrigin = "${origin.latitude},${origin.longitude}";
-      _lastRouteDestination =
-          "${destination.latitude},${destination.longitude}";
+      // _lastRouteDestination =
+      //     "${destination.latitude},${destination.longitude}";
       _lastOrderStatus = currentStatus;
       _lastStopCoordinates = waypoints.map((wp) => wp.location).toList();
     } catch (e) {
@@ -1013,7 +1009,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     bool isPickedUp = false;
     String googleMapUrl = '';
     String? buttonText;
-    double discountAmount = 0.0;
+    // double discountAmount = 0.0;
     if (currentOrder!.status == ORDER_STATUS_SHIPPED ||
         currentOrder!.status == ORDER_STATUS_DRIVER_ACCEPTED) {
       buttonText = enableOTPTripStart

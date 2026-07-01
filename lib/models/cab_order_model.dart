@@ -100,7 +100,7 @@ class CabOrderModel {
   String? adminCommissionType;
 
   // ── Tip ─────────────────────────────────────────────────────
-  String? tipValue; // second model (parsed from 'tip_amount')
+  String? tipAmount; // second model (parsed from 'tip_amount')
 
   // ── Multi‑stop support ──────────────────────────────────────
   List<UserLocationData> stops = [];
@@ -156,7 +156,7 @@ class CabOrderModel {
     this.customerDropTime,
     this.adminCommission,
     this.adminCommissionType,
-    this.tipValue,
+    this.tipAmount,
     this.stops = const [],
     this.stopNames = const [],
     this.currentStopIndex = 0,
@@ -246,7 +246,7 @@ class CabOrderModel {
       customerDropTime: json['customerDropTime'],
       adminCommission: json['adminCommission'],
       adminCommissionType: json['adminCommissionType'],
-      tipValue: json['tip_amount']?.toString() ?? json['tipValue']?.toString(),
+      tipAmount: json['tip_amount']?.toString() ?? json['tipValue']?.toString(),
       stops: stopsList,
       stopNames: stopNamesList,
       currentStopIndex: json['currentStopIndex'] ?? 0,
@@ -307,7 +307,7 @@ class CabOrderModel {
 
     data['adminCommission'] = adminCommission;
     data['adminCommissionType'] = adminCommissionType;
-    data['tip_amount'] = tipValue;
+    data['tip_amount'] = tipAmount;
 
     data['stops'] = stops.map((v) => v.toJson()).toList();
     data['stopNames'] = stopNames;

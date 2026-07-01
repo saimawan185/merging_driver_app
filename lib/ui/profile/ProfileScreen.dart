@@ -1,9 +1,7 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:door_delights_driver/models/user_model.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
-import 'package:door_delights_driver/main.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/services/show_toast_dialog.dart';
@@ -14,7 +12,6 @@ import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
 import '../../constant/constant.dart';
 
 class ProfileScreen extends StatefulWidget {

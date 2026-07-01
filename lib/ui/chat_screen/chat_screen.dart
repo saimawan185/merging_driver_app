@@ -5,7 +5,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart' as easyLocal;
 import 'package:door_delights_driver/constants.dart';
-import 'package:door_delights_driver/main.dart';
 import 'package:door_delights_driver/model/ChatVideoContainer.dart';
 import 'package:door_delights_driver/model/conversation_model.dart';
 import 'package:door_delights_driver/model/inbox_model.dart';

@@ -27,6 +27,43 @@ class DashBoardController extends GetxController {
   DateTime? currentBackPressTime;
   RxBool canPopNow = false.obs;
 
+  Future<void> toggleDriverStatus() async {
+    // Get the current status
+    final bool currentStatus = userModel.value.isActive ?? false;
+    final bool newStatus = !currentStatus;
+
+    // If auto-verify is disabled, check document verification first
+    if (userModel.value.isAutoVerify == false) {
+      if (userModel.value.isDocumentVerify == true) {
+        // Update status and other fields
+        userModel.value.isActive = newStatus;
+        userModel.value.inProgressOrderID =
+            Constant.userModel!.inProgressOrderID;
+        userModel.value.orderRequestData = Constant.userModel!.orderRequestData;
+
+        if (userModel.value.isActive == true) {
+          await updateCurrentLocation();
+        }
+        await FireStoreUtils.updateUser(userModel.value);
+      } else {
+        ShowToastDialog.showToast(
+          "Document verification is pending. Please proceed to set up your document verification."
+              .tr,
+        );
+      }
+    } else {
+      // Auto-verify is enabled – just toggle
+      userModel.value.isActive = newStatus;
+      userModel.value.inProgressOrderID = Constant.userModel!.inProgressOrderID;
+      userModel.value.orderRequestData = Constant.userModel!.orderRequestData;
+
+      if (userModel.value.isActive == true) {
+        await updateCurrentLocation();
+      }
+      await FireStoreUtils.updateUser(userModel.value);
+    }
+  }
+
   Future<void> getUser() async {
     await updateCurrentLocation();
     FireStoreUtils.fireStore

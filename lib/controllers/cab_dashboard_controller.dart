@@ -26,6 +26,31 @@ class CabDashBoardController extends GetxController {
 
   final RxBool isLoading = false.obs;
 
+  Future<void> toggleDriverStatus() async {
+    final bool currentStatus = userModel.value.isActive ?? false;
+    final bool newStatus = !currentStatus;
+
+    if (Constant.userModel?.isAutoVerify == false) {
+      if (userModel.value.isDocumentVerify == true) {
+        userModel.value.isActive = newStatus;
+        if (newStatus) {
+          updateCurrentLocation();
+        }
+        await FireStoreUtils.updateUser(userModel.value);
+      } else {
+        ShowToastDialog.showToast(
+            "Document verification is pending. Please proceed to set up your document verification."
+                .tr);
+      }
+    } else {
+      userModel.value.isActive = newStatus;
+      if (newStatus) {
+        updateCurrentLocation();
+      }
+      await FireStoreUtils.updateUser(userModel.value);
+    }
+  }
+
   Future<void> getUser() async {
     isLoading.value = true;
     await updateCurrentLocation();

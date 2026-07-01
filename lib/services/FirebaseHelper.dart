@@ -1003,7 +1003,7 @@ class FireStoreUtils {
         'KB',
       );
     });
-    uploadTask.whenComplete(() {}).catchError((onError) {
+    uploadTask.whenComplete(() {}).catchError((onError) async {
       print((onError as PlatformException).message);
     });
     var storageRef = (await uploadTask.whenComplete(() {})).ref;
@@ -2418,8 +2418,8 @@ class FireStoreUtils {
       String profilePicUrl = '';
       String carPicUrl = DEFAULT_CAR_IMAGE;
 
-      String driverProofUrl = '';
-      String carProofUrl = '';
+      // String driverProofUrl = '';
+      // String carProofUrl = '';
 
       if (image != null) {
         updateProgress('Uploading image, Please wait...'.tr());
@@ -2438,17 +2438,17 @@ class FireStoreUtils {
 
       if (driverProofImage != null) {
         updateProgress('Uploading car image, Please wait...'.tr());
-        driverProofUrl = await uploadCarImageToFireStorage(
-          driverProofImage,
-          Timestamp.now().toString(),
-        );
+        // driverProofUrl = await uploadCarImageToFireStorage(
+        //   driverProofImage,
+        //   Timestamp.now().toString(),
+        // );
       }
       if (carProofImage != null) {
         updateProgress('Uploading car image, Please wait...'.tr());
-        carProofUrl = await uploadCarImageToFireStorage(
-          carProofImage,
-          Timestamp.now().toString(),
-        );
+        // carProofUrl = await uploadCarImageToFireStorage(
+        //   carProofImage,
+        //   Timestamp.now().toString(),
+        // );
       }
 
       UserModel user = UserModel(
@@ -2524,8 +2524,8 @@ class FireStoreUtils {
       );
       String profilePicUrl = '';
       String carPicUrl = DEFAULT_CAR_IMAGE;
-      String driverProofUrl = '';
-      String carProofUrl = '';
+      // String driverProofUrl = '';
+      // String carProofUrl = '';
       if (image != null) {
         updateProgress('Uploading image, Please wait...'.tr());
         profilePicUrl = await uploadUserImageToFireStorage(
@@ -2541,20 +2541,20 @@ class FireStoreUtils {
         );
       }
 
-      if (driverProofImage != null) {
-        updateProgress('Uploading car image, Please wait...'.tr());
-        driverProofUrl = await uploadCarImageToFireStorage(
-          driverProofImage,
-          Timestamp.now().toString() ?? '',
-        );
-      }
-      if (carProofImage != null) {
-        updateProgress('Uploading car image, Please wait...'.tr());
-        carProofUrl = await uploadCarImageToFireStorage(
-          carProofImage,
-          Timestamp.now().toString(),
-        );
-      }
+      // if (driverProofImage != null) {
+      //   updateProgress('Uploading car image, Please wait...'.tr());
+      //   driverProofUrl = await uploadCarImageToFireStorage(
+      //     driverProofImage,
+      //     Timestamp.now().toString() ?? '',
+      //   );
+      // }
+      // if (carProofImage != null) {
+      //   updateProgress('Uploading car image, Please wait...'.tr());
+      //   carProofUrl = await uploadCarImageToFireStorage(
+      //     carProofImage,
+      //     Timestamp.now().toString(),
+      //   );
+      // }
 
       UserModel user = UserModel(
         email: emailAddress,
@@ -2657,14 +2657,14 @@ class FireStoreUtils {
         updateProgress('Uploading car image, Please wait...'.tr());
         driverProofUrl = await uploadCarImageToFireStorage(
           driverProofImage,
-          Timestamp.now().toString() ?? '',
+          Timestamp.now().toString(),
         );
       }
       if (carProofImage != null) {
         updateProgress('Uploading car image, Please wait...'.tr());
         carProofUrl = await uploadCarImageToFireStorage(
           carProofImage,
-          Timestamp.now().toString() ?? '',
+          Timestamp.now().toString(),
         );
       }
 

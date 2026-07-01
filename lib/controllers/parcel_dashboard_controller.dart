@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:door_delights_driver/constant/collection_name.dart';
 import 'package:door_delights_driver/constant/show_toast_dialog.dart';
 import 'package:door_delights_driver/models/user_model.dart';
@@ -5,8 +7,9 @@ import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/preferences.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
-
 import '../constant/constant.dart' show Constant;
+import '../constants.dart';
+import '../model/CurrencyModel.dart';
 import '../themes/theme_controller.dart';
 
 class ParcelDashboardController extends GetxController {
@@ -24,30 +27,87 @@ class ParcelDashboardController extends GetxController {
   DateTime? currentBackPressTime;
   RxBool canPopNow = false.obs;
 
-  Future<void> getUser() async {
-    await updateCurrentLocation();
-    FireStoreUtils.fireStore
-        .collection(CollectionName.users)
-        .doc(FireStoreUtils.getCurrentUid())
-        .snapshots()
-        .listen(
-      (event) async {
-        if (event.exists) {
-          userModel.value = UserModel.fromJson(event.data()!);
-          Constant.userModel = UserModel.fromJson(event.data()!);
-          // Preload all registered sections into cache
-          // for (final sid in userModel.value.sectionIds ?? <String>[]) {
-          final sid = userModel.value.sectionId!;
-          if (!Constant.sectionModels.containsKey(sid)) {
-            FireStoreUtils.getSectionBySectionId(sid).then((sectionValue) {
-              if (sectionValue != null)
-                Constant.sectionModels[sid] = sectionValue;
-            });
-          }
-          // }
+  Future<void> toggleDriverStatus() async {
+    final bool newStatus = !(userModel.value.isActive ?? false);
+    userModel.value.isActive = newStatus;
+    userModel.value.inProgressOrderID = Constant.userModel!.inProgressOrderID;
+    userModel.value.orderRequestData =
+        Constant.userModel!.orderRequestData; // or orderCabRequestData
+
+    // If auto-verify is disabled, check document verification
+    if (userModel.value.isAutoVerify == false) {
+      if (userModel.value.isDocumentVerify == true) {
+        // Documents are verified – proceed
+        if (newStatus == true) {
+          await updateCurrentLocation();
         }
-      },
-    );
+        await FireStoreUtils.updateUser(userModel.value);
+      } else {
+        // Verification pending – revert status and show toast
+        userModel.value.isActive = false;
+        ShowToastDialog.showToast(
+          "Document verification is pending. Please proceed to set up your document verification."
+              .tr,
+        );
+      }
+    } else {
+      // Auto-verify is enabled – just toggle
+      if (newStatus == true) {
+        await updateCurrentLocation();
+      }
+      await FireStoreUtils.updateUser(userModel.value);
+    }
+  }
+
+  final RxBool isLoading = false.obs;
+
+  Future<void> getUser() async {
+    isLoading.value = true;
+    try {
+      await updateCurrentLocation();
+      FireStoreUtils.fireStore
+          .collection(CollectionName.users)
+          .doc(FireStoreUtils.getCurrentUid())
+          .snapshots()
+          .listen(
+        (event) async {
+          if (event.exists) {
+            userModel.value = UserModel.fromJson(event.data()!);
+            Constant.userModel = UserModel.fromJson(event.data()!);
+            // Preload all registered sections into cache
+            // for (final sid in userModel.value.sectionIds ?? <String>[]) {
+            final sid = userModel.value.sectionId!;
+            if (!Constant.sectionModels.containsKey(sid)) {
+              FireStoreUtils.getSectionBySectionId(sid).then((sectionValue) {
+                if (sectionValue != null)
+                  Constant.sectionModels[sid] = sectionValue;
+              });
+            }
+            // }
+          }
+        },
+      );
+
+      await FireStoreUtils.getCurrency().then((value) {
+        if (value != null) {
+          currencyData = value;
+        } else {
+          currencyData = CurrencyModel(
+            id: "",
+            code: "USD",
+            decimal: 2,
+            isactive: true,
+            name: "US Dollar",
+            symbol: "\$",
+            symbolatright: false,
+          );
+        }
+      });
+    } catch (e) {
+      log("Error getting user: $e");
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   RxString isDarkMode = "Light".obs;

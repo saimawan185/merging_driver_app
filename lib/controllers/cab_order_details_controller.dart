@@ -97,13 +97,13 @@ class CabOrderDetailsController extends GetxController {
     googleMarkers.value = {
       gmap.Marker(
         markerId: const gmap.MarkerId('source'),
-        position: gmap.LatLng(sourceLat!, sourceLng!),
+        position: gmap.LatLng(sourceLat, sourceLng),
         icon: gmap.BitmapDescriptor.defaultMarkerWithHue(
             gmap.BitmapDescriptor.hueGreen),
       ),
       gmap.Marker(
         markerId: const gmap.MarkerId('destination'),
-        position: gmap.LatLng(destLat!, destLng!),
+        position: gmap.LatLng(destLat, destLng),
         icon: gmap.BitmapDescriptor.defaultMarkerWithHue(
             gmap.BitmapDescriptor.hueRed),
       ),

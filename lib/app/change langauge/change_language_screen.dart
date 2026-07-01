@@ -5,9 +5,12 @@ import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:flutter/material.dart';
+import 'package:get/instance_manager.dart';
+import 'package:get/state_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/language_model.dart';
+import '../../themes/theme_controller.dart';
 
 class LanguageChooseScreen extends StatefulWidget {
   final bool isContainer;
@@ -49,6 +52,8 @@ class _LanguageChooceScreenState extends State<LanguageChooseScreen> {
     }
     setState(() {});
   }
+
+  final themeController = Get.find<ThemeController>();
 
   @override
   Widget build(BuildContext context) {
@@ -93,8 +98,14 @@ class _LanguageChooceScreenState extends State<LanguageChooseScreen> {
                                 ),
                           Padding(
                             padding: const EdgeInsets.only(left: 10, right: 10),
-                            child: Text(languageList[index].title.toString(),
-                                style: const TextStyle(fontSize: 16)),
+                            child: Obx(() {
+                              final isDark = themeController.isDark.value;
+                              return Text(languageList[index].title.toString(),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: isDark ? Colors.white : Colors.black,
+                                  ));
+                            }),
                           )
                         ],
                       ),

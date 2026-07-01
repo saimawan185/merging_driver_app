@@ -57,6 +57,8 @@ import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
+import '../constants.dart';
+import '../model/CurrencyModel.dart';
 import '../models/parcel_category.dart';
 import '../models/rating_model.dart';
 
@@ -79,6 +81,25 @@ class FireStoreUtils {
 
   static String getCurrentUid() {
     return FirebaseAuth.instance.currentUser!.uid;
+  }
+
+  static Future<CurrencyModel?> getCurrency() async {
+    try {
+      CurrencyModel? currency;
+      await fireStore
+          .collection(Currency)
+          .where("isActive", isEqualTo: true)
+          .get()
+          .then((value) {
+        if (value.docs.isNotEmpty) {
+          currency = CurrencyModel.fromJson(value.docs.first.data());
+        }
+      });
+      return currency;
+    } catch (e) {
+      log("Currency error: $e");
+      return null;
+    }
   }
 
   static Future<bool> isLogin() async {

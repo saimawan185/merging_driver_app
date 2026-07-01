@@ -1,8 +1,6 @@
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/controllers/order_details_controller.dart';
-import 'package:door_delights_driver/models/cart_product_model.dart';
 import 'package:door_delights_driver/themes/app_them_data.dart';
-import 'package:door_delights_driver/themes/responsive.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:door_delights_driver/widget/my_separator.dart';
@@ -261,7 +259,7 @@ class OrderDetailsScreen extends StatelessWidget {
               child: Stack(
                 children: [
                   NetworkImageWidget(
-                    imageUrl: product.photo ?? '',
+                    imageUrl: product.photo,
                     height: 70,
                     width: 70,
                     fit: BoxFit.cover,
@@ -292,7 +290,7 @@ class OrderDetailsScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          product.name ?? '',
+                          product.name,
                           style: TextStyle(
                             fontFamily: AppThemeData.regular,
                             color: isDark
@@ -314,8 +312,7 @@ class OrderDetailsScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  if ((double.tryParse(product.discount_price ?? '0.0') ?? 0) <=
-                      0)
+                  if ((double.tryParse(product.discount_price) ?? 0) <= 0)
                     Text(
                       Constant.amountShow(amount: product.price),
                       style: TextStyle(
@@ -429,8 +426,7 @@ class OrderDetailsScreen extends StatelessWidget {
               Text(
                 Constant.amountShow(
                   amount: ((double.tryParse(product.extras_price ?? '0') ?? 0) *
-                          (int.tryParse(product.quantity?.toString() ?? '1') ??
-                              1))
+                          (int.tryParse(product.quantity.toString()) ?? 1))
                       .toString(),
                 ),
                 style: TextStyle(

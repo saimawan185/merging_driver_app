@@ -19,7 +19,7 @@ class CabOrderModel {
   num? discount;
   String? couponCode;
   String? couponId;
-  String? tipValue;
+  String? tipAmount;
   String? adminCommission;
   String? adminCommissionType;
   // String? tax;
@@ -76,7 +76,7 @@ class CabOrderModel {
     this.discount = 0,
     this.couponCode = '',
     this.couponId = '',
-    this.tipValue,
+    this.tipAmount,
     this.adminCommission,
     this.adminCommissionType,
     this.sourceLocationName,
@@ -163,7 +163,7 @@ class CabOrderModel {
       adminCommission: parsedJson["adminCommission"] ?? "",
       otpCode: parsedJson["otpCode"] ?? "",
       adminCommissionType: parsedJson["adminCommissionType"] ?? "",
-      tipValue: parsedJson["tip_amount"] ?? "",
+      tipAmount: parsedJson["tip_amount"] ?? "",
       paymentMethod: parsedJson['paymentMethod'] ?? '',
       taxModel: taxList,
       subTotal: parsedJson['subTotal'] ?? '0.0',
@@ -206,7 +206,7 @@ class CabOrderModel {
       'couponId': couponId,
       'adminCommission': adminCommission,
       'adminCommissionType': adminCommissionType,
-      "tip_amount": tipValue,
+      "tip_amount": tipAmount,
       "taxSetting":
           taxModel != null ? taxModel!.map((v) => v.toJson()).toList() : null,
       "sourceLocation": sourceLocation.toJson(),

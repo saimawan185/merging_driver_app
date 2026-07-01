@@ -68,7 +68,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     total = 0.0;
     String extrasDisVal = '';
     orderModel.products?.forEach((element) {
-      total += (element.quantity ?? 0) * double.parse(element.price ?? '0');
+      total += (element.quantity) * double.parse(element.price);
 
       for (int i = 0; i < (element.extras?.length ?? 0); i++) {
         extrasDisVal +=

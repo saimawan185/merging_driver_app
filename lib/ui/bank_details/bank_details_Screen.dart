@@ -1,9 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:door_delights_driver/main.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/ui/bank_details/enter_bank_details_screen.dart';
 import 'package:flutter/material.dart';
-
 import '../../constant/constant.dart';
 import '../../models/user_model.dart';
 

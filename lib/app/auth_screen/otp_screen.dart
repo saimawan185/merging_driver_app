@@ -6,7 +6,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
-
 import '../../constant/constant.dart';
 import '../../constant/show_toast_dialog.dart';
 import '../../controllers/otp_controller.dart';
@@ -18,7 +17,6 @@ import '../../ui/login/LoginScreen.dart';
 import '../../utils/fire_store_utils.dart';
 import '../cab_screen/cab_dashboard_screen.dart';
 import '../dash_board_screen/dash_board_screen.dart';
-import '../multi_service/multi_service_dashboard_screen.dart';
 import '../owner_screen/owner_dashboard_screen.dart';
 import '../parcel_screen/parcel_dashboard_screen.dart';
 import '../rental_service/rental_dashboard_screen.dart';

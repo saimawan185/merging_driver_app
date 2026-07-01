@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-
 import '../../constant/constant.dart';
 import '../../constant/show_toast_dialog.dart';
 import '../../controllers/signup_controller.dart';
@@ -17,7 +16,6 @@ import '../../theme/responsive.dart';
 import '../../themes/text_field_widget.dart';
 import '../../themes/theme_controller.dart';
 import '../../ui/login/LoginScreen.dart';
-import 'phone_number_screen.dart';
 
 class SignupScreen extends StatelessWidget {
   const SignupScreen({super.key});
@@ -233,7 +231,7 @@ class SignupScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              section?.name ?? '',
+                              section.name ?? '',
                               style: TextStyle(
                                   fontFamily: AppThemeData.semiBold,
                                   fontSize: 14,

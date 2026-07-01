@@ -104,18 +104,75 @@ class CabDashboardScreen extends StatelessWidget {
                 ],
               ),
               actions: [
+                Obx(() {
+                  final bool isActive =
+                      controller.userModel.value.isActive ?? false;
+                  return GestureDetector(
+                    onTap: () async {
+                      await controller.toggleDriverStatus();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: isActive
+                            ? const LinearGradient(
+                                colors: [Color(0xFF00C853), Color(0xFF00A800)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : const LinearGradient(
+                                colors: [Color(0xFF9E9E9E), Color(0xFF616161)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: isActive
+                            ? [
+                                BoxShadow(
+                                  color: Colors.green.withOpacity(0.5),
+                                  blurRadius: 12,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isActive ? Icons.circle : Icons.circle_outlined,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          // Status Text
+                          Text(
+                            isActive ? 'ONLINE' : 'OFFLINE',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(width: 10),
                 Constant.userModel!.ownerId != null &&
                         Constant.userModel!.ownerId!.isNotEmpty
                     ? SizedBox()
                     : InkWell(
                         onTap: () {
-                          Get.to(() => const WalletScreen());
+                          controller.drawerIndex.value = 2;
                         },
                         child: SvgPicture.asset(
                             "assets/icons/ic_wallet_home.svg")),
-                const SizedBox(
-                  width: 10,
-                ),
+                const SizedBox(width: 10),
                 InkWell(
                     onTap: () {
                       Get.to(const EditProfileScreen());

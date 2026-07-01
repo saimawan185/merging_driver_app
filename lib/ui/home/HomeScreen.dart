@@ -1,21 +1,17 @@
 import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 import 'dart:math' as math;
-import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/services/show_toast_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
-import 'package:door_delights_driver/main.dart';
 import 'package:door_delights_driver/model/VendorModel.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/ui/chat_screen/chat_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:geolocator/geolocator.dart';
@@ -57,7 +53,7 @@ class HomeScreenState extends State<HomeScreen> {
 
   // Add route caching variables
   String? _lastRouteOrigin;
-  String? _lastRouteDestination;
+  // String? _lastRouteDestination;
   String? _lastOrderStatus;
 
   setIcons() async {
@@ -423,8 +419,8 @@ class HomeScreenState extends State<HomeScreen> {
 
       // Cache the current route information
       _lastRouteOrigin = "${origin.latitude},${origin.longitude}";
-      _lastRouteDestination =
-          "${destination.latitude},${destination.longitude}";
+      // _lastRouteDestination =
+      //     "${destination.latitude},${destination.longitude}";
       _lastOrderStatus = currentStatus;
     } catch (e) {
       log("Error getting directions: $e");
@@ -806,14 +802,16 @@ class HomeScreenState extends State<HomeScreen> {
   void _startTimer() {
     _remaningTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final now = DateTime.now();
-      setState(() {
-        _remainingTime = _targetTime.difference(now);
+      if (mounted) {
+        setState(() {
+          _remainingTime = _targetTime.difference(now);
 
-        if (_remainingTime.isNegative) {
-          _remainingTime = Duration.zero;
-          timer.cancel();
-        }
-      });
+          if (_remainingTime.isNegative) {
+            _remainingTime = Duration.zero;
+            timer.cancel();
+          }
+        });
+      }
     });
   }
 

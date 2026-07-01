@@ -7,7 +7,6 @@ import 'package:door_delights_driver/app/owner_screen/driver_location_screen.dar
 import 'package:door_delights_driver/app/owner_screen/owner_home_screen.dart';
 import 'package:door_delights_driver/app/terms_and_condition/terms_and_condition_screen.dart';
 import 'package:door_delights_driver/app/verification_screen/verification_screen.dart';
-import 'package:door_delights_driver/app/wallet_screen/wallet_screen.dart';
 import 'package:door_delights_driver/app/withdraw_method_setup_screens/withdraw_method_setup_screen.dart';
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/constant/show_toast_dialog.dart';

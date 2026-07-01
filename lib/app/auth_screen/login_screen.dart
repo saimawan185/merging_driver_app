@@ -3,16 +3,13 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-
 import '../../constant/show_toast_dialog.dart';
 import '../../controllers/login_controller.dart';
 import '../../theme/app_them_data.dart';
 import '../../theme/responsive.dart';
-import '../../theme/round_button_fill.dart';
 import '../../themes/text_field_widget.dart';
 import '../../themes/theme_controller.dart';
 import '../forgot_password_screen/forgot_password_screen.dart';
-import 'phone_number_screen.dart';
 import 'signup_screen.dart';
 
 class LoginScreen extends StatelessWidget {

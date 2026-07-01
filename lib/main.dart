@@ -50,7 +50,7 @@ void main() async {
     ),
     UserPreference.init(),
     AudioPlayerService.initAudio(),
-    configEasyLoading()
+    configEasyLoading(),
   ]);
 
   runApp(

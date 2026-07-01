@@ -1,33 +1,25 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:door_delights_driver/app/cab_screen/cab_order_details.dart';
 import 'package:door_delights_driver/app/parcel_screen/parcel_order_details.dart';
 import 'package:door_delights_driver/app/rental_service/rental_order_details_screen.dart';
 import 'package:door_delights_driver/model/onePaySettingsModel.dart';
-import 'package:door_delights_driver/services/onepaypayment.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:door_delights_driver/model/CabOrderModel.dart';
 import 'package:door_delights_driver/model/FlutterWaveSettingDataModel.dart';
 import 'package:door_delights_driver/model/MercadoPagoSettingsModel.dart';
 import 'package:door_delights_driver/model/PayFastSettingData.dart';
 import 'package:door_delights_driver/model/PayStackSettingsModel.dart';
-import 'package:door_delights_driver/model/StripePayFailedModel.dart';
-import 'package:door_delights_driver/model/createRazorPayOrderModel.dart';
 import 'package:door_delights_driver/model/getPaytmTxtToken.dart';
 import 'package:door_delights_driver/model/payStackURLModel.dart';
 import 'package:door_delights_driver/model/paypalSettingData.dart';
 import 'package:door_delights_driver/model/paytmSettingData.dart';
-import 'package:door_delights_driver/model/razorpayKeyModel.dart';
-import 'package:door_delights_driver/model/stripeSettingData.dart';
 import 'package:door_delights_driver/model/withdrawHistoryModel.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/services/payStackScreen.dart';
 import 'package:door_delights_driver/services/paystack_url_genrater.dart';
 import 'package:door_delights_driver/services/show_toast_dialog.dart';
-import 'package:door_delights_driver/ui/topup/TopUpScreen.dart';
 import 'package:door_delights_driver/ui/wallet/paymenturlscreen.dart';
 import 'package:door_delights_driver/ui/wallet/PayFastScreen.dart';
 import 'package:door_delights_driver/userPrefrence.dart';
@@ -49,12 +41,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import '../../constant/constant.dart';
 import '../../constants.dart';
-import '../../main.dart';
+import '../../models/cab_order_model.dart';
 import '../../models/order_model.dart';
 import '../../models/parcel_order_model.dart';
 import '../../models/rental_order_model.dart';
 import '../../models/user_model.dart';
-import '../../models/withdrawal_model.dart';
 import '../../theme/app_them_data.dart';
 import '../../theme/responsive.dart';
 import '../../theme/round_button_fill.dart';
@@ -91,7 +82,6 @@ class WalletScreenState extends State<WalletScreen> {
   getData() async {
     try {
       userQuery = fireStore.collection(USERS).doc(userId).snapshots();
-      print(userQuery!.isEmpty);
     } catch (e) {
       print(e);
     }
@@ -311,7 +301,7 @@ class WalletScreenState extends State<WalletScreen> {
     payFastSettingData = await UserPreference.getPayFastData();
     mercadoPagoSettingData = await UserPreference.getMercadoPago();
     print("onePaySettingData ::  ${onePaySettingData?.appId.toString()}");
-    setRef();
+    // setRef();
     // initPayPal();
     // await UserPreference.getStripeData().then((value) async {
     //   stripeData = value;
@@ -421,14 +411,16 @@ class WalletScreenState extends State<WalletScreen> {
                           if (asyncSnapshot.connectionState ==
                               ConnectionState.waiting) {
                             return Center(
-                                child: SizedBox(
-                                    height: 30,
-                                    width: 30,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 0.8,
-                                      color: Colors.white,
-                                      backgroundColor: Colors.transparent,
-                                    )));
+                              child: SizedBox(
+                                height: 30,
+                                width: 30,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 0.8,
+                                  color: Colors.white,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              ),
+                            );
                           }
                           UserModel userData =
                               UserModel.fromJson(asyncSnapshot.data!.data()!);
@@ -1528,22 +1520,22 @@ class WalletScreenState extends State<WalletScreen> {
   }
 
   ///FlutterWave Payment Method
-  String? _ref;
+  // String? _ref;
 
-  setRef() {
-    Random numRef = Random();
-    int year = DateTime.now().year;
-    int refNumber = numRef.nextInt(20000);
-    if (Platform.isAndroid) {
-      setState(() {
-        _ref = "AndroidRef$year$refNumber";
-      });
-    } else if (Platform.isIOS) {
-      setState(() {
-        _ref = "IOSRef$year$refNumber";
-      });
-    }
-  }
+  // setRef() {
+  //   Random numRef = Random();
+  //   int year = DateTime.now().year;
+  //   int refNumber = numRef.nextInt(20000);
+  //   if (Platform.isAndroid) {
+  //     setState(() {
+  //       _ref = "AndroidRef$year$refNumber";
+  //     });
+  //   } else if (Platform.isIOS) {
+  //     setState(() {
+  //       _ref = "IOSRef$year$refNumber";
+  //     });
+  //   }
+  // }
 
   _onePayPayment() async {
     await Navigator.push(
@@ -2185,6 +2177,8 @@ class WalletScreenState extends State<WalletScreen> {
 
   Widget showEarningsHistory(BuildContext context,
       {required Stream<QuerySnapshot>? query}) {
+    final themeController = Get.find<ThemeController>();
+
     return StreamBuilder<QuerySnapshot>(
       stream: query,
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -2257,7 +2251,6 @@ class WalletScreenState extends State<WalletScreen> {
 
             orderAmount.value = orderAmount.value + amount;
           }
-          final themeController = Get.find<ThemeController>();
 
           return Obx(() {
             final isDark = themeController.isDark.value;
@@ -2366,11 +2359,17 @@ class WalletScreenState extends State<WalletScreen> {
             );
           });
         } else {
-          return Center(
-              child: Text(
-            "No Transaction History".tr(),
-            style: TextStyle(fontSize: 18),
-          ));
+          return Obx(() {
+            final isDark = themeController.isDark.value;
+            return Center(
+                child: Text(
+              "No Transaction History".tr(),
+              style: TextStyle(
+                fontSize: 18,
+                color: isDark ? Colors.white70 : Colors.black87,
+              ),
+            ));
+          });
         }
       },
     );
@@ -3071,7 +3070,8 @@ class WalletScreenState extends State<WalletScreen> {
                                   .then((value) {
                                 CabOrderModel orderModel =
                                     CabOrderModel.fromJson(value.data()!);
-                                push(context, CabOrderDetails());
+                                Get.to(() => CabOrderDetails(),
+                                    arguments: {"cabOrderModel": orderModel});
                               });
                             } else if (Constant.userModel!.serviceType ==
                                 "parcel_delivery") {
@@ -3082,7 +3082,8 @@ class WalletScreenState extends State<WalletScreen> {
                                   .then((value) {
                                 ParcelOrderModel orderModel =
                                     ParcelOrderModel.fromJson(value.data()!);
-                                push(context, ParcelOrderDetails());
+                                Get.to(() => ParcelOrderDetails(),
+                                    arguments: orderModel);
                               });
                             } else if (Constant.userModel!.serviceType ==
                                 "rental-service") {
@@ -3093,11 +3094,8 @@ class WalletScreenState extends State<WalletScreen> {
                                   .then((value) {
                                 RentalOrderModel orderModel =
                                     RentalOrderModel.fromJson(value.data()!);
-                                push(
-                                    context,
-                                    RentalOrderDetailsScreen(
-                                        // rentalOrderModel: orderModel,
-                                        ));
+                                Get.to(() => RentalOrderDetailsScreen(),
+                                    arguments: {"rentalOrder": orderModel});
                               });
                             }
                           },
@@ -3321,7 +3319,10 @@ class WalletScreenState extends State<WalletScreen> {
             return Center(
                 child: Text(
               "No Transaction History".tr(),
-              style: TextStyle(fontSize: 18),
+              style: TextStyle(
+                fontSize: 18,
+                color: isDark ? Colors.white70 : Colors.black87,
+              ),
             ));
           } else {
             return Padding(
@@ -3465,8 +3466,7 @@ class WalletScreenState extends State<WalletScreen> {
                         ),
                       ),
                       Text(
-                        Constant.timestampToDateTime(
-                            transactionModel.paidDate!),
+                        Constant.timestampToDateTime(transactionModel.paidDate),
                         style: TextStyle(
                             fontSize: 12,
                             fontFamily: AppThemeData.medium,

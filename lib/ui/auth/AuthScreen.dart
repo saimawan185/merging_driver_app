@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/ui/login/LoginScreen.dart';
-import 'package:door_delights_driver/ui/signUp/SignUpScreen.dart';
 import 'package:flutter/material.dart';
 
 class AuthScreen extends StatelessWidget {

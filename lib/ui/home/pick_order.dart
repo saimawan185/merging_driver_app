@@ -1,12 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/services/show_toast_dialog.dart';
 import 'package:flutter/material.dart';
-
 import '../../models/order_model.dart';
 
 class PickOrder extends StatefulWidget {

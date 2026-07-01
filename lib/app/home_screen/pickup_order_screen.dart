@@ -2,7 +2,6 @@ import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/constant/show_toast_dialog.dart';
 import 'package:door_delights_driver/controllers/pickup_order_controller.dart';
 import 'package:door_delights_driver/model/ProductModel.dart';
-import 'package:door_delights_driver/models/cart_product_model.dart';
 import 'package:door_delights_driver/themes/app_them_data.dart';
 import 'package:door_delights_driver/themes/responsive.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';

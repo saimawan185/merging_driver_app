@@ -8,7 +8,6 @@ import 'package:get/get.dart';
 
 import '../app/cab_screen/cab_dashboard_screen.dart';
 import '../app/dash_board_screen/dash_board_screen.dart';
-import '../app/multi_service/multi_service_dashboard_screen.dart';
 import '../app/owner_screen/owner_dashboard_screen.dart';
 import '../app/parcel_screen/parcel_dashboard_screen.dart';
 import '../app/rental_service/rental_dashboard_screen.dart';

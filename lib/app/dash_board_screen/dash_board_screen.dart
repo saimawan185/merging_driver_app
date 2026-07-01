@@ -5,12 +5,10 @@ import 'package:door_delights_driver/app/chat_screens/driver_inbox_screen.dart';
 import 'package:door_delights_driver/app/change_section_screen/change_section_screen.dart';
 import 'package:door_delights_driver/app/edit_profile_screen/edit_profile_screen.dart';
 import 'package:door_delights_driver/app/help_support_screen/help_support_screen.dart';
-import 'package:door_delights_driver/app/home_screen/home_screen.dart';
 import 'package:door_delights_driver/app/home_screen/home_screen_multiple_order.dart';
 import 'package:door_delights_driver/app/order_list_screen/order_list_screen.dart';
 import 'package:door_delights_driver/app/terms_and_condition/terms_and_condition_screen.dart';
 import 'package:door_delights_driver/app/verification_screen/verification_screen.dart';
-import 'package:door_delights_driver/app/wallet_screen/wallet_screen.dart';
 import 'package:door_delights_driver/app/withdraw_method_setup_screens/withdraw_method_setup_screen.dart';
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/constant/show_toast_dialog.dart';
@@ -27,7 +25,6 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:share_plus/share_plus.dart';
-
 import '../../constants.dart';
 import '../../model/CurrencyModel.dart';
 import '../../services/FirebaseHelper.dart';
@@ -110,18 +107,76 @@ class DashBoardScreen extends StatelessWidget {
                 ],
               ),
               actions: [
+                Obx(() {
+                  final bool isActive =
+                      controller.userModel.value.isActive ?? false;
+                  return GestureDetector(
+                    onTap: () async {
+                      await controller.toggleDriverStatus();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: isActive
+                            ? const LinearGradient(
+                                colors: [Color(0xFF00C853), Color(0xFF00A800)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : const LinearGradient(
+                                colors: [Color(0xFF9E9E9E), Color(0xFF616161)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: isActive
+                            ? [
+                                BoxShadow(
+                                  color: Colors.green.withOpacity(0.5),
+                                  blurRadius: 12,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isActive ? Icons.circle : Icons.circle_outlined,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          // Status Text
+                          Text(
+                            isActive ? 'ONLINE' : 'OFFLINE',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(width: 10),
                 Visibility(
                   visible: Constant.userModel?.vendorID?.isEmpty == true,
                   child: InkWell(
                       onTap: () {
-                        Get.to(() => const WalletScreen());
+                        controller.drawerIndex.value = 2;
+                        // Get.to(() => const WalletScreen());
                       },
                       child:
                           SvgPicture.asset("assets/icons/ic_wallet_home.svg")),
                 ),
-                const SizedBox(
-                  width: 10,
-                ),
+                const SizedBox(width: 10),
                 InkWell(
                     onTap: () {
                       Get.to(const EditProfileScreen());

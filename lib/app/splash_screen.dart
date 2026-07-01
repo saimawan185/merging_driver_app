@@ -1,6 +1,4 @@
 import 'package:door_delights_driver/controllers/splash_controller.dart';
-import 'package:door_delights_driver/themes/app_them_data.dart';
-import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,8 +9,8 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeController = Get.find<ThemeController>();
-    final isDark = themeController.isDark.value;
+    // final themeController = Get.find<ThemeController>();
+    // final isDark = themeController.isDark.value;
     return GetBuilder<SplashController>(
       init: SplashController(),
       builder: (controller) {

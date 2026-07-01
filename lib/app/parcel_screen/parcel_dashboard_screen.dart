@@ -7,7 +7,6 @@ import 'package:door_delights_driver/app/parcel_screen/parcel_home_screen.dart';
 import 'package:door_delights_driver/app/parcel_screen/parcel_order_list_screen.dart';
 import 'package:door_delights_driver/app/terms_and_condition/terms_and_condition_screen.dart';
 import 'package:door_delights_driver/app/verification_screen/verification_screen.dart';
-import 'package:door_delights_driver/app/wallet_screen/wallet_screen.dart';
 import 'package:door_delights_driver/app/withdraw_method_setup_screens/withdraw_method_setup_screen.dart';
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/constant/show_toast_dialog.dart'
@@ -69,12 +68,72 @@ class ParcelDashboardScreen extends StatelessWidget {
                 ],
               ),
               actions: [
+                Obx(() {
+                  final bool isActive =
+                      controller.userModel.value.isActive ?? false;
+                  return GestureDetector(
+                    onTap: () async {
+                      await controller.toggleDriverStatus();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: isActive
+                            ? const LinearGradient(
+                                colors: [Color(0xFF00C853), Color(0xFF00A800)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : const LinearGradient(
+                                colors: [Color(0xFF9E9E9E), Color(0xFF616161)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: isActive
+                            ? [
+                                BoxShadow(
+                                  color: Colors.green.withOpacity(0.5),
+                                  blurRadius: 12,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isActive ? Icons.circle : Icons.circle_outlined,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          // Status Text
+                          Text(
+                            isActive ? 'ONLINE' : 'OFFLINE',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(width: 10),
                 Constant.userModel!.ownerId != null &&
                         Constant.userModel!.ownerId!.isNotEmpty
                     ? SizedBox()
                     : InkWell(
                         onTap: () {
-                          Get.to(() => const WalletScreen());
+                          controller.drawerIndex.value = 2;
+                          // Get.to(() => const WalletScreen());
                         },
                         child: SvgPicture.asset(
                             "assets/icons/ic_wallet_home.svg")),
@@ -117,29 +176,37 @@ class ParcelDashboardScreen extends StatelessWidget {
               }),
             ),
             drawer: const DrawerView(),
-            body: controller.drawerIndex.value == 0
-                ? const ParcelHomeScreen()
-                : controller.drawerIndex.value == 1
-                    ? ParcelOrderListScreen()
-                    : controller.drawerIndex.value == 2
-                        ? const WalletScreen()
-                        : controller.drawerIndex.value == 3
-                            ? const WithdrawMethodSetupScreen()
-                            : controller.drawerIndex.value == 4
-                                ? const VerificationScreen()
-                                : controller.drawerIndex.value == 5
-                                    ? const DriverInboxScreen()
-                                    : controller.drawerIndex.value == 6
-                                        ? LanguageChooseScreen(
-                                            isContainer: false,
-                                          )
-                                        : controller.drawerIndex.value == 7
-                                            ? const TermsAndConditionScreen(
-                                                type: "temsandcondition")
-                                            : controller.drawerIndex.value == 8
+            body: controller.isLoading.value
+                ? Center(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 1.6,
+                    ),
+                  )
+                : controller.drawerIndex.value == 0
+                    ? const ParcelHomeScreen()
+                    : controller.drawerIndex.value == 1
+                        ? ParcelOrderListScreen()
+                        : controller.drawerIndex.value == 2
+                            ? const WalletScreen()
+                            : controller.drawerIndex.value == 3
+                                ? const WithdrawMethodSetupScreen()
+                                : controller.drawerIndex.value == 4
+                                    ? const VerificationScreen()
+                                    : controller.drawerIndex.value == 5
+                                        ? const DriverInboxScreen()
+                                        : controller.drawerIndex.value == 6
+                                            ? LanguageChooseScreen(
+                                                isContainer: false,
+                                              )
+                                            : controller.drawerIndex.value == 7
                                                 ? const TermsAndConditionScreen(
-                                                    type: "privacy")
-                                                : TermsAndConditionScreen(),
+                                                    type: "temsandcondition")
+                                                : controller.drawerIndex
+                                                            .value ==
+                                                        8
+                                                    ? const TermsAndConditionScreen(
+                                                        type: "privacy")
+                                                    : TermsAndConditionScreen(),
           );
         },
       );

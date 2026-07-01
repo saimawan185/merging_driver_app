@@ -76,8 +76,8 @@ class DriverCreateScreen extends StatelessWidget {
                                     child: Column(
                                       children: controller.ownerSections
                                           .map((section) {
-                                        final isSelected = controller
-                                            .isSectionSelected(section);
+                                        // final isSelected = controller
+                                        //     .isSectionSelected(section);
                                         return RadioListTile<SectionModel>(
                                           dense: true,
                                           title: Text(
