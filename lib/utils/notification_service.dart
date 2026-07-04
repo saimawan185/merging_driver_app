@@ -62,6 +62,19 @@ class NotificationService {
         },
       );
 
+      const AndroidNotificationChannel channel = AndroidNotificationChannel(
+        'channel_id',
+        'High Importance Notifications',
+        description: 'This channel is used for important notifications.',
+        importance: Importance.high,
+        sound: RawResourceAndroidNotificationSound('notification_sound'),
+      );
+
+      await flutterLocalNotificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.createNotificationChannel(channel);
+
       setupInteractedMessage();
     }
   }
@@ -120,16 +133,14 @@ class NotificationService {
           AndroidNotificationDetails(
         channel.id,
         channel.name,
-        channelDescription: 'your channel Description',
+        channelDescription: 'Order notification sound',
         importance: Importance.high,
         priority: Priority.high,
         ticker: 'ticker',
-        sound: message.notification!.title
-                .toString()
-                .toLowerCase()
-                .contains('New'.toLowerCase())
-            ? RawResourceAndroidNotificationSound('notification_sound')
-            : null,
+        sound:
+            message.notification!.title.toString().toLowerCase().contains('new')
+                ? RawResourceAndroidNotificationSound('notification_sound')
+                : null,
       );
 
       DarwinNotificationDetails darwinNotificationDetails =
@@ -140,7 +151,7 @@ class NotificationService {
               sound: message.notification!.title
                       .toString()
                       .toLowerCase()
-                      .contains('New'.toLowerCase())
+                      .contains('new')
                   ? 'notification_sound.wav'
                   : null);
 

@@ -74,7 +74,7 @@ class PhoneNumberScreen extends StatelessWidget {
                         TextSpan(
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                Get.to(const SignupScreen());
+                                Get.to(() => SignupScreen());
                               },
                             text: 'Sign up'.tr,
                             style: TextStyle(

@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../app/cab_screen/cab_dashboard_screen.dart';
 import '../app/dash_board_screen/dash_board_screen.dart';
@@ -198,8 +199,9 @@ class SignupController extends GetxController {
         selectedCarMakesPerSection[sid] = Rx<CarMakes>(CarMakes());
         carModelListPerSection[sid] = <CarModel>[].obs;
         selectedCarModelPerSection[sid] = Rx<CarModel>(CarModel());
-        carPlatePerSection[sid] =
-            Rx<TextEditingController>(TextEditingController());
+        carPlatePerSection[sid] = Rx<TextEditingController>(
+          TextEditingController(),
+        );
       } else {
         // Clear any leftover vehicle data for this section
         vehicleTypesPerSection.remove(sid);
@@ -240,6 +242,120 @@ class SignupController extends GetxController {
     ShowToastDialog.closeLoader();
   }
 
+  // ── Image files ──────────────────────────────────────────────
+  final Rx<File?> profileImage = Rx<File?>(null);
+  final Rx<File?> carImage = Rx<File?>(null);
+  final Rx<File?> vehicleLicenseImage = Rx<File?>(null);
+  final Rx<File?> driverLicenseImage = Rx<File?>(null);
+
+  Future<void> pickImage(bool isUserImage) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile != null) {
+      if (isUserImage) {
+        profileImage.value = File(pickedFile.path);
+      } else {
+        carImage.value = File(pickedFile.path);
+      }
+    }
+  }
+
+  Future<void> pickLicenseImage(bool isDriverLicense) async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+    );
+    if (pickedFile != null) {
+      if (isDriverLicense) {
+        driverLicenseImage.value = File(pickedFile.path);
+      } else {
+        vehicleLicenseImage.value = File(pickedFile.path);
+      }
+    }
+  }
+
+  Future<void> _uploadImagesAndUpdateUser(UserModel user) async {
+    final List<Future> uploadFutures = [];
+    final List<File> filesToDelete = [];
+
+    // ── Profile image ──────────────────────────────────────────
+    if (profileImage.value != null) {
+      final file = profileImage.value!;
+      filesToDelete.add(file);
+      uploadFutures.add(
+        FireStoreUtils.uploadUserImageToFireStorage(
+          file,
+          user.id!,
+        ).then((url) => user.profilePictureURL = url),
+      );
+    }
+
+    // ── Car image ──────────────────────────────────────────────
+    if (carImage.value != null) {
+      final file = carImage.value!;
+      filesToDelete.add(file);
+      uploadFutures.add(
+        FireStoreUtils.uploadCarImageToFireStorage(
+          file,
+          user.id!,
+        ).then((url) => user.carPictureURL = url),
+      );
+    }
+
+    // ── Vehicle license image ─────────────────────────────────
+    if (vehicleLicenseImage.value != null) {
+      final file = vehicleLicenseImage.value!;
+      filesToDelete.add(file);
+      uploadFutures.add(
+        FireStoreUtils.uploadCarImageToFireStorage(
+          file,
+          'vehicle_license_${user.id}',
+        ).then((url) => user.carProofPictureURL = url),
+      );
+    }
+
+    // ── Driver license image ──────────────────────────────────
+    if (driverLicenseImage.value != null) {
+      final file = driverLicenseImage.value!;
+      filesToDelete.add(file);
+      uploadFutures.add(
+        FireStoreUtils.uploadCarImageToFireStorage(
+          file,
+          'driver_license_${user.id}',
+        ).then((url) => user.driverProofPictureURL = url),
+      );
+    }
+
+    try {
+      // ── Upload all images in parallel ──────────────────────────
+      if (uploadFutures.isNotEmpty) {
+        await Future.wait(uploadFutures);
+      }
+
+      // ── Save all URLs to Firestore ─────────────────────────────
+      await FireStoreUtils.updateUser(user);
+    } finally {
+      // ── Clear memory references ────────────────────────────────
+      profileImage.value = null;
+      carImage.value = null;
+      vehicleLicenseImage.value = null;
+      driverLicenseImage.value = null;
+
+      // ── Delete temporary files from storage ────────────────────
+      for (final file in filesToDelete) {
+        try {
+          if (await file.exists()) {
+            file.delete();
+          }
+        } catch (e) {
+          print('Error deleting temporary file: $e');
+        }
+      }
+    }
+  }
+
   // ── Sign up ────────────────────────────────────────────────────────────────
 
   Future<void> signUpWithEmailAndPassword() async {
@@ -269,7 +385,7 @@ class SignupController extends GetxController {
         if (credential.user != null) {
           userModel.value.id = credential.user!.uid;
           _populateUserModel();
-          await FireStoreUtils.updateUser(userModel.value);
+          await _uploadImagesAndUpdateUser(userModel.value);
           _navigateAfterSignup(userModel.value);
         }
       } on FirebaseAuthException catch (e) {
@@ -277,7 +393,8 @@ class SignupController extends GetxController {
           ShowToastDialog.showToast("The password provided is too weak.".tr);
         } else if (e.code == 'email-already-in-use') {
           ShowToastDialog.showToast(
-              "The account already exists for that email.".tr);
+            "The account already exists for that email.".tr,
+          );
         } else if (e.code == 'invalid-email') {
           ShowToastDialog.showToast("Enter email is Invalid".tr);
         }
@@ -359,8 +476,9 @@ class SignupController extends GetxController {
   void _navigateAfterSignup(UserModel user) {
     if (!(Constant.autoApproveDriver ?? false)) {
       ShowToastDialog.showToast(
-          "Thank you for sign up, your application is under approval so please wait till that approve."
-              .tr);
+        "Thank you for sign up, your application is under approval so please wait till that approve."
+            .tr,
+      );
       Get.offAll(LoginScreen());
       return;
     }

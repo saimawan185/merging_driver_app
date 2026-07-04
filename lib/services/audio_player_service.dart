@@ -14,8 +14,8 @@ class AudioPlayerService {
       if (isPlay) {
         if (_audioPlayer.state != PlayerState.playing) {
           if (Platform.isAndroid) {
-            final path = await rootBundle
-                .load("assets/audio/mixkit-happy-bells-notification-937.mp3");
+            final path =
+                await rootBundle.load("assets/audio/notification_sound.wav");
             await _audioPlayer.setSourceBytes(path.buffer.asUint8List());
             await _audioPlayer.setReleaseMode(ReleaseMode.loop);
             _audioPlayer.play(BytesSource(path.buffer.asUint8List()),
@@ -29,11 +29,10 @@ class AudioPlayerService {
                     iOS: AudioContextIOS(
                         category: AVAudioSessionCategory.playback)));
           } else {
-            await _audioPlayer.setSourceAsset(
-                "audio/mixkit-happy-bells-notification-937.mp3");
+            await _audioPlayer.setSourceAsset("audio/notification_sound.wav");
             await _audioPlayer.setReleaseMode(ReleaseMode.loop);
-            await _audioPlayer.play(
-                AssetSource('audio/mixkit-happy-bells-notification-937.mp3'));
+            await _audioPlayer
+                .play(AssetSource('audio/notification_sound.wav'));
           }
         }
       } else {

@@ -1868,8 +1868,8 @@ class FireStoreUtils {
     yield* ordersStreamController.stream;
   }
 
-  late StreamController<CabOrderModel> cabOrdersStreamController;
-  late StreamSubscription cabOrdersStreamSub;
+  StreamController<CabOrderModel>? cabOrdersStreamController;
+  StreamSubscription? cabOrdersStreamSub;
 
   Stream<CabOrderModel?> getCabOrderByID(String inProgressOrderID) async* {
     cabOrdersStreamController = StreamController();
@@ -1880,10 +1880,10 @@ class FireStoreUtils {
         .listen((onData) async {
       if (onData.data() != null) {
         CabOrderModel? orderModel = CabOrderModel.fromJson(onData.data()!);
-        cabOrdersStreamController.sink.add(orderModel);
+        cabOrdersStreamController?.sink.add(orderModel);
       }
     });
-    yield* cabOrdersStreamController.stream;
+    yield* cabOrdersStreamController!.stream;
   }
 
   late StreamController<ParcelOrderModel> parcelOrdersStreamController;

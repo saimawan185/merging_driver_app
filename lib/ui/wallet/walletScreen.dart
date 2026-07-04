@@ -2487,7 +2487,8 @@ class WalletScreenState extends State<WalletScreen> {
       //  -
       //     double.parse(orderModel.discount.toString());
       // double adminComm = 0.0;
-      if (orderModel.adminCommission!.isNotEmpty) {
+      if (orderModel.adminCommission != null &&
+          orderModel.adminCommission?.isNotEmpty) {
         adminComm = (orderModel.adminCommissionType!.toLowerCase() ==
                     'Percent'.toLowerCase() ||
                 orderModel.adminCommissionType!.toLowerCase() ==
@@ -2497,9 +2498,10 @@ class WalletScreenState extends State<WalletScreen> {
       }
 
       print("--->finalAmount---- $subTotal");
-      double tipAmount = orderModel.tipAmount!.isEmpty
-          ? 0.0
-          : double.parse(orderModel.tipAmount.toString());
+      double tipAmount =
+          (orderModel.tipAmount == null || orderModel.tipAmount!.isEmpty)
+              ? 0.0
+              : double.parse(orderModel.tipAmount.toString());
       amount = subTotal + totalTax + tipAmount;
       adminComm = adminComm;
     } else if (Constant.userModel!.serviceType == "parcel_delivery") {

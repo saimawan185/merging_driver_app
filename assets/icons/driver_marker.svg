@@ -1,0 +1,42 @@
+<svg width="120" height="140" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+  <!-- Drop shadow filter -->
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#00000055"/>
+    </filter>
+    <!-- Stem/pin pointer clip -->
+  </defs>
+
+  <!-- Pin stem -->
+  <path
+    d="M60 128 L48 100 Q60 108 72 100 Z"
+    fill="#CC4A20"
+    filter="url(#shadow)"
+  />
+
+  <!-- Outer circle (slightly darker ring) -->
+  <circle cx="60" cy="58" r="50" fill="#CC4A20" filter="url(#shadow)"/>
+
+  <!-- Main circle -->
+  <circle cx="60" cy="58" r="46" fill="#FF6839"/>
+
+  <!-- Inner circle highlight (top-left subtle gloss) -->
+  <circle cx="60" cy="58" r="38" fill="#FF7A50" opacity="0.4"/>
+
+  <!-- Navigation arrow — pointing upward/forward, rotated ~-30° like the reference -->
+  <!-- Arrow is a filled chevron/triangle with a notch at bottom -->
+  <g transform="translate(60,58) rotate(-30)">
+    <!-- Main arrow body -->
+    <polygon
+      points="0,-24  18,14  0,6  -18,14"
+      fill="white"
+      opacity="0.95"
+    />
+    <!-- Slight inner shadow notch to give depth -->
+    <polygon
+      points="0,6  -10,14  0,-8  10,14"
+      fill="white"
+      opacity="0.15"
+    />
+  </g>
+</svg>

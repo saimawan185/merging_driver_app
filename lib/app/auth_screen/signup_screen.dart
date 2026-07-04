@@ -88,14 +88,96 @@ class SignupScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Text(
+                                'Profile Picture',
+                                style: AppThemeData.mediumTextStyle(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? AppThemeData.greyDark700
+                                        : AppThemeData.grey700),
+                              ),
+                              Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 50,
+                                    backgroundImage: controller
+                                                .profileImage.value !=
+                                            null
+                                        ? FileImage(
+                                            controller.profileImage.value!)
+                                        : AssetImage(
+                                                'assets/images/placeholder.jpg')
+                                            as ImageProvider,
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: IconButton(
+                                      icon: Icon(Icons.camera_alt),
+                                      onPressed: () =>
+                                          controller.pickImage(true),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            children: [
+                              Text(
+                                'Car Image',
+                                style: AppThemeData.mediumTextStyle(
+                                    fontSize: 14,
+                                    color: isDark
+                                        ? AppThemeData.greyDark700
+                                        : AppThemeData.grey700),
+                              ),
+                              Stack(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 50,
+                                    backgroundImage: controller
+                                                .carImage.value !=
+                                            null
+                                        ? FileImage(controller.carImage.value!)
+                                        : AssetImage(
+                                                'assets/images/car_default_image.png')
+                                            as ImageProvider,
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: IconButton(
+                                      icon: Icon(Icons.camera_alt),
+                                      onPressed: () =>
+                                          controller.pickImage(false),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
 
                     // ── Individual / Company ─────────────────────────────
-                    Text('Continue as'.tr,
-                        style: AppThemeData.mediumTextStyle(
-                            fontSize: 14,
-                            color: isDark
-                                ? AppThemeData.greyDark700
-                                : AppThemeData.grey700)),
+                    Text(
+                      'Continue as'.tr,
+                      style: AppThemeData.mediumTextStyle(
+                          fontSize: 14,
+                          color: isDark
+                              ? AppThemeData.greyDark700
+                              : AppThemeData.grey700),
+                    ),
                     Row(
                       children: [
                         Expanded(
@@ -666,6 +748,129 @@ class SignupScreen extends StatelessWidget {
                                 ),
                                 textInputAction: TextInputAction.next,
                               ),
+                              const SizedBox(height: 10),
+                              // ── License images ──
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          'Vehicle License',
+                                          style: AppThemeData.mediumTextStyle(
+                                              fontSize: 14,
+                                              color: isDark
+                                                  ? AppThemeData.greyDark700
+                                                  : AppThemeData.grey700),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () => controller
+                                              .pickLicenseImage(false),
+                                          child: Stack(
+                                            children: [
+                                              Container(
+                                                width: 90,
+                                                height: 90,
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(),
+                                                  image: controller
+                                                              .vehicleLicenseImage
+                                                              .value !=
+                                                          null
+                                                      ? DecorationImage(
+                                                          image: FileImage(
+                                                              controller
+                                                                  .vehicleLicenseImage
+                                                                  .value!),
+                                                          fit: BoxFit.cover,
+                                                        )
+                                                      : null,
+                                                ),
+                                                child: controller
+                                                            .vehicleLicenseImage
+                                                            .value ==
+                                                        null
+                                                    ? Icon(Icons.image,
+                                                        size: 50)
+                                                    : null,
+                                              ),
+                                              Positioned(
+                                                bottom: 0,
+                                                right: 0,
+                                                child: IconButton(
+                                                  icon: Icon(Icons.camera_alt,
+                                                      size: 20),
+                                                  onPressed: () => controller
+                                                      .pickLicenseImage(false),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        Text(
+                                          'Driver License',
+                                          style: AppThemeData.mediumTextStyle(
+                                              fontSize: 14,
+                                              color: isDark
+                                                  ? AppThemeData.greyDark700
+                                                  : AppThemeData.grey700),
+                                        ),
+                                        GestureDetector(
+                                          onTap: () =>
+                                              controller.pickLicenseImage(true),
+                                          child: Stack(
+                                            children: [
+                                              Container(
+                                                width: 90,
+                                                height: 90,
+                                                decoration: BoxDecoration(
+                                                  border: Border.all(),
+                                                  image: controller
+                                                              .driverLicenseImage
+                                                              .value !=
+                                                          null
+                                                      ? DecorationImage(
+                                                          image: FileImage(
+                                                              controller
+                                                                  .driverLicenseImage
+                                                                  .value!),
+                                                          fit: BoxFit.cover,
+                                                        )
+                                                      : null,
+                                                ),
+                                                child: controller
+                                                            .driverLicenseImage
+                                                            .value ==
+                                                        null
+                                                    ? Icon(Icons.image,
+                                                        size: 50)
+                                                    : null,
+                                              ),
+                                              Positioned(
+                                                bottom: 0,
+                                                right: 0,
+                                                child: IconButton(
+                                                  icon: Icon(Icons.camera_alt,
+                                                      size: 20),
+                                                  onPressed: () => controller
+                                                      .pickLicenseImage(true),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
                             ],
                           ),
                   ],
@@ -708,6 +913,25 @@ class SignupScreen extends StatelessWidget {
                 // const SizedBox(height: 10),
                 InkWell(
                   onTap: () {
+                    if (controller.profileImage.value == null) {
+                      ShowToastDialog.showToast(
+                          'Please upload a profile picture.');
+                      return;
+                    }
+                    if (controller.carImage.value == null) {
+                      ShowToastDialog.showToast('Please upload a car image.');
+                      return;
+                    }
+                    if (controller.vehicleLicenseImage.value == null) {
+                      ShowToastDialog.showToast(
+                          'Please upload a vehicle license image.');
+                      return;
+                    }
+                    if (controller.driverLicenseImage.value == null) {
+                      ShowToastDialog.showToast(
+                          'Please upload a driver license image.');
+                      return;
+                    }
                     if (controller.selectedSection.value == null) {
                       ShowToastDialog.showToast(
                           "Please select at least one section".tr);

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui' as ui;
 import 'dart:developer' as log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:door_delights_driver/constant/constant.dart';
@@ -54,6 +55,43 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   List<String>? _lastStopCoordinates;
   bool _isFirstOrderLoad = true;
 
+  // ────────────────────────────────────────────────
+  // Smooth driver-marker animation state
+  // ────────────────────────────────────────────────
+  AnimationController? _markerAnimationController;
+  LatLng? _lastKnownDriverLatLng;
+  double _lastKnownDriverRotation = 0;
+  bool _isFirstDriverUpdate = true;
+  bool _followDriverWithCamera = true;
+  bool _isAutoCameraMove = false;
+
+  // Modern, clean "silver" style map used in light mode so the map feels
+  // premium instead of the plain default Google style.
+  static const String _lightModernMapStyle = '''
+[
+  {"elementType": "geometry", "stylers": [{"color": "#f5f5f5"}]},
+  {"elementType": "labels.icon", "stylers": [{"visibility": "off"}]},
+  {"elementType": "labels.text.fill", "stylers": [{"color": "#616161"}]},
+  {"elementType": "labels.text.stroke", "stylers": [{"color": "#f5f5f5"}]},
+  {"featureType": "administrative.land_parcel", "stylers": [{"visibility": "off"}]},
+  {"featureType": "administrative.land_parcel", "elementType": "labels.text.fill", "stylers": [{"color": "#bdbdbd"}]},
+  {"featureType": "poi", "elementType": "geometry", "stylers": [{"color": "#eeeeee"}]},
+  {"featureType": "poi", "elementType": "labels.text.fill", "stylers": [{"color": "#757575"}]},
+  {"featureType": "poi.park", "elementType": "geometry", "stylers": [{"color": "#e5f5e0"}]},
+  {"featureType": "poi.park", "elementType": "labels.text.fill", "stylers": [{"color": "#9e9e9e"}]},
+  {"featureType": "road", "elementType": "geometry", "stylers": [{"color": "#ffffff"}]},
+  {"featureType": "road.arterial", "elementType": "labels.text.fill", "stylers": [{"color": "#757575"}]},
+  {"featureType": "road.highway", "elementType": "geometry", "stylers": [{"color": "#ffd54f"}]},
+  {"featureType": "road.highway", "elementType": "geometry.stroke", "stylers": [{"color": "#ffca28"}]},
+  {"featureType": "road.highway", "elementType": "labels.text.fill", "stylers": [{"color": "#8d6e00"}]},
+  {"featureType": "road.local", "elementType": "labels.text.fill", "stylers": [{"color": "#9e9e9e"}]},
+  {"featureType": "transit.line", "elementType": "geometry", "stylers": [{"color": "#e5e5e5"}]},
+  {"featureType": "transit.station", "elementType": "geometry", "stylers": [{"color": "#eeeeee"}]},
+  {"featureType": "water", "elementType": "geometry", "stylers": [{"color": "#bfe9ff"}]},
+  {"featureType": "water", "elementType": "labels.text.fill", "stylers": [{"color": "#5f9ea0"}]}
+]
+''';
+
   setIcons() async {
     BitmapDescriptor.asset(const ImageConfiguration(size: Size(36, 36)),
             "assets/images/pickup.png")
@@ -67,16 +105,22 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       destinationIcon = value;
     });
 
-    BitmapDescriptor.asset(
-      const ImageConfiguration(size: Size(36, 36)),
-      Constant.userModel?.vehicleType == 'Car'
-          ? "assets/images/ic_taxi.png"
-          : Constant.userModel?.vehicleType == 'Tuk Tuk'
-              ? 'assets/icons/ic_tuk.png'
-              : 'assets/icons/ic_bike.png',
-    ).then((value) {
+    // Code-drawn driver arrow marker. Generating this ourselves (instead of
+    // loading a PNG asset) guarantees the arrow is drawn perfectly straight
+    // up at rotation 0, which is what makes `Marker.rotation` line up
+    // exactly with the driver's real compass heading. No dependency on an
+    // external image being pixel-perfectly aligned.
+    _createDriverArrowIcon().then((value) {
       taxiIcon = value;
+      if (mounted) setState(() {});
     });
+
+    // Old asset-based icon, kept for reference / easy revert:
+    // BitmapDescriptor.asset(const ImageConfiguration(size: Size(36, 36)),
+    //         'assets/icons/driver_marker.png')
+    //     .then((value) {
+    //   taxiIcon = value;
+    // });
 
     stopOneIcon = await BitmapDescriptor.asset(
       ImageConfiguration(size: const Size(26, 26)),
@@ -92,6 +136,82 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       ImageConfiguration(size: const Size(26, 26)),
       "assets/icons/drop_3.png",
     );
+  }
+
+  // ────────────────────────────────────────────────
+  // Code-drawn driver marker (orange pin + white arrow, matching the
+  // uploaded reference icon) rendered straight up (0° = north). Because we
+  // control every pixel, we know for certain the arrow's tip is perfectly
+  // vertical and centered, so rotating the marker by the driver's compass
+  // bearing always points it the correct way — no PNG-alignment guesswork.
+  // ────────────────────────────────────────────────
+  Future<BitmapDescriptor> _createDriverArrowIcon({
+    double size = 130,
+    Color pinColor = const Color(0xFFF15A29),
+    Color pinBorderColor = const Color(0xFFB6431A),
+    Color arrowColor = Colors.white,
+  }) async {
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder, Rect.fromLTWH(0, 0, size, size));
+    final center = Offset(size / 2, size / 2 - size * 0.06);
+    final radius = size * 0.36;
+
+    // Soft drop shadow under the pin for a bit of depth.
+    final shadowPaint = Paint()
+      ..color = Colors.black.withOpacity(0.28)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+    canvas.drawCircle(center.translate(0, size * 0.05), radius, shadowPaint);
+
+    // Circular pin body.
+    canvas.drawCircle(center, radius, Paint()..color = pinColor);
+
+    // Pin border ring.
+    final borderPaint = Paint()
+      ..color = pinBorderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size * 0.045;
+    canvas.drawCircle(
+        center, radius - borderPaint.strokeWidth / 2, borderPaint);
+
+    // Small glossy highlight, purely cosmetic.
+    final highlightPaint = Paint()..color = Colors.white.withOpacity(0.18);
+    canvas.drawOval(
+      Rect.fromCenter(
+        center: center.translate(-radius * 0.35, -radius * 0.4),
+        width: radius * 0.7,
+        height: radius * 0.4,
+      ),
+      highlightPaint,
+    );
+
+    // Arrow pointing straight up — this is rotation = 0.
+    final arrowPath = Path();
+    final double halfWidth = radius * 0.62;
+    final double tipY = center.dy - radius * 0.62;
+    final double baseY = center.dy + radius * 0.45;
+    final double notchY = center.dy + radius * 0.08;
+    arrowPath.moveTo(center.dx, tipY);
+    arrowPath.lineTo(center.dx + halfWidth, baseY);
+    arrowPath.lineTo(center.dx, notchY);
+    arrowPath.lineTo(center.dx - halfWidth, baseY);
+    arrowPath.close();
+    canvas.drawPath(arrowPath, Paint()..color = arrowColor);
+
+    // Little pin "tail" underneath the circle, like a map-pin drop shadow tip.
+    final tailPath = Path();
+    final double tailWidth = radius * 0.32;
+    final double tailTop = center.dy + radius * 0.78;
+    final double tailTip = size * 0.98;
+    tailPath.moveTo(center.dx - tailWidth, tailTop);
+    tailPath.lineTo(center.dx + tailWidth, tailTop);
+    tailPath.lineTo(center.dx, tailTip);
+    tailPath.close();
+    canvas.drawPath(tailPath, Paint()..color = pinColor);
+
+    final picture = recorder.endRecording();
+    final image = await picture.toImage(size.round(), size.round());
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return BitmapDescriptor.fromBytes(byteData!.buffer.asUint8List());
   }
 
   updateDriverOrder() async {
@@ -162,12 +282,11 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   Future<void> dispose() async {
     _mapController!.dispose();
     // await FireStoreUtils().driverStreamController.close();
-    if (FireStoreUtils().driverStreamSub != null) {
-      FireStoreUtils().driverStreamSub!.cancel();
-    }
+    // FireStoreUtils().driverStreamSub?.cancel();
 
-    FireStoreUtils().cabOrdersStreamController.close();
-    FireStoreUtils().cabOrdersStreamSub.cancel();
+    FireStoreUtils().cabOrdersStreamController?.close();
+    FireStoreUtils().cabOrdersStreamSub?.cancel();
+    _markerAnimationController?.dispose();
     if (_timer != null) {
       _timer!.cancel();
     }
@@ -187,7 +306,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
             'geo'
             'met'
             'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]')
-        : _mapController?.setMapStyle(null);
+        : _mapController?.setMapStyle(_lightModernMapStyle);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -229,12 +348,33 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             ? false
                             : true,
                     myLocationButtonEnabled: true,
-                    mapType: MapType.terrain,
+                    mapType: MapType.normal,
+                    buildingsEnabled: true,
+                    trafficEnabled: false,
+                    indoorViewEnabled: false,
+                    compassEnabled: true,
+                    rotateGesturesEnabled: true,
+                    tiltGesturesEnabled: true,
+                    zoomGesturesEnabled: true,
+                    scrollGesturesEnabled: true,
                     zoomControlsEnabled: false,
+                    padding: const EdgeInsets.only(bottom: 16, top: 8),
                     polylines: Set<Polyline>.of(polyLines.values),
                     markers: _markers.values.toSet(),
+                    onCameraMoveStarted: () {
+                      // This also fires for our own animateCamera() calls,
+                      // so only treat it as a manual drag when we didn't
+                      // just trigger a programmatic move ourselves.
+                      if (!_isAutoCameraMove) {
+                        _followDriverWithCamera = false;
+                      }
+                    },
+                    onCameraIdle: () {
+                      _isAutoCameraMove = false;
+                    },
                     initialCameraPosition: CameraPosition(
-                      zoom: 15,
+                      zoom: 17,
+                      tilt: 30,
                       target: LatLng(
                         _driverModel!.location?.latitude ?? 0.0,
                         _driverModel!.location?.longitude ?? 0.0,
@@ -247,15 +387,15 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         currentOrder != null &&
                         isShow == true
                     ? buildOrderActionsCard()
-                    : Container(),
-                (_driverModel!.orderCabRequestData != null)
+                    : const SizedBox.shrink(),
+                (_driverModel!.orderCabRequestData != null && isShow)
                     ? showDriverBottomSheet()
-                    : Container()
+                    : const SizedBox.shrink(),
               ],
             ),
       floatingActionButton: (_driverModel!.orderCabRequestData == null &&
               (_driverModel!.inProgressOrderID == null ||
-                  _driverModel!.inProgressOrderID!.isEmpty))
+                  _driverModel!.inProgressOrderID!.trim().isEmpty))
           ? null
           : FloatingActionButton(
               onPressed: () {
@@ -284,24 +424,180 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   void _onMapCreated(GoogleMapController controller) async {
     _mapController = controller;
     await Future.delayed(const Duration(seconds: 1));
+    _isAutoCameraMove = true;
     controller.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: LatLng(_driverModel!.location?.latitude ?? 0.0,
               _driverModel!.location?.longitude ?? 0.0),
-          zoom: 14,
+          zoom: 15,
         ),
       ),
     );
     if (mounted) {
       setState(() {});
     }
-    if (isDarkMode(context))
+    if (isDarkMode(context)) {
       _mapController?.setMapStyle('[{"featureType": "all","'
           'elementType": "'
           'geo'
           'met'
           'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]');
+    } else {
+      _mapController?.setMapStyle(_lightModernMapStyle);
+    }
+  }
+
+  // ────────────────────────────────────────────────
+  // Smooth driver marker update + camera follow
+  //
+  // Instead of snapping the marker straight to the new coordinate, this
+  // tweens lat/lng/rotation over a short duration so the car glides across
+  // the map, and it points the arrow icon in the *actual* direction of
+  // travel (computed from the last known point to the new one) rather than
+  // trusting a raw rotation value that may be stale or noisy.
+  // ────────────────────────────────────────────────
+  void _updateDriverMarkerAndCamera() {
+    if (_driverModel == null ||
+        _driverModel!.location == null ||
+        taxiIcon == null) return;
+
+    final lat = _driverModel!.location!.latitude!;
+    final lng = _driverModel!.location!.longitude!;
+    final newPosition = LatLng(lat, lng);
+
+    final fromPosition = _lastKnownDriverLatLng ?? newPosition;
+
+    // Distance moved since last update (meters), used to decide whether we
+    // trust a freshly computed bearing or keep the previous heading (avoids
+    // the arrow jittering/spinning when the driver is stationary at a light).
+    final movedMeters = Geolocator.distanceBetween(
+      fromPosition.latitude,
+      fromPosition.longitude,
+      newPosition.latitude,
+      newPosition.longitude,
+    );
+
+    double targetRotation = _lastKnownDriverRotation;
+    if (movedMeters > 2) {
+      targetRotation = Geolocator.bearingBetween(
+        fromPosition.latitude,
+        fromPosition.longitude,
+        newPosition.latitude,
+        newPosition.longitude,
+      );
+      if (targetRotation < 0) targetRotation += 360;
+    } else if (_driverModel!.rotation != null) {
+      // Fall back to the server-provided heading if we haven't moved enough
+      // to compute a reliable bearing ourselves (e.g. right after app start).
+      targetRotation =
+          double.tryParse(_driverModel!.rotation.toString()) ?? targetRotation;
+    }
+
+    if (_isFirstDriverUpdate) {
+      // First update: place the marker immediately, nothing to animate from.
+      _isFirstDriverUpdate = false;
+      _markers['Driver'] = Marker(
+        markerId: const MarkerId('Driver'),
+        infoWindow: const InfoWindow(title: "Driver"),
+        position: newPosition,
+        icon: taxiIcon!,
+        rotation: targetRotation,
+        anchor: const Offset(0.5, 0.5),
+        // Screen-relative rotation: the map stays north-up and the arrow
+        // itself rotates to the driver's true compass heading, so what you
+        // see always matches the direction the driver is actually facing.
+        flat: false,
+        zIndex: 2,
+      );
+      _lastKnownDriverLatLng = newPosition;
+      _lastKnownDriverRotation = targetRotation;
+      if (_mapController != null) {
+        _isAutoCameraMove = true;
+        _mapController!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(target: newPosition, zoom: 17),
+          ),
+        );
+      }
+      if (mounted) setState(() {});
+      return;
+    }
+
+    _animateDriverMarker(
+      from: fromPosition,
+      to: newPosition,
+      fromRotation: _lastKnownDriverRotation,
+      toRotation: targetRotation,
+    );
+
+    _lastKnownDriverLatLng = newPosition;
+    _lastKnownDriverRotation = targetRotation;
+  }
+
+  void _animateDriverMarker({
+    required LatLng from,
+    required LatLng to,
+    required double fromRotation,
+    required double toRotation,
+  }) {
+    _markerAnimationController?.dispose();
+    _markerAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    // Take the shortest rotational path (e.g. 350° -> 10° should turn +20,
+    // not -340) so the arrow never does a full unnecessary spin.
+    double rotationDelta = toRotation - fromRotation;
+    if (rotationDelta > 180) rotationDelta -= 360;
+    if (rotationDelta < -180) rotationDelta += 360;
+    final adjustedToRotation = fromRotation + rotationDelta;
+
+    final latTween = Tween<double>(begin: from.latitude, end: to.latitude);
+    final lngTween = Tween<double>(begin: from.longitude, end: to.longitude);
+    final rotationTween =
+        Tween<double>(begin: fromRotation, end: adjustedToRotation);
+
+    final curved = CurvedAnimation(
+      parent: _markerAnimationController!,
+      curve: Curves.easeInOut,
+    );
+
+    _markerAnimationController!.addListener(() {
+      if (taxiIcon == null) return;
+      final animatedPosition =
+          LatLng(latTween.evaluate(curved), lngTween.evaluate(curved));
+      final animatedRotation = rotationTween.evaluate(curved) % 360;
+
+      _markers['Driver'] = Marker(
+        markerId: const MarkerId('Driver'),
+        infoWindow: const InfoWindow(title: "Driver"),
+        position: animatedPosition,
+        icon: taxiIcon!,
+        rotation:
+            animatedRotation < 0 ? animatedRotation + 360 : animatedRotation,
+        anchor: const Offset(0.5, 0.5),
+        flat: false,
+        zIndex: 2,
+      );
+
+      if (mounted) setState(() {});
+
+      if (_mapController != null && _followDriverWithCamera) {
+        _isAutoCameraMove = true;
+        _mapController!.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: animatedPosition,
+              zoom: 17,
+            ),
+          ),
+        );
+      }
+    });
+
+    _markerAnimationController!.forward();
   }
 
   Widget showDriverBottomSheet() {
@@ -389,15 +685,14 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   children: [
                     Image.asset(
                       'assets/images/location3x.png',
-                      height: 55,
+                      height: 80,
                     ),
-                    SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 270,
-                          child: Text(
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
                             "${_driverModel!.orderCabRequestData!.sourceLocationName} ",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -406,11 +701,40 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                                 fontFamily: "Poppinsr",
                                 letterSpacing: 0.5),
                           ),
-                        ),
-                        SizedBox(height: 22),
-                        SizedBox(
-                          width: 270,
-                          child: Text(
+                          FutureBuilder<Map<String, String>?>(
+                            future: _getDriverToPickupInfo(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Padding(
+                                  padding: EdgeInsets.only(top: 2),
+                                  child: SizedBox(
+                                    height: 16,
+                                    width: 16,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  ),
+                                );
+                              }
+                              if (snapshot.hasData && snapshot.data != null) {
+                                final info = snapshot.data!;
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(
+                                    "🚗 ${info['duration']} away (${info['distance']})",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey[600],
+                                      fontFamily: "Poppinsr",
+                                    ),
+                                  ),
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                          const SizedBox(height: 22),
+                          Text(
                             "${_driverModel!.orderCabRequestData!.destinationLocationName}",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -419,8 +743,19 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                                 fontFamily: "Poppinsr",
                                 letterSpacing: 0.5),
                           ),
-                        ),
-                      ],
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              "🛣️ ${_driverModel!.orderCabRequestData!.duration ?? '0'} (${_driverModel!.orderCabRequestData!.distance ?? '0'} km)",
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey[600],
+                                fontFamily: "Poppinsr",
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -474,7 +809,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                           );
                           ScaffoldMessenger.of(_scaffoldKey.currentContext!)
                               .showSnackBar(snack);
-                          setState(() {});
+                          if (mounted) {
+                            setState(() {});
+                          }
                         } else {
                           //Navigator.pop(context);
                           showProgress(
@@ -508,9 +845,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                       child: Text(
                         'Accept'.tr(),
                         style: TextStyle(
-                            color: Color(0xffFFFFFF),
-                            fontFamily: "Poppinsm",
-                            letterSpacing: 0.5),
+                          color: Color(0xffFFFFFF),
+                          fontFamily: "Poppinsm",
+                          letterSpacing: 0.5,
+                        ),
                       ),
                       onPressed: () async {
                         playSound(false);
@@ -535,7 +873,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             );
                             ScaffoldMessenger.of(_scaffoldKey.currentContext!)
                                 .showSnackBar(snack);
-                            setState(() {});
+                            if (mounted) {
+                              setState(() {});
+                            }
                           } else {
                             showProgress(
                                 context, 'Accepting Ride....'.tr(), false);
@@ -543,11 +883,11 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                               if (_timer != null) {
                                 _timer!.cancel();
                               }
+                              print("Accepting order");
                               await acceptOrder();
                               hideProgress();
                             } catch (e) {
                               hideProgress();
-                              print('HomeScreenState.showDriverBottomSheet $e');
                             }
                           }
                         });
@@ -561,35 +901,102 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     );
   }
 
-  acceptOrder() async {
-    CabOrderModel orderModel = _driverModel!.orderCabRequestData!;
-
-    _driverModel!.orderCabRequestData = null;
-    _driverModel!.inProgressOrderID = orderModel.id!;
-
-    await FireStoreUtils.updateCurrentUser(_driverModel!);
-
-    orderModel.status = ORDER_STATUS_DRIVER_ACCEPTED;
-    orderModel.driverId = _driverModel!.id;
-    orderModel.driver = _driverModel!;
-
-    if (enableOTPTripStart) {
-      orderModel.otpCode = (Random().nextInt(900000) + 100000).toString();
+  Future<Map<String, String>?> _getDriverToPickupInfo() async {
+    if (_driverModel == null ||
+        _driverModel!.location == null ||
+        _driverModel!.orderCabRequestData == null) {
+      return null;
     }
 
-    await FireStoreUtils.updateCabOrder(orderModel);
+    final driverLat = _driverModel!.location!.latitude!;
+    final driverLng = _driverModel!.location!.longitude!;
+    final pickupLat =
+        _driverModel!.orderCabRequestData!.sourceLocation!.latitude;
+    final pickupLng =
+        _driverModel!.orderCabRequestData!.sourceLocation!.longitude;
 
-    await getCurrentOrder();
-    Map<String, dynamic> payLoad = <String, dynamic>{
-      "type": "cab_order",
-      "orderId": currentOrder!.id
-    };
-    await FireStoreUtils.sendFcmMessage(
-        cabAccepted, orderModel.author!.fcmToken ?? '', payLoad);
+    final result = await getDurationDistance(
+      LatLng(driverLat, driverLng),
+      LatLng(pickupLat, pickupLng),
+    );
 
-    setState(() {
-      isShow = true;
-    });
+    if (result != null &&
+        result['rows'] != null &&
+        result['rows'].isNotEmpty &&
+        result['rows'].first['elements'] != null &&
+        result['rows'].first['elements'].isNotEmpty &&
+        result['rows'].first['elements'].first['status'] == 'OK') {
+      final element = result['rows'].first['elements'].first;
+      final distanceText = element['distance']['text'];
+      final durationSeconds = element['duration']['value'] as int;
+
+      return {
+        'duration': _formatDuration(durationSeconds),
+        'distance': distanceText,
+      };
+    }
+    return null;
+  }
+
+  String _formatDuration(int seconds) {
+    if (seconds < 60) {
+      return '${seconds} sec${seconds == 1 ? '' : 's'}';
+    } else if (seconds < 3600) {
+      int minutes = seconds ~/ 60;
+      return '${minutes} min${minutes == 1 ? '' : 's'}';
+    } else {
+      int hours = seconds ~/ 3600;
+      int minutes = (seconds % 3600) ~/ 60;
+      if (minutes == 0) {
+        return '${hours} hr${hours == 1 ? '' : 's'}';
+      } else {
+        return '${hours} hr${hours == 1 ? '' : 's'} ${minutes} min${minutes == 1 ? '' : 's'}';
+      }
+    }
+  }
+
+  acceptOrder() async {
+    try {
+      CabOrderModel orderModel = _driverModel!.orderCabRequestData!;
+
+      _driverModel!.orderCabRequestData = null;
+      _driverModel!.inProgressOrderID = orderModel.id!;
+      _followDriverWithCamera = true;
+
+      orderModel.status = ORDER_STATUS_DRIVER_ACCEPTED;
+      orderModel.driverId = _driverModel!.id;
+      orderModel.driver = _driverModel!;
+
+      if (enableOTPTripStart) {
+        orderModel.otpCode = (Random().nextInt(900000) + 100000).toString();
+      }
+
+      await Future.wait([
+        FireStoreUtils.updateCurrentUser(_driverModel!),
+        FireStoreUtils.updateCabOrder(orderModel),
+      ]);
+
+      await getCurrentOrder();
+
+      Map<String, dynamic> payLoad = <String, dynamic>{
+        "type": "cab_order",
+        "orderId": currentOrder!.id
+      };
+
+      FireStoreUtils.sendFcmMessage(
+        cabAccepted,
+        orderModel.author!.fcmToken ?? '',
+        payLoad,
+      );
+
+      if (mounted) {
+        setState(() {
+          isShow = true;
+        });
+      }
+    } catch (e) {
+      print("Error while accepting: $e");
+    }
   }
 
   rejectOrder() async {
@@ -769,14 +1176,21 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
         // Add driver marker if needed
         if (includeDriverMarker && _driverModel != null) {
+          final driverLatLng = LatLng(_driverModel!.location!.latitude!,
+              _driverModel!.location!.longitude!);
           _markers['Driver'] = Marker(
             markerId: const MarkerId('Driver'),
             infoWindow: const InfoWindow(title: "Driver"),
-            position: LatLng(_driverModel!.location!.latitude!,
-                _driverModel!.location!.longitude!),
+            position: driverLatLng,
             icon: taxiIcon!,
-            rotation: double.parse(_driverModel!.rotation.toString()),
+            rotation: _lastKnownDriverRotation != 0
+                ? _lastKnownDriverRotation
+                : double.parse(_driverModel!.rotation.toString()),
+            anchor: const Offset(0.5, 0.5),
+            flat: false,
+            zIndex: 2,
           );
+          _lastKnownDriverLatLng = driverLatLng;
         }
 
         // Add departure marker
@@ -845,12 +1259,12 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     LatLng destination,
     GoogleMapController? mapController,
   ) async {
+    _isAutoCameraMove = true;
     _mapController!.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
           target: source,
           zoom: 20,
-          bearing: double.parse(_driverModel!.rotation.toString()),
         ),
       ),
     );
@@ -980,6 +1394,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       // Reset first load flag when driver data changes
       _isFirstOrderLoad = true;
       getDirections();
+
+      // ─── Smooth driver movement ──────────────────────────
+      _updateDriverMarkerAndCamera();
 
       if (_driverModel!.isActive == true) {
         if (_driverModel!.orderCabRequestData != null) {
@@ -2081,6 +2498,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     _markers.clear();
     polyLines.clear();
 
+    _isAutoCameraMove = true;
+    _followDriverWithCamera = true;
     _mapController?.moveCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(

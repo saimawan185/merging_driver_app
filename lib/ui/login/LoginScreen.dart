@@ -73,7 +73,7 @@ class LoginScreen extends StatelessWidget {
                         TextSpan(
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                Get.to(const SignupScreen());
+                                Get.to(() => SignupScreen());
                               },
                             text: 'Sign up'.tr,
                             style: TextStyle(
@@ -176,84 +176,84 @@ class LoginScreen extends StatelessWidget {
             bottomNavigationBar: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                      vertical: Platform.isAndroid ? 10 : 30, horizontal: 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      RoundedButtonFill(
-                        title: "Continue with Mobile Number".tr,
-                        textColor: isDark
-                            ? AppThemeData.grey100
-                            : AppThemeData.grey900,
-                        color: isDark
-                            ? AppThemeData.grey900
-                            : AppThemeData.grey100,
-                        icon: SvgPicture.asset(
-                          "assets/icons/ic_phone.svg",
-                          colorFilter: const ColorFilter.mode(
-                              AppThemeData.grey900, BlendMode.srcIn),
-                        ),
-                        isRight: false,
-                        onPress: () async {
-                          Get.to(const PhoneNumberScreen());
-                        },
-                      ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: RoundedButtonFill(
-                              title: Platform.isIOS
-                                  ? "with Google".tr
-                                  : 'Continue with Google'.tr,
-                              textColor: isDark
-                                  ? AppThemeData.grey100
-                                  : AppThemeData.grey900,
-                              color: isDark
-                                  ? AppThemeData.grey900
-                                  : AppThemeData.grey100,
-                              icon: SvgPicture.asset(
-                                  "assets/icons/ic_google.svg"),
-                              isRight: false,
-                              onPress: () async {
-                                controller.loginWithGoogle();
-                              },
-                            ),
-                          ),
-                          // if (Platform.isIOS)
-                          //   const SizedBox(
-                          //     width: 10,
-                          //   ),
-                          // Platform.isIOS
-                          //     ? Expanded(
-                          //         child: RoundedButtonFill(
-                          //           title: Platform.isIOS
-                          //               ? "with Apple".tr
-                          //               : 'Continue with Apple'.tr,
-                          //           textColor: isDark
-                          //               ? AppThemeData.grey100
-                          //               : AppThemeData.grey900,
-                          //           color: isDark
-                          //               ? AppThemeData.grey900
-                          //               : AppThemeData.grey100,
-                          //           icon: SvgPicture.asset(
-                          //               "assets/icons/ic_apple.svg"),
-                          //           isRight: false,
-                          //           onPress: () async {
-                          //             controller.loginWithApple();
-                          //           },
-                          //         ),
-                          //       )
-                          //     : const SizedBox(),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                // Padding(
+                //   padding: EdgeInsets.symmetric(
+                //       vertical: Platform.isAndroid ? 10 : 30, horizontal: 16),
+                //   child: Column(
+                //     mainAxisSize: MainAxisSize.min,
+                //     children: [
+                //       RoundedButtonFill(
+                //         title: "Continue with Mobile Number".tr,
+                //         textColor: isDark
+                //             ? AppThemeData.grey100
+                //             : AppThemeData.grey900,
+                //         color: isDark
+                //             ? AppThemeData.grey900
+                //             : AppThemeData.grey100,
+                //         icon: SvgPicture.asset(
+                //           "assets/icons/ic_phone.svg",
+                //           colorFilter: const ColorFilter.mode(
+                //               AppThemeData.grey900, BlendMode.srcIn),
+                //         ),
+                //         isRight: false,
+                //         onPress: () async {
+                //           Get.to(const PhoneNumberScreen());
+                //         },
+                //       ),
+                //       const SizedBox(
+                //         height: 12,
+                //       ),
+                //       Row(
+                //         children: [
+                //           Expanded(
+                //             child: RoundedButtonFill(
+                //               title: Platform.isIOS
+                //                   ? "with Google".tr
+                //                   : 'Continue with Google'.tr,
+                //               textColor: isDark
+                //                   ? AppThemeData.grey100
+                //                   : AppThemeData.grey900,
+                //               color: isDark
+                //                   ? AppThemeData.grey900
+                //                   : AppThemeData.grey100,
+                //               icon: SvgPicture.asset(
+                //                   "assets/icons/ic_google.svg"),
+                //               isRight: false,
+                //               onPress: () async {
+                //                 controller.loginWithGoogle();
+                //               },
+                //             ),
+                //           ),
+                //           // if (Platform.isIOS)
+                //           //   const SizedBox(
+                //           //     width: 10,
+                //           //   ),
+                //           // Platform.isIOS
+                //           //     ? Expanded(
+                //           //         child: RoundedButtonFill(
+                //           //           title: Platform.isIOS
+                //           //               ? "with Apple".tr
+                //           //               : 'Continue with Apple'.tr,
+                //           //           textColor: isDark
+                //           //               ? AppThemeData.grey100
+                //           //               : AppThemeData.grey900,
+                //           //           color: isDark
+                //           //               ? AppThemeData.grey900
+                //           //               : AppThemeData.grey100,
+                //           //           icon: SvgPicture.asset(
+                //           //               "assets/icons/ic_apple.svg"),
+                //           //           isRight: false,
+                //           //           onPress: () async {
+                //           //             controller.loginWithApple();
+                //           //           },
+                //           //         ),
+                //           //       )
+                //           //     : const SizedBox(),
+                //         ],
+                //       ),
+                //     ],
+                //   ),
+                // ),
                 InkWell(
                   onTap: () {
                     if (controller.emailEditingController.value.text

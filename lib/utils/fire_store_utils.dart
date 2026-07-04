@@ -52,9 +52,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:video_compress/video_compress.dart';
 import '../constants.dart';
@@ -74,6 +77,8 @@ class FireStoreUtils {
 
   static late FirebaseFirestore fireStore;
 
+  static Reference storage = FirebaseStorage.instance.ref();
+
   /// Initialize Firestore with a FirebaseApp and optional databaseId
   void init(FirebaseApp app, {String? databaseId}) {
     fireStore = FirebaseFirestore.instanceFor(app: app, databaseId: databaseId);
@@ -81,6 +86,60 @@ class FireStoreUtils {
 
   static String getCurrentUid() {
     return FirebaseAuth.instance.currentUser!.uid;
+  }
+
+  static Future<File> compressImage(File file) async {
+    try {
+      final dir = await getTemporaryDirectory();
+      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+      final targetPath = "${dir.path}/compressed_$fileName.jpg";
+
+      final XFile? compressedFile =
+          await FlutterImageCompress.compressAndGetFile(
+        file.path,
+        targetPath,
+        quality: 50,
+      );
+
+      if (compressedFile == null) {
+        return file;
+      }
+
+      return File(compressedFile.path);
+    } catch (e) {
+      return file;
+    }
+  }
+
+  static Future<String> uploadUserImageToFireStorage(
+    File image,
+    String userID,
+  ) async {
+    Reference upload = storage.child(STORAGE_ROOT + '/images/$userID.png');
+    UploadTask uploadTask = upload.putFile(image);
+    var downloadUrl = await (await uploadTask.whenComplete(
+      () {},
+    ))
+        .ref
+        .getDownloadURL();
+    return downloadUrl.toString();
+  }
+
+  static Future<String> uploadCarImageToFireStorage(
+    File image,
+    String userID,
+  ) async {
+    Reference upload = storage.child(
+      STORAGE_ROOT + '/drivers/carImages/$userID.png',
+    );
+    File compressedCarImage = await compressImage(image);
+    UploadTask uploadTask = upload.putFile(compressedCarImage);
+    var downloadUrl = await (await uploadTask.whenComplete(
+      () {},
+    ))
+        .ref
+        .getDownloadURL();
+    return downloadUrl.toString();
   }
 
   static Future<CurrencyModel?> getCurrency() async {

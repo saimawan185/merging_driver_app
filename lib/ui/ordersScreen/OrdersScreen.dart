@@ -277,35 +277,35 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-  final audioPlayer = AudioPlayer(playerId: "playerId");
-  bool isPlaying = false;
+  // final audioPlayer = AudioPlayer(playerId: "playerId");
+  // bool isPlaying = false;
 
-  playSound() async {
-    if (Platform.isAndroid) {
-      final path = await rootBundle
-          .load("assets/audio/mixkit-happy-bells-notification-937.mp3");
+  // playSound() async {
+  //   if (Platform.isAndroid) {
+  //     final path = await rootBundle
+  //         .load("assets/audio/mixkit-happy-bells-notification-937.mp3");
 
-      audioPlayer.setSourceBytes(path.buffer.asUint8List());
-      audioPlayer.setReleaseMode(ReleaseMode.loop);
-      //audioPlayer.setSourceUrl(url);
-      audioPlayer.play(BytesSource(path.buffer.asUint8List()),
-          volume: 15,
-          ctx: AudioContext(
-              android: AudioContextAndroid(
-                  contentType: AndroidContentType.music,
-                  isSpeakerphoneOn: true,
-                  stayAwake: true,
-                  usageType: AndroidUsageType.alarm,
-                  audioFocus: AndroidAudioFocus.gainTransient),
-              iOS: AudioContextIOS(category: AVAudioSessionCategory.playback)));
-    } else {
-      audioPlayer
-          .setSourceAsset("audio/mixkit-happy-bells-notification-937.mp3");
-      audioPlayer.setReleaseMode(ReleaseMode.loop);
-      audioPlayer
-          .play(AssetSource('audio/mixkit-happy-bells-notification-937.mp3'));
-    }
-  }
+  //     audioPlayer.setSourceBytes(path.buffer.asUint8List());
+  //     audioPlayer.setReleaseMode(ReleaseMode.loop);
+  //     //audioPlayer.setSourceUrl(url);
+  //     audioPlayer.play(BytesSource(path.buffer.asUint8List()),
+  //         volume: 15,
+  //         ctx: AudioContext(
+  //             android: AudioContextAndroid(
+  //                 contentType: AndroidContentType.music,
+  //                 isSpeakerphoneOn: true,
+  //                 stayAwake: true,
+  //                 usageType: AndroidUsageType.alarm,
+  //                 audioFocus: AndroidAudioFocus.gainTransient),
+  //             iOS: AudioContextIOS(category: AVAudioSessionCategory.playback)));
+  //   } else {
+  //     audioPlayer
+  //         .setSourceAsset("audio/mixkit-happy-bells-notification-937.mp3");
+  //     audioPlayer.setReleaseMode(ReleaseMode.loop);
+  //     audioPlayer
+  //         .play(AssetSource('audio/mixkit-happy-bells-notification-937.mp3'));
+  //   }
+  // }
 }
 
 Widget _buildChip(String label, int attributesOptionIndex) {

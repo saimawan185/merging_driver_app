@@ -82,7 +82,7 @@ class LoginController extends GetxController {
           userModel.provider = 'google';
 
           ShowToastDialog.closeLoader();
-          Get.to(const SignupScreen(), arguments: {
+          Get.to(() => SignupScreen(), arguments: {
             "userModel": userModel,
             "type": "google",
           });
@@ -116,7 +116,7 @@ class LoginController extends GetxController {
               userModel.lastName = value.user!.displayName?.split(' ').last;
               userModel.provider = 'google';
 
-              Get.to(const SignupScreen(), arguments: {
+              Get.to(() => SignupScreen(), arguments: {
                 "userModel": userModel,
                 "type": "google",
               });

@@ -218,7 +218,7 @@ class OtpScreen extends StatelessWidget {
                           userModel.provider = 'phone';
 
                           ShowToastDialog.closeLoader();
-                          Get.off(const SignupScreen(), arguments: {
+                          Get.off(() => SignupScreen(), arguments: {
                             "userModel": userModel,
                             "type": "mobileNumber",
                           });
@@ -284,7 +284,7 @@ class OtpScreen extends StatelessWidget {
                               userModel.fcmToken = fcmToken;
                               userModel.provider = 'phone';
 
-                              Get.off(const SignupScreen(), arguments: {
+                              Get.off(() => SignupScreen(), arguments: {
                                 "userModel": userModel,
                                 "type": "mobileNumber",
                               });

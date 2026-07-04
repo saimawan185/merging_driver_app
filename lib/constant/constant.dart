@@ -77,7 +77,7 @@ class Constant {
   static String supportURL = "";
   static String minimumAmountToDeposit = "0.0";
   static String? mapType = "inappmap";
-  static bool? autoApproveDriver = true;
+  static bool? autoApproveDriver = false;
 
   static const String orderPlaced = "Order Placed";
   static const String orderAccepted = "Order Accepted";
