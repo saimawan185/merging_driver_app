@@ -2,9 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:door_delights_driver/model/onePaySettingsModel.dart';
 import 'package:door_delights_driver/models/user_model.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -2775,8 +2774,10 @@ class FireStoreUtils {
           .doc(auth.FirebaseAuth.instance.currentUser!.uid)
           .delete();
 
-      // delete user  from firebase auth
-      await auth.FirebaseAuth.instance.currentUser!.delete();
+      HttpsCallable callable =
+          FirebaseFunctions.instance.httpsCallable('deleteUser');
+
+      await callable.call();
     } catch (e, s) {
       print('FireStoreUtils.deleteUser $e $s');
     }

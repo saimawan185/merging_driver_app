@@ -24,8 +24,10 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
   final List<String> _subtitlesList = [
     // 'Log in and order delicious food from stores around you.'.tr(),
     // 'Hungry? Order food in just a few clicks and we\'ll take care of you.'.tr(),
-    'Find perfect store nearby or  place order at your favorite store in few clicks.'.tr(),
-    'A diverse list of different dining stores throughout the territory and around your area carefully selected'.tr(),
+    'Find perfect store nearby or  place order at your favorite store in few clicks.'
+        .tr(),
+    'A diverse list of different dining stores throughout the territory and around your area carefully selected'
+        .tr(),
     'Get your favorite item fastest delivered at your doorstep'.tr(),
   ];
 
@@ -52,10 +54,17 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
       body: Stack(
         children: <Widget>[
           PageView.builder(
-            itemBuilder: (context, index) => getPage(isDarkMode(context) ? _darkimageList[index] : _imageList[index], _titlesList[index], _subtitlesList[index], context,
-                isDarkMode(context) ? (index + 1) == _darkimageList.length : (index + 1) == _imageList.length),
+            itemBuilder: (context, index) => getPage(
+                isDarkMode(context) ? _darkimageList[index] : _imageList[index],
+                _titlesList[index],
+                _subtitlesList[index],
+                context,
+                isDarkMode(context)
+                    ? (index + 1) == _darkimageList.length
+                    : (index + 1) == _imageList.length),
             controller: pageController,
-            itemCount: isDarkMode(context) ? _darkimageList.length : _imageList.length,
+            itemCount:
+                isDarkMode(context) ? _darkimageList.length : _imageList.length,
             onPageChanged: (int index) {
               setState(() {
                 _currentIndex = index;
@@ -68,12 +77,13 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   right: 13,
                   bottom: 17,
                   child: Container(
-                      width: MediaQuery.of(context).size.width * 0.94,
-                      height: MediaQuery.of(context).size.height * 0.08,
+                      width: MediaQuery.sizeOf(context).width * 0.94,
+                      height: MediaQuery.sizeOf(context).height * 0.08,
                       padding: EdgeInsets.all(10),
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6)),
                           backgroundColor: Color(COLOR_PRIMARY),
                         ),
                         child: Text(
@@ -107,7 +117,13 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
               child: SmoothPageIndicator(
                 controller: pageController,
                 count: _imageList.length,
-                effect: ScrollingDotsEffect(spacing: 20, activeDotColor: Color(COLOR_PRIMARY), dotColor: Color(COLOR_PRIMARY).withOpacity(0.4), dotWidth: 7, dotHeight: 7, fixedCenter: false),
+                effect: ScrollingDotsEffect(
+                    spacing: 20,
+                    activeDotColor: Color(COLOR_PRIMARY),
+                    dotColor: Color(COLOR_PRIMARY).withOpacity(0.4),
+                    dotWidth: 7,
+                    dotHeight: 7,
+                    fixedCenter: false),
               ),
             ),
           )),
@@ -118,9 +134,14 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                 top: 30,
                 child: GestureDetector(
                     onTap: () {
-                      pageController.previousPage(duration: Duration(milliseconds: 100), curve: Curves.bounceIn);
+                      pageController.previousPage(
+                          duration: Duration(milliseconds: 100),
+                          curve: Curves.bounceIn);
                     },
-                    child: Icon(Icons.chevron_left, size: 40, color: isDarkMode(context) ? Color(0xffFFFFFF) : null))),
+                    child: Icon(Icons.chevron_left,
+                        size: 40,
+                        color:
+                            isDarkMode(context) ? Color(0xffFFFFFF) : null))),
           ),
           Visibility(
             visible: _currentIndex + 2 == _imageList.length,
@@ -129,7 +150,9 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                 top: 30,
                 child: GestureDetector(
                     onTap: () {
-                      pageController.previousPage(duration: Duration(milliseconds: 100), curve: Curves.bounceIn);
+                      pageController.previousPage(
+                          duration: Duration(milliseconds: 100),
+                          curve: Curves.bounceIn);
                     },
                     child: Icon(
                       Icons.chevron_left,
@@ -149,7 +172,10 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                       },
                       child: Text(
                         "SKIP".tr(),
-                        style: TextStyle(fontSize: 19, color: Color(COLOR_PRIMARY), fontFamily: 'Poppinsm'),
+                        style: TextStyle(
+                            fontSize: 19,
+                            color: Color(COLOR_PRIMARY),
+                            fontFamily: 'Poppinsm'),
                       )))),
           Visibility(
               visible: _currentIndex + 1 != _imageList.length,
@@ -159,20 +185,27 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   child: InkWell(
                       onTap: () {},
                       child: Container(
-                          width: MediaQuery.of(context).size.width * 0.94,
-                          height: MediaQuery.of(context).size.height * 0.08,
+                          width: MediaQuery.sizeOf(context).width * 0.94,
+                          height: MediaQuery.sizeOf(context).height * 0.08,
                           padding: EdgeInsets.all(10),
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(6)),
                               backgroundColor: Color(COLOR_PRIMARY),
                             ),
                             child: Text(
                               "NEXT".tr(),
-                              style: TextStyle(fontSize: 16, color: isDarkMode(context) ? Color(0xffFFFFFF) : Color(0XFF333333)),
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  color: isDarkMode(context)
+                                      ? Color(0xffFFFFFF)
+                                      : Color(0XFF333333)),
                             ),
                             onPressed: () {
-                              pageController.nextPage(duration: Duration(milliseconds: 100), curve: Curves.bounceIn);
+                              pageController.nextPage(
+                                  duration: Duration(milliseconds: 100),
+                                  curve: Curves.bounceIn);
                             },
                           )))))
         ],
@@ -180,7 +213,8 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
     );
   }
 
-  Widget getPage(dynamic image, _titlesList, _subtitlesList, BuildContext context, bool isLastPage) {
+  Widget getPage(dynamic image, _titlesList, _subtitlesList,
+      BuildContext context, bool isLastPage) {
     return Container(
         child: Column(
       //  crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -190,15 +224,21 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
         // image is String ?
         Expanded(
             child: Container(
-                //  height:  MediaQuery.of(context).size.height*0.55,
-                width: MediaQuery.of(context).size.width * 1,
+                //  height:  MediaQuery.sizeOf(context).height*0.55,
+                width: MediaQuery.sizeOf(context).width * 1,
                 decoration: BoxDecoration(
-                    color: isDarkMode(context) ? Color(0XFF242528) : Color(0XFFFCEEE9),
-                    borderRadius: BorderRadius.only(bottomLeft: Radius.elliptical(400, 180), bottomRight: Radius.elliptical(400, 180))),
+                    color: isDarkMode(context)
+                        ? Color(0XFF242528)
+                        : Color(0XFFFCEEE9),
+                    borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.elliptical(400, 180),
+                        bottomRight: Radius.elliptical(400, 180))),
                 child: Container(
                   margin: EdgeInsets.only(right: 40, left: 40, top: 30),
 
-                  decoration: BoxDecoration(image: DecorationImage(image: AssetImage(image), fit: BoxFit.contain)),
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          image: AssetImage(image), fit: BoxFit.contain)),
 
                   //  child:
                   //       Image.asset(
@@ -207,11 +247,15 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   //           fit: BoxFit.contain,
                   //         )
                 ))),
-        SizedBox(height: MediaQuery.of(context).size.height * 0.08),
+        SizedBox(height: MediaQuery.sizeOf(context).height * 0.08),
         Text(
           _titlesList,
           textAlign: TextAlign.center,
-          style: TextStyle(color: isDarkMode(context) ? Color(0xffFFFFFF) : Color(0XFF333333), fontFamily: 'Poppinsm', fontSize: 20),
+          style: TextStyle(
+              color:
+                  isDarkMode(context) ? Color(0xffFFFFFF) : Color(0XFF333333),
+              fontFamily: 'Poppinsm',
+              fontSize: 20),
         ),
 
         Padding(
@@ -219,9 +263,16 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
             child: Text(
               _subtitlesList,
               textAlign: TextAlign.center,
-              style: TextStyle(color: isDarkMode(context) ? Color(0xffFFFFFF) : Color(0XFF333333), fontFamily: 'Poppinsl', height: 2, letterSpacing: 1.2, fontSize: 15),
+              style: TextStyle(
+                  color: isDarkMode(context)
+                      ? Color(0xffFFFFFF)
+                      : Color(0XFF333333),
+                  fontFamily: 'Poppinsl',
+                  height: 2,
+                  letterSpacing: 1.2,
+                  fontSize: 15),
             )),
-        SizedBox(height: MediaQuery.of(context).size.height * 0.25),
+        SizedBox(height: MediaQuery.sizeOf(context).height * 0.25),
         // : Icon(
         //     image as IconData,
         //     color: Colors.white,

@@ -193,7 +193,7 @@ class _ContainerScreen extends State<ContainerScreen> {
             contentPadding: EdgeInsets.only(top: 10.0),
             content: Container(
               //width: 300.0,
-              width: MediaQuery.of(context).size.width * 0.6,
+              width: MediaQuery.sizeOf(context).width * 0.6,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.stretch,

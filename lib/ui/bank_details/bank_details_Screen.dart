@@ -102,7 +102,7 @@ class _BankDetailsScreenState extends State<BankDetailsScreen> {
   }
 
   addBankDetail(context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return Container(
       height: size.height,
       width: size.width,
@@ -184,7 +184,7 @@ class _BankDetailsScreenState extends State<BankDetailsScreen> {
   }
 
   buildButton(context, {required String title, required Function()? onPress}) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return SizedBox(
       width: size.width * 0.8,
       child: MaterialButton(

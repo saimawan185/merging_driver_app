@@ -51,7 +51,7 @@ class _EnterBankDetailScreenState extends State<EnterBankDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return Scaffold(
       appBar: AppBar(
         leading: GestureDetector(
@@ -205,7 +205,7 @@ class _EnterBankDetailScreenState extends State<EnterBankDetailScreen> {
   }
 
   buildButton(context, {required String title, required Function()? onPress}) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return SizedBox(
       width: size.width * 0.8,
       child: MaterialButton(

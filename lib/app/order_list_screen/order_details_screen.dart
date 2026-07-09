@@ -762,7 +762,7 @@ void showBillBifurcationDialog(
         insetPadding: const EdgeInsets.symmetric(horizontal: 10),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: SizedBox(
-          width: MediaQuery.of(context).size.width * 0.9,
+          width: MediaQuery.sizeOf(context).width * 0.9,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Column(

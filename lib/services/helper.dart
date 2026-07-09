@@ -732,7 +732,7 @@ updateCabWalletAmount(CabOrderModel orderModel) async {
 
 showWithdrawalModelSheet(
     BuildContext context, WithdrawHistoryModel withdrawHistoryModel) {
-  final size = MediaQuery.of(context).size;
+  final size = MediaQuery.sizeOf(context);
   return showModalBottomSheet(
       context: context,
       shape: RoundedRectangleBorder(
@@ -742,7 +742,7 @@ showWithdrawalModelSheet(
       builder: (context) {
         return Container(
             padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 5,
+                bottom: MediaQuery.viewInsetsOf(context).bottom + 5,
                 left: 10,
                 right: 10),
             child: Column(

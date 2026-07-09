@@ -617,7 +617,7 @@ class WalletScreenState extends State<WalletScreen> {
   bool onePay = false;
 
   topUpBalance() {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return showModalBottomSheet(
         elevation: 5,
         enableDrag: true,
@@ -2467,7 +2467,7 @@ class WalletScreenState extends State<WalletScreen> {
   }
 
   Widget buildEarningCard({required var orderModel}) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     double amount = 0;
     double adminComm = 0.0;
     if (Constant.userModel!.serviceType == "cab-service") {
@@ -2840,7 +2840,7 @@ class WalletScreenState extends State<WalletScreen> {
       amount = subTotal + totalTax;
       adminComm = adminComm;
     }
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return showModalBottomSheet(
         elevation: 5,
         shape: RoundedRectangleBorder(
@@ -3124,7 +3124,7 @@ class WalletScreenState extends State<WalletScreen> {
   }
 
   // Widget buildEarningCard({required var orderModel}) {
-  //   final size = MediaQuery.of(context).size;
+  //   final size = MediaQuery.sizeOf(context);
   //   double amount = 0;
   //   if (Constant.userModel!.serviceType == "cab-service") {
   //     double totalTax = 0.0;
@@ -3492,7 +3492,7 @@ class WalletScreenState extends State<WalletScreen> {
     required WithdrawHistoryModel withdrawHistory,
     required DateTime date,
   }) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
       child: GestureDetector(
@@ -4122,7 +4122,7 @@ class WalletScreenState extends State<WalletScreen> {
   }
 
   withdrawalHistoryBottomSheet(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return showModalBottomSheet(
         context: context,
         isScrollControlled: true,
@@ -4162,7 +4162,7 @@ class WalletScreenState extends State<WalletScreen> {
       {required String title,
       double width = 0.9,
       required Function()? onPress}) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return SizedBox(
       width: size.width * width,
       child: MaterialButton(
@@ -4183,7 +4183,7 @@ class WalletScreenState extends State<WalletScreen> {
       {required String title,
       double width = 0.9,
       required Function()? onPress}) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return SizedBox(
       width: size.width * width,
       child: MaterialButton(

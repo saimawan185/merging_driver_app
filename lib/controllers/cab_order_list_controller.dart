@@ -40,13 +40,30 @@ class CabOrderListController extends GetxController {
   List<CabOrderModel> getOrdersForTab(String tab) {
     switch (tab) {
       case "On Going":
-        return cabOrder.where((order) => ["Order Placed", "Order Accepted", "Driver Accepted", "Driver Pending", "Order Shipped", "In Transit"].contains(order.status)).toList();
+        return cabOrder
+            .where((order) => [
+                  "Order Placed",
+                  "Order Accepted",
+                  "Driver Accepted",
+                  "Driver Pending",
+                  "Order Shipped",
+                  "In Transit"
+                ].contains(order.status))
+            .toList();
 
       case "Completed":
-        return cabOrder.where((order) => ["Order Completed"].contains(order.status)).toList();
+        return cabOrder
+            .where((order) => ["Order Completed"].contains(order.status))
+            .toList();
 
       case "Cancelled":
-        return cabOrder.where((order) => ["Order Rejected", "Order Cancelled", "Driver Rejected"].contains(order.status)).toList();
+        return cabOrder
+            .where((order) => [
+                  "Order Rejected",
+                  "Order Cancelled",
+                  "Driver Rejected"
+                ].contains(order.status))
+            .toList();
 
       default:
         return [];

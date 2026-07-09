@@ -79,7 +79,8 @@ class SignupController extends GetxController {
 
   bool sectionNeedsVehicle(SectionModel section) =>
       section.serviceTypeFlag == 'cab-service' ||
-      section.serviceTypeFlag == 'rental-service';
+      section.serviceTypeFlag == 'rental-service' ||
+      section.serviceTypeFlag == 'parcel_delivery';
 
   bool get hasVehicleBasedSection =>
       selectedSection.value != null &&
@@ -217,9 +218,12 @@ class SignupController extends GetxController {
 
   Future<void> _loadVehicleTypesForSection(SectionModel section) async {
     ShowToastDialog.showLoader("Please wait".tr);
-    List<VehicleType> types;
+    List<VehicleType> types = [];
     if (section.serviceTypeFlag == 'cab-service') {
       types = await FireStoreUtils.getCabVehicleType(section.id.toString());
+    } else if (section.serviceTypeFlag == 'parcel_delivery') {
+      types.add(VehicleType(name: 'Bike'));
+      types.add(VehicleType(name: 'Carriage'));
     } else {
       types = await FireStoreUtils.getRentalVehicleType(section.id.toString());
     }
@@ -443,7 +447,7 @@ class SignupController extends GetxController {
     userModel.value.sectionId = section.id;
 
     // ── Derive serviceTypes from single section ──────────────────────────
-    userModel.value.serviceType = section.serviceType ?? 'delivery-service';
+    userModel.value.serviceType = section.serviceTypeFlag ?? 'delivery-service';
 
     // ── sectionNames: {sectionId → sectionName} ──────────────────────────
 
@@ -456,6 +460,10 @@ class SignupController extends GetxController {
       final carMakes = selectedCarMakesPerSection[section.id]?.value;
       final carModel = selectedCarModelPerSection[section.id]?.value;
       final carPlate = carPlatePerSection[section.id]?.value.text ?? '';
+      userModel.value.vehicleType = vehicle?.name;
+      userModel.value.vehicleId = vehicle?.id;
+      userModel.value.rideType = section.rideType ?? 'ride';
+
       vDetails[section.id!] = {
         'vehicleId': vehicle?.id ?? '',
         'vehicleType': vehicle?.name ?? '',
@@ -467,8 +475,6 @@ class SignupController extends GetxController {
       };
     }
     if (vDetails.isNotEmpty) userModel.value.vehicleDetails = vDetails;
-
-    log(userModel.value.toJson().toString());
   }
 
   // ── Navigation ─────────────────────────────────────────────────────────────

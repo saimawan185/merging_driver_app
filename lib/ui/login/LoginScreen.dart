@@ -92,6 +92,7 @@ class LoginScreen extends StatelessWidget {
                     title: 'Email Address'.tr,
                     controller: controller.emailEditingController.value,
                     hintText: 'Enter email address'.tr,
+                    textInputType: TextInputType.emailAddress,
                     prefix: Padding(
                       padding: const EdgeInsets.all(12),
                       child: SvgPicture.asset(
@@ -109,6 +110,7 @@ class LoginScreen extends StatelessWidget {
                     controller: controller.passwordEditingController.value,
                     hintText: 'Enter password'.tr,
                     obscureText: controller.passwordVisible.value,
+                    textInputType: TextInputType.visiblePassword,
                     prefix: Padding(
                       padding: const EdgeInsets.all(12),
                       child: SvgPicture.asset(

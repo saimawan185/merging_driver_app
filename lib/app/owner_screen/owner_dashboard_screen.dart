@@ -175,7 +175,7 @@ class DrawerView extends StatelessWidget {
                   isDark ? AppThemeData.grey900 : AppThemeData.grey50,
               child: Padding(
                 padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).viewPadding.top + 20,
+                    top: MediaQuery.viewPaddingOf(context).top + 20,
                     left: 16,
                     right: 16),
                 child: ListView(

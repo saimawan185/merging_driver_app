@@ -115,8 +115,12 @@ class NotificationService {
   }
 
   static Future<String> getToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
-    return token!;
+    try {
+      String? token = await FirebaseMessaging.instance.getToken();
+      return token!;
+    } catch (e) {
+      return '';
+    }
   }
 
   void display(RemoteMessage message) async {

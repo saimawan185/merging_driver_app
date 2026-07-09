@@ -24,6 +24,7 @@ class TextFieldWidget extends StatefulWidget {
   final FocusNode? focusNode;
   final ValueChanged<String>? onFieldSubmitted;
   final Function()? onClick;
+  final TextCapitalization textCapitalization;
 
   const TextFieldWidget({
     super.key,
@@ -45,6 +46,7 @@ class TextFieldWidget extends StatefulWidget {
     this.focusNode,
     this.onClick,
     this.onFieldSubmitted,
+    this.textCapitalization = TextCapitalization.sentences,
   });
 
   @override
@@ -96,7 +98,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
           keyboardType: widget.textInputType ?? TextInputType.text,
           onTap: widget.onClick,
           initialValue: widget.initialValue,
-          textCapitalization: TextCapitalization.sentences,
+          textCapitalization: widget.textCapitalization,
           controller: widget.controller,
           maxLines: widget.maxLine ?? 1,
           focusNode: _focusNode,

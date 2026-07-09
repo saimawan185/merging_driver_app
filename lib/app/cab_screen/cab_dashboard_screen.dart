@@ -271,7 +271,7 @@ class DrawerView extends StatelessWidget {
                   isDark ? AppThemeData.grey900 : AppThemeData.grey50,
               child: Padding(
                 padding: EdgeInsets.only(
-                    top: MediaQuery.of(context).viewPadding.top + 20,
+                    top: MediaQuery.viewPaddingOf(context).top + 20,
                     left: 16,
                     right: 16),
                 child: ListView(
@@ -934,18 +934,11 @@ class DrawerView extends StatelessWidget {
                                 negativeString: "Cancel".tr,
                                 positiveClick: () async {
                                   ShowToastDialog.showLoader("Please wait".tr);
-                                  await FireStoreUtils.deleteUser()
-                                      .then((value) {
-                                    ShowToastDialog.closeLoader();
-                                    if (value == true) {
-                                      ShowToastDialog.showToast(
-                                          "Account deleted successfully".tr);
-                                      Get.offAll(LoginScreen());
-                                    } else {
-                                      ShowToastDialog.showToast(
-                                          "Contact Administrator".tr);
-                                    }
-                                  });
+                                  await FireStoreUtils.deleteUser();
+                                  ShowToastDialog.closeLoader();
+                                  ShowToastDialog.showToast(
+                                      "Account deleted successfully".tr);
+                                  Get.offAll(LoginScreen());
                                 },
                                 negativeClick: () {
                                   Get.back();

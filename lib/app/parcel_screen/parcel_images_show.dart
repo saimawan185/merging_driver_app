@@ -30,7 +30,7 @@ class _ParcelImagesShowState extends State<ParcelImagesShow> {
               child: GridView.builder(
                 itemCount: widget.images.length,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: (MediaQuery.of(context).orientation ==
+                    crossAxisCount: (MediaQuery.orientationOf(context) ==
                             Orientation.portrait)
                         ? 2
                         : 3),

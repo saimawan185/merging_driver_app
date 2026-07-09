@@ -19,9 +19,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
 import 'package:http/http.dart' as http;
+import '../../constant/global.dart';
 import '../../models/cab_order_model.dart';
 import '../../models/vehicle_type.dart';
 import '../../services/audio_player_service.dart';
+import '../home_screen/home_screen_multiple_order.dart';
 import 'verify_otp_screen.dart';
 
 class CabHomeScreen extends StatefulWidget {
@@ -146,7 +148,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   // bearing always points it the correct way — no PNG-alignment guesswork.
   // ────────────────────────────────────────────────
   Future<BitmapDescriptor> _createDriverArrowIcon({
-    double size = 130,
+    double size = 80,
     Color pinColor = const Color(0xFFF15A29),
     Color pinBorderColor = const Color(0xFFB6431A),
     Color arrowColor = Colors.white,
@@ -766,8 +768,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 SizedBox(
-                  height: MediaQuery.of(context).size.height / 20,
-                  width: MediaQuery.of(context).size.width / 2.5,
+                  height: MediaQuery.sizeOf(context).height / 20,
+                  width: MediaQuery.sizeOf(context).width / 2.5,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
@@ -829,8 +831,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   ),
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).size.height / 20,
-                  width: MediaQuery.of(context).size.width / 2.5,
+                  height: MediaQuery.sizeOf(context).height / 20,
+                  width: MediaQuery.sizeOf(context).width / 2.5,
                   child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
@@ -1334,6 +1336,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       if (mounted) {
         setState(() {
           currentOrder = event;
+          log.log("Status: ${currentOrder!.status}");
           if (currentOrder!.status == ORDER_STATUS_DRIVER_REJECTED ||
               currentOrder!.status == ORDER_STATUS_DRIVER_PENDING ||
               currentOrder!.status == ORDER_STATUS_ACCEPTED) {
@@ -1465,7 +1468,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     return Container(
       margin: EdgeInsets.only(left: 8, right: 8),
       padding: EdgeInsets.symmetric(vertical: 15),
-      width: MediaQuery.of(context).size.width,
+      width: MediaQuery.sizeOf(context).width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(8), topRight: Radius.circular(18)),
@@ -1593,7 +1596,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         Padding(
                           padding: const EdgeInsets.only(top: 4.0),
                           child: SizedBox(
-                            width: MediaQuery.of(context).size.width / 4,
+                            width: MediaQuery.sizeOf(context).width / 4,
                             child: Text(
                               '${currentOrder!.id} ',
                               maxLines: 1,
@@ -1682,7 +1685,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         Padding(
                           padding: const EdgeInsets.only(top: 4.0),
                           child: SizedBox(
-                            width: MediaQuery.of(context).size.width / 4,
+                            width: MediaQuery.sizeOf(context).width / 4,
                             child: Text(
                               '${currentOrder!.id} ',
                               maxLines: 1,
@@ -1912,7 +1915,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                       child: AnimatedContainer(
                         duration: Duration(seconds: 2),
                         height: 40,
-                        width: MediaQuery.of(context).size.width,
+                        width: MediaQuery.sizeOf(context).width,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
@@ -1965,7 +1968,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                     child: AnimatedContainer(
                       duration: Duration(seconds: 2),
                       height: 40,
-                      width: MediaQuery.of(context).size.width,
+                      width: MediaQuery.sizeOf(context).width,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
@@ -2308,35 +2311,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
       hideProgress();
       setState(() {});
-    }
-  }
-
-  Future<dynamic> getDurationDistance(
-      LatLng departureLatLong, LatLng destinationLatLong) async {
-    log.log("Get duration distane");
-
-    try {
-      double originLat, originLong, destLat, destLong;
-      originLat = departureLatLong.latitude;
-      originLong = departureLatLong.longitude;
-      destLat = destinationLatLong.latitude;
-      destLong = destinationLatLong.longitude;
-
-      String url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
-      http.Response restaurantToCustomerTime = await http.get(Uri.parse(
-          '$url?units=metric&origins=$originLat,'
-          '$originLong&destinations=$destLat,$destLong&key=$GOOGLE_API_KEY'));
-
-      var decodedResponse = jsonDecode(restaurantToCustomerTime.body);
-
-      print(decodedResponse);
-      if (decodedResponse['status'] == 'OK' &&
-          decodedResponse['rows'].first['elements'].first['status'] == 'OK') {
-        return decodedResponse;
-      }
-      return null;
-    } catch (e) {
-      return null;
     }
   }
 

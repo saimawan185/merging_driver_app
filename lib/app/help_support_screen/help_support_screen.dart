@@ -263,7 +263,7 @@ class HelpSupportScreen extends StatelessWidget {
                       data.messageType == "text"
                           ? Container(
                               constraints: BoxConstraints(
-                                maxWidth: MediaQuery.of(context).size.width *
+                                maxWidth: MediaQuery.sizeOf(context).width *
                                     0.75, // prevent overflow
                               ),
                               decoration: BoxDecoration(
@@ -410,8 +410,7 @@ class HelpSupportScreen extends StatelessWidget {
                   data.messageType == "text"
                       ? Container(
                           constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width *
-                                0.75, // prevent overflow
+                            maxWidth: MediaQuery.sizeOf(context).width * 0.75,
                           ),
                           decoration: BoxDecoration(
                             borderRadius: const BorderRadius.only(

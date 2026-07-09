@@ -98,7 +98,7 @@ class TopUpScreenState extends State<TopUpScreen> {
     required TopupTranHistoryModel topupTranHistory,
     required DateTime date,
   }) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 3),
       child: GestureDetector(
@@ -198,7 +198,7 @@ class TopUpScreenState extends State<TopUpScreen> {
   showTransactionDetails({
     required TopupTranHistoryModel topupTranHistory,
   }) {
-    final size = MediaQuery.of(context).size;
+    final size = MediaQuery.sizeOf(context);
     return showModalBottomSheet(
         elevation: 5,
         shape: RoundedRectangleBorder(

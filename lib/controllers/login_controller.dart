@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:crypto/crypto.dart';
 import 'package:door_delights_driver/app/auth_screen/signup_screen.dart';
 import 'package:door_delights_driver/app/cab_screen/cab_dashboard_screen.dart';
@@ -38,13 +39,14 @@ class LoginController extends GetxController {
       );
       UserModel? userModel =
           await FireStoreUtils.getUserProfile(credential.user!.uid);
+
       if (userModel?.role == Constant.userRoleDriver) {
         if (userModel?.active == true) {
           userModel?.fcmToken = await NotificationService.getToken();
           await FireStoreUtils.updateUser(userModel!);
-          if (Constant.autoApproveDriver == true) {
-            _navigateByUserModel(userModel);
-          }
+          // if (Constant.autoApproveDriver == true) {
+          _navigateByUserModel(userModel);
+          // }
         } else {
           await FirebaseAuth.instance.signOut();
           ShowToastDialog.showToast(
@@ -56,16 +58,20 @@ class LoginController extends GetxController {
             "This user is not created in driver application.".tr);
       }
     } on FirebaseAuthException catch (e) {
-      print(e.code);
       if (e.code == 'user-not-found') {
         ShowToastDialog.showToast("No user found for that email.".tr);
       } else if (e.code == 'wrong-password') {
         ShowToastDialog.showToast("Wrong password provided for that user.".tr);
       } else if (e.code == 'invalid-email') {
         ShowToastDialog.showToast("Invalid Email.".tr);
+      } else {
+        ShowToastDialog.showToast(e.message.toString().tr);
       }
+    } on Exception catch (e) {
+      log("Catch exception: $e");
+    } finally {
+      ShowToastDialog.closeLoader();
     }
-    ShowToastDialog.closeLoader();
   }
 
   Future<void> loginWithGoogle() async {

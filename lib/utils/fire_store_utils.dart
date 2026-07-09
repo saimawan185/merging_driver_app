@@ -2012,7 +2012,7 @@ class FireStoreUtils {
   static Stream<List<CabOrderModel>> getCabDriverOrders(String driverId) {
     return fireStore
         .collection(CollectionName.ridesBooking)
-        .where('driverId', isEqualTo: driverId)
+        .where('driverID', isEqualTo: driverId)
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((query) {
