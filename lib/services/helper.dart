@@ -543,8 +543,8 @@ updateParcelWalletAmount(ParcelOrderModel orderModel) async {
   //  -
   //     double.parse(orderModel.discount.toString());
 
-  if (orderModel.taxSetting != null) {
-    for (var element in orderModel.taxSetting!) {
+  if (orderModel.taxModel != null) {
+    for (var element in orderModel.taxModel!) {
       totalTax = totalTax +
           calculateTax(amount: subTotal.toString(), taxModel: element);
     }

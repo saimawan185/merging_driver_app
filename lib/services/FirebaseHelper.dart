@@ -482,11 +482,15 @@ class FireStoreUtils {
   }
 
   static Future<CabOrderModel?> getCabOrderByOrderId(String orderID) async {
-    DocumentSnapshot<Map<String, dynamic>> userDocument =
-        await firestore.collection(RIDESORDER).doc(orderID).get();
-    if (userDocument.data() != null && userDocument.exists) {
-      return CabOrderModel.fromJson(userDocument.data()!);
-    } else {
+    try {
+      DocumentSnapshot<Map<String, dynamic>> userDocument =
+          await firestore.collection(RIDESORDER).doc(orderID).get();
+      if (userDocument.data() != null && userDocument.exists) {
+        return CabOrderModel.fromJson(userDocument.data()!);
+      } else {
+        return null;
+      }
+    } catch (e) {
       return null;
     }
   }

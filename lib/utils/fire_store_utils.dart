@@ -488,14 +488,16 @@ class FireStoreUtils {
         Constant.placeHolderImage = value.data()!['image'];
       });
 
-      await fireStore
-          .collection(CollectionName.settings)
-          .doc("document_verification_settings")
-          .get()
-          .then((value) {
-        Constant.isDriverVerification = value.data()!['isDriverVerification'];
-        Constant.isOwnerVerification = value.data()!['isOwnerVerification'];
-      });
+      try {
+        await fireStore
+            .collection(CollectionName.settings)
+            .doc("document_verification_settings")
+            .get()
+            .then((value) {
+          Constant.isDriverVerification = value.data()!['isDriverVerification'];
+          Constant.isOwnerVerification = value.data()!['isOwnerVerification'];
+        });
+      } catch (e) {}
 
       await fireStore
           .collection(CollectionName.settings)
@@ -504,6 +506,7 @@ class FireStoreUtils {
           .then((value) {
         Constant.minimumDepositToRideAccept =
             value.data()!['minimumDepositToRideAccept'];
+
         Constant.ownerMinimumDepositToRideAccept =
             value.data()!['ownerMinimumDepositToRideAccept'];
         Constant.minimumAmountToWithdrawal =
@@ -521,7 +524,7 @@ class FireStoreUtils {
         log("Constant.singleOrderReceive :: ${Constant.singleOrderReceive}");
       });
     } catch (e) {
-      log(e.toString());
+      log("settings error: ${e.toString()}");
     }
   }
 

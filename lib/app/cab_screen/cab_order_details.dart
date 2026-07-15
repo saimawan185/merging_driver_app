@@ -473,13 +473,20 @@ class CabOrderDetails extends StatelessWidget {
 
                             // Discount
                             _summaryTile(
-                                "Discount".tr,
+                              "Discount".tr,
+                              Constant.amountShow(
+                                  amount: controller.discount.value.toString()),
+                              isDark,
+                              null,
+                            ),
+
+                            _summaryTile(
+                                "Tip".tr,
                                 Constant.amountShow(
                                     amount:
-                                        controller.discount.value.toString()),
+                                        controller.tipValue.value.toString()),
                                 isDark,
                                 null),
-
                             // Tax List
                             ...List.generate(
                                 controller.cabOrder.value.taxModel!.length,

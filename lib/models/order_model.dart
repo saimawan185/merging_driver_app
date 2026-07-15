@@ -132,7 +132,7 @@ class OrderModel {
     couponCode = json['couponCode'];
     sectionId = json['section_id'];
     specialDiscount = json['specialDiscount'];
-    deliveryCharge = json['deliveryCharge'].toString().isEmpty
+    deliveryCharge = json['deliveryCharge'].toString().trim().isEmpty
         ? "0.0"
         : json['deliveryCharge'] ?? '0.0';
     scheduleTime = json['scheduleTime'];

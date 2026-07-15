@@ -222,6 +222,8 @@ class VehicleInformationController extends GetxController {
               'rideType': selectedRideTypePerSection[sid]?.value ?? 'ride',
           };
           userModel.value.vehicleId = vehicle.id ?? '';
+          userModel.value.vehicleType = vehicle.name ?? '';
+
           if (initialServiceType == 'cab-service') {
             userModel.value.rideType =
                 selectedRideTypePerSection[sid]?.value ?? 'ride';

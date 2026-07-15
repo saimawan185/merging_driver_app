@@ -86,7 +86,7 @@ class OwnerHomeController extends GetxController {
       double subTotal = double.tryParse(order.subTotal?.toString() ?? "0") ?? 0;
       double discount = double.tryParse(order.discount?.toString() ?? "0") ?? 0;
 
-      double taxTotal = _calculateTax(order.taxSetting, subTotal, discount);
+      double taxTotal = _calculateTax(order.taxModel, subTotal, discount);
       double driverEarned =
           (subTotal - discount + taxTotal).clamp(0, double.infinity);
 

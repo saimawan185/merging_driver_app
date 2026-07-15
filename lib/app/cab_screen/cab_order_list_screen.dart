@@ -1,3 +1,4 @@
+import 'package:door_delights_driver/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../constant/constant.dart';
@@ -33,10 +34,9 @@ class CabOrderListScreen extends StatelessWidget {
                     },
                     // isScrollable: true,
                     indicatorColor: AppThemeData.primary300,
-                    labelColor: AppThemeData.primary300,
+                    labelColor: Color(COLOR_PRIMARY_DARK),
                     dividerColor: isDark ? Colors.black : Colors.white,
-                    unselectedLabelColor:
-                        AppThemeData.primary300.withOpacity(0.60),
+                    unselectedLabelColor: AppThemeData.primary300,
                     labelStyle: AppThemeData.boldTextStyle(fontSize: 14),
                     unselectedLabelStyle:
                         AppThemeData.mediumTextStyle(fontSize: 14),

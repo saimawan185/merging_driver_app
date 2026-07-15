@@ -48,6 +48,7 @@ class CabOrderDetailsController extends GetxController {
 
   RxDouble subTotal = 0.0.obs;
   RxDouble discount = 0.0.obs;
+  RxDouble tipValue = 0.0.obs;
   RxDouble taxAmount = 0.0.obs;
   RxDouble totalAmount = 0.0.obs;
   RxDouble adminCommission = 0.0.obs;
@@ -66,8 +67,11 @@ class CabOrderDetailsController extends GetxController {
   void calculateTotalAmount() {
     taxAmount = 0.0.obs;
     discount = 0.0.obs;
-    subTotal.value = double.parse(cabOrder.value.subTotal.toString());
-    discount.value = double.parse(cabOrder.value.discount?.toString() ?? '0.0');
+    tipValue.value =
+        double.tryParse(cabOrder.value.tipAmount.toString()) ?? 0.0;
+    subTotal.value = double.tryParse(cabOrder.value.subTotal.toString()) ?? 0.0;
+    discount.value =
+        double.tryParse(cabOrder.value.discount?.toString() ?? '0.0') ?? 0.0;
 
     for (var element in cabOrder.value.taxModel!) {
       taxAmount.value = (taxAmount.value +
@@ -78,12 +82,13 @@ class CabOrderDetailsController extends GetxController {
 
     if (cabOrder.value.adminCommission!.isNotEmpty) {
       adminCommission.value = Constant.calculateAdminCommission(
-          amount: (subTotal.value - discount.value).toString(),
+          amount: subTotal.toString(),
           adminCommissionType: cabOrder.value.adminCommissionType.toString(),
           adminCommission: cabOrder.value.adminCommission ?? '0');
     }
 
-    totalAmount.value = (subTotal.value - discount.value) + taxAmount.value;
+    totalAmount.value =
+        (subTotal.value - discount.value) + taxAmount.value + tipValue.value;
     update();
   }
 

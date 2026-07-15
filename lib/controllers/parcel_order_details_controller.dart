@@ -34,8 +34,11 @@ class ParcelOrderDetailsController extends GetxController {
     subTotal.value = double.parse(parcelOrder.value.subTotal.toString());
     discount.value = double.parse(parcelOrder.value.discount ?? '0.0');
 
-    for (var element in parcelOrder.value.taxSetting!) {
-      taxAmount.value = (taxAmount.value + Constant.calculateTax(amount: (subTotal.value - discount.value).toString(), taxModel: element));
+    for (var element in parcelOrder.value.taxModel!) {
+      taxAmount.value = (taxAmount.value +
+          Constant.calculateTax(
+              amount: (subTotal.value - discount.value).toString(),
+              taxModel: element));
     }
 
     if (parcelOrder.value.adminCommission!.isNotEmpty) {
@@ -44,7 +47,6 @@ class ParcelOrderDetailsController extends GetxController {
           adminCommissionType: parcelOrder.value.adminCommissionType.toString(),
           adminCommission: parcelOrder.value.adminCommission ?? '0');
     }
-
 
     totalAmount.value = (subTotal.value - discount.value) + taxAmount.value;
     update();
@@ -65,7 +67,9 @@ class ParcelOrderDetailsController extends GetxController {
   ParcelCategory? getSelectedCategory() {
     try {
       return parcelCategory.firstWhere(
-            (cat) => cat.title?.toLowerCase().trim() == parcelOrder.value.parcelType?.toLowerCase().trim(),
+        (cat) =>
+            cat.title?.toLowerCase().trim() ==
+            parcelOrder.value.parcelType?.toLowerCase().trim(),
         orElse: () => ParcelCategory(),
       );
     } catch (e) {

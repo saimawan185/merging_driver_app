@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:door_delights_driver/app/cab_screen/cab_order_details.dart';
@@ -93,7 +94,7 @@ class WalletScreenState extends State<WalletScreen> {
         .snapshots();
 
     DateTime nowDate = DateTime.now();
-
+    log("Service: ${Constant.userModel!.serviceType}");
     // Use serviceType (singular) for all checks
     if (Constant.userModel!.serviceType == "cab-service") {
       dailyEarningQuery = fireStore
@@ -128,7 +129,7 @@ class WalletScreenState extends State<WalletScreen> {
     } else if (Constant.userModel!.serviceType == "parcel_delivery") {
       dailyEarningQuery = fireStore
           .collection(PARCELORDER)
-          .where('driverID', isEqualTo: driverId)
+          .where('driverId', isEqualTo: driverId)
           // .where('createdAt',
           //     isGreaterThanOrEqualTo: Timestamp.fromDate(
           //         DateTime(nowDate.year, nowDate.month, nowDate.day)))
@@ -618,6 +619,8 @@ class WalletScreenState extends State<WalletScreen> {
 
   topUpBalance() {
     final size = MediaQuery.sizeOf(context);
+    final isDark = Get.find<ThemeController>().isDark.value;
+
     return showModalBottomSheet(
         elevation: 5,
         enableDrag: true,
@@ -654,9 +657,7 @@ class WalletScreenState extends State<WalletScreen> {
                                   text: "Topup Wallet".tr(),
                                   style: TextStyle(
                                     fontSize: 20,
-                                    color: isDarkMode(context)
-                                        ? Colors.white
-                                        : Colors.black,
+                                    color: isDark ? Colors.white : Colors.black,
                                   ),
                                 ),
                               ),
@@ -674,7 +675,7 @@ class WalletScreenState extends State<WalletScreen> {
                                 text: "Add Topup Amount".tr(),
                                 style: TextStyle(
                                     fontSize: 16,
-                                    color: isDarkMode(context)
+                                    color: isDark
                                         ? Colors.white54
                                         : Colors.black54),
                               ),
@@ -739,9 +740,7 @@ class WalletScreenState extends State<WalletScreen> {
                                 text: "Select Payment Option".tr(),
                                 style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: isDarkMode(context)
-                                      ? Colors.white
-                                      : Colors.black,
+                                  color: isDark ? Colors.white : Colors.black,
                                   fontSize: 16,
                                 ),
                               ),
@@ -2468,366 +2467,336 @@ class WalletScreenState extends State<WalletScreen> {
 
   Widget buildEarningCard({required var orderModel}) {
     final size = MediaQuery.sizeOf(context);
+    final themeController = Get.find<ThemeController>();
+    final isDark = themeController.isDark.value;
+
     double amount = 0;
     double adminComm = 0.0;
+
+    // --- Calculate amounts based on service type ---
     if (Constant.userModel!.serviceType == "cab-service") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
-          totalTax = totalTax +
-              calculateTax(
-                  amount: (double.parse(orderModel.subTotal.toString()) -
-                          double.parse(orderModel.discount.toString()))
-                      .toString(),
-                  taxModel: element);
+          totalTax += calculateTax(
+              amount: (double.parse(orderModel.subTotal.toString()) -
+                      double.parse(orderModel.discount.toString()))
+                  .toString(),
+              taxModel: element);
         }
       }
-      print(totalTax);
       double subTotal = double.parse(orderModel.subTotal.toString());
-      //  -
-      //     double.parse(orderModel.discount.toString());
-      // double adminComm = 0.0;
-      if (orderModel.adminCommission != null &&
-          orderModel.adminCommission?.isNotEmpty) {
-        adminComm = (orderModel.adminCommissionType!.toLowerCase() ==
-                    'Percent'.toLowerCase() ||
-                orderModel.adminCommissionType!.toLowerCase() ==
-                    'percentage'.toLowerCase())
+      if (orderModel.adminCommission!.isNotEmpty) {
+        adminComm = (orderModel.adminCommissionType == 'Percent' ||
+                orderModel.adminCommissionType == 'percentage')
             ? (subTotal * double.parse(orderModel.adminCommission!)) / 100
             : double.parse(orderModel.adminCommission!);
       }
-
-      print("--->finalAmount---- $subTotal");
-      double tipAmount =
-          (orderModel.tipAmount == null || orderModel.tipAmount!.isEmpty)
-              ? 0.0
-              : double.parse(orderModel.tipAmount.toString());
+      double tipAmount = orderModel.tipAmount!.isEmpty
+          ? 0.0
+          : double.parse(orderModel.tipAmount.toString());
       amount = subTotal + totalTax + tipAmount;
-      adminComm = adminComm;
     } else if (Constant.userModel!.serviceType == "parcel_delivery") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
-          totalTax = totalTax +
-              calculateTax(
-                  amount: (double.parse(orderModel.subTotal.toString()) -
-                          double.parse(orderModel.discount.toString()))
-                      .toString(),
-                  taxModel: element);
+          totalTax += calculateTax(
+              amount: (double.parse(orderModel.subTotal.toString()) -
+                      double.parse(orderModel.discount.toString()))
+                  .toString(),
+              taxModel: element);
         }
       }
       double subTotal = double.parse(orderModel.subTotal.toString());
-      //  -
-      //     double.parse(orderModel.discount.toString());
-      // double adminComm = 0.0;
       if (orderModel.adminCommission!.isNotEmpty) {
         adminComm = (orderModel.adminCommissionType == 'Percent' ||
                 orderModel.adminCommissionType == 'percentage')
             ? (subTotal * double.parse(orderModel.adminCommission!)) / 100
             : double.parse(orderModel.adminCommission!);
       }
-
-      print("--->finalAmount---- $subTotal");
       amount = subTotal + totalTax;
-      adminComm = adminComm;
     } else if (Constant.userModel!.serviceType == "rental-service") {
       double totalTax = 0.0;
       double subTotal = (double.parse(orderModel.subTotal.toString()) +
-              double.parse(orderModel.driverRate.toString()))
-          //     -
-          // double.parse(orderModel.discount.toString())
-          ;
-
+          double.parse(orderModel.driverRate.toString()));
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
-          totalTax = totalTax +
-              calculateTax(amount: (subTotal.toString()), taxModel: element);
+          totalTax +=
+              calculateTax(amount: subTotal.toString(), taxModel: element);
         }
       }
-      // double adminComm = 0.0;
       if (orderModel.adminCommission!.isNotEmpty) {
         adminComm = (orderModel.adminCommissionType == 'Percent' ||
                 orderModel.adminCommissionType == 'percentage')
             ? (subTotal * double.parse(orderModel.adminCommission!)) / 100
             : double.parse(orderModel.adminCommission!);
       }
-
       amount = subTotal + totalTax;
-      adminComm = adminComm;
     } else {
+      // delivery-service
       if (orderModel.deliveryCharge != null &&
           orderModel.deliveryCharge!.isNotEmpty) {
         amount += double.parse(orderModel.deliveryCharge!);
       }
-
       if (orderModel.tipAmount != null && orderModel.tipAmount!.isNotEmpty) {
         amount += double.parse(orderModel.tipAmount!);
       }
     }
-    return Padding(
+
+    // --- For delivery service, return a simpler card ---
+    if (Constant.userModel!.serviceType == "delivery-service") {
+      return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
-        child: Constant.userModel!.serviceType == "delivery-service"
-            ? Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 15.0, vertical: 15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+        child: Card(
+          elevation: 2,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: size.width * 0.52,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(
-                        width: size.width * 0.52,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "${DateFormat('dd-MM-yyyy, KK:mma').format(orderModel.createdAt.toDate()).toUpperCase()}",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 17,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Opacity(
-                              opacity: 0.75,
-                              child: Text(
-                                orderModel.status,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 17,
-                                  color: orderModel.status == "Order Completed"
-                                      ? Colors.green
-                                      : Colors.deepOrangeAccent,
-                                ),
-                              ),
-                            ),
-                          ],
+                      Text(
+                        DateFormat('dd-MM-yyyy, KK:mma')
+                            .format(orderModel.createdAt.toDate())
+                            .toUpperCase(),
+                        style: AppThemeData.semiBoldTextStyle(
+                          fontSize: 17,
+                          color: isDark
+                              ? AppThemeData.greyDark900
+                              : AppThemeData.grey900,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(right: 3.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              " ${amountShow(amount: amount.toString())}",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: orderModel.status == "Order Completed"
-                                    ? amount < 0
-                                        ? Colors.red
-                                        : Colors.green
-                                    : Colors.deepOrange,
-                                fontSize: 18,
-                              ),
-                            ),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            // Icon(
-                            //   Icons.arrow_forward_ios,
-                            //   size: 15,
-                            // )
-                          ],
+                      const SizedBox(height: 10),
+                      Opacity(
+                        opacity: 0.75,
+                        child: Text(
+                          orderModel.status,
+                          style: AppThemeData.semiBoldTextStyle(
+                            fontSize: 17,
+                            color: orderModel.status == "Order Completed"
+                                ? AppThemeData.success400
+                                : AppThemeData.warning400,
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              )
-            : GestureDetector(
-                onTap: () => showTransactionDetails(orderModel: orderModel),
-                child: Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 2.0, vertical: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        ClipOval(
-                          child: Container(
-                            color: Color(COLOR_PRIMARY).withOpacity(0.06),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: Icon(Icons.account_balance_wallet_rounded,
-                                  size: 28, color: Color(COLOR_PRIMARY)),
-                            ),
-                          ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 3.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        amountShow(amount: amount.toString()),
+                        style: AppThemeData.semiBoldTextStyle(
+                          fontSize: 18,
+                          color: orderModel.status == "Order Completed"
+                              ? amount < 0
+                                  ? AppThemeData.danger300
+                                  : AppThemeData.success400
+                              : AppThemeData.warning400,
                         ),
-                        SizedBox(
-                          width: size.width * 0.78,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Order Amount".tr(),
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: isDarkMode(context)
-                                              ? Colors.white
-                                              : Color(DARK_COLOR)),
-                                    ),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    Text(
-                                      "Admin commission Deducted".tr(),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    Opacity(
-                                      opacity: 0.65,
-                                      child: Text(
-                                        "${DateFormat('KK:mm:ss a, dd MMM yyyy').format(orderModel.createdAt.toDate()).toUpperCase()}",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(right: 4.0, left: 4),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      // "(${orderModel.paymentMethod.toLowerCase() != "cod" ? "+" : "-"} ${amountShow(amount: amount.toString())})",
-                                      orderModel.paymentMethod.toLowerCase() !=
-                                              "cod"
-                                          ? "${"+"} ${amountShow(amount: amount.toString())}"
-                                          : "(${"-"} ${amountShow(amount: amount.toString())})",
-
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: orderModel.paymentMethod
-                                                    .toLowerCase() !=
-                                                "cod"
-                                            ? Colors.green
-                                            : Colors.red,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 8,
-                                    ),
-                                    Text(
-                                      //  "${orderModel.paymentMethod.toLowerCase() != "cod" ? "+" : "-"} ${amountShow(amount: adminComm.toString())}",
-                                      "(-${amountShow(amount: adminComm.toString())})",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.red,
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    SizedBox(height: 10),
-                                    Icon(
-                                      Icons.arrow_forward_ios,
-                                      size: 15,
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ));
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // --- For cab, parcel, rental services – rich card ---
+    return GestureDetector(
+      onTap: () => showTransactionDetails(orderModel: orderModel),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
+        child: Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: isDark ? AppThemeData.greyDark200 : AppThemeData.grey200,
+              width: 0.5,
+            ),
+          ),
+          color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            child: Row(
+              children: [
+                // Icon with circle background
+                Container(
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppThemeData.primary300.withOpacity(0.1)
+                        : AppThemeData.primary300.withOpacity(0.06),
+                    shape: BoxShape.circle,
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: Icon(
+                    Icons.account_balance_wallet_rounded,
+                    size: 28,
+                    color: AppThemeData.primary300,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                // Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Order Amount Row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Order Amount".tr(),
+                            style: AppThemeData.semiBoldTextStyle(
+                              fontSize: 16,
+                              color: isDark
+                                  ? AppThemeData.greyDark900
+                                  : AppThemeData.grey900,
+                            ),
+                          ),
+                          Text(
+                            orderModel.paymentMethod.toLowerCase() != "cod"
+                                ? "+ ${amountShow(amount: amount.toString())}"
+                                : "- ${amountShow(amount: amount.toString())}",
+                            style: AppThemeData.semiBoldTextStyle(
+                              fontSize: 18,
+                              color: orderModel.paymentMethod.toLowerCase() !=
+                                      "cod"
+                                  ? AppThemeData.success400
+                                  : AppThemeData.danger300,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      // Admin Commission Row
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "Admin Commission".tr(),
+                              style: AppThemeData.mediumTextStyle(
+                                fontSize: 14,
+                                color: isDark
+                                    ? AppThemeData.greyDark800
+                                    : AppThemeData.grey800,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "- ${amountShow(amount: adminComm.toString())}",
+                            style: AppThemeData.semiBoldTextStyle(
+                              fontSize: 16,
+                              color: AppThemeData.danger300,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      // Date
+                      Opacity(
+                        opacity: 0.65,
+                        child: Text(
+                          DateFormat('KK:mm:ss a, dd MMM yyyy')
+                              .format(orderModel.createdAt.toDate())
+                              .toUpperCase(),
+                          style: AppThemeData.mediumTextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? AppThemeData.greyDark700
+                                : AppThemeData.grey700,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Arrow icon (touch indicator)
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color:
+                      isDark ? AppThemeData.greyDark400 : AppThemeData.grey400,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
-  showTransactionDetails({required orderModel}) {
+  showTransactionDetails({required var orderModel}) {
     double amount = 0;
     double adminComm = 0.0;
+
+    // Calculate amounts based on service type
     if (Constant.userModel!.serviceType == "cab-service") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
-          totalTax = totalTax +
-              calculateTax(
-                  amount: (double.parse(orderModel.subTotal.toString()) -
-                          double.parse(orderModel.discount.toString()))
-                      .toString(),
-                  taxModel: element);
+          totalTax += calculateTax(
+              amount: (double.parse(orderModel.subTotal.toString()) -
+                      double.parse(orderModel.discount.toString()))
+                  .toString(),
+              taxModel: element);
         }
       }
-      print(totalTax);
       double subTotal = double.parse(orderModel.subTotal.toString());
-      //  -
-      //     double.parse(orderModel.discount.toString());
-      // double adminComm = 0.0;
       if (orderModel.adminCommission!.isNotEmpty) {
         adminComm = (orderModel.adminCommissionType == 'Percent' ||
                 orderModel.adminCommissionType == 'percentage')
             ? (subTotal * double.parse(orderModel.adminCommission!)) / 100
             : double.parse(orderModel.adminCommission!);
       }
-
-      print("--->finalAmount---- $subTotal");
       double tipAmount = orderModel.tipAmount!.isEmpty
           ? 0.0
           : double.parse(orderModel.tipAmount.toString());
-
       amount = subTotal + totalTax + tipAmount;
-      adminComm = adminComm;
     } else if (Constant.userModel!.serviceType == "parcel_delivery") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
-          totalTax = totalTax +
-              calculateTax(
-                  amount: (double.parse(orderModel.subTotal.toString()) -
-                          double.parse(orderModel.discount.toString()))
-                      .toString(),
-                  taxModel: element);
+          totalTax += calculateTax(
+              amount: (double.parse(orderModel.subTotal.toString()) -
+                      double.parse(orderModel.discount.toString()))
+                  .toString(),
+              taxModel: element);
         }
       }
       double subTotal = double.parse(orderModel.subTotal.toString());
-      // -
-      //     double.parse(orderModel.discount.toString());
       if (orderModel.adminCommission!.isNotEmpty) {
         adminComm = (orderModel.adminCommissionType == 'Percent' ||
                 orderModel.adminCommissionType == 'percentage')
             ? (subTotal * double.parse(orderModel.adminCommission!)) / 100
             : double.parse(orderModel.adminCommission!);
       }
-
       amount = subTotal + totalTax;
-      adminComm = adminComm;
     } else if (Constant.userModel!.serviceType == "rental-service") {
       double totalTax = 0.0;
       double subTotal = (double.parse(orderModel.subTotal.toString()) +
           double.parse(orderModel.driverRate.toString()));
-      //      -
-      // double.parse(orderModel.discount.toString());
-
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
-          totalTax = totalTax +
-              calculateTax(amount: (subTotal.toString()), taxModel: element);
+          totalTax +=
+              calculateTax(amount: subTotal.toString(), taxModel: element);
         }
       }
       if (orderModel.adminCommission!.isNotEmpty) {
@@ -2836,66 +2805,109 @@ class WalletScreenState extends State<WalletScreen> {
             ? (subTotal * double.parse(orderModel.adminCommission!)) / 100
             : double.parse(orderModel.adminCommission!);
       }
-
       amount = subTotal + totalTax;
-      adminComm = adminComm;
     }
-    final size = MediaQuery.sizeOf(context);
+
+    final themeController = Get.find<ThemeController>();
+    final isDark = themeController.isDark.value;
+
     return showModalBottomSheet(
-        elevation: 5,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(15), topRight: Radius.circular(15))),
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(builder: (context, setState) {
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 25.0),
-                  child: Text(
-                    "Transaction Details".tr(),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
+      elevation: 5,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+              decoration: BoxDecoration(
+                color: isDark ? AppThemeData.greyDark50 : AppThemeData.grey50,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Draggable handle
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppThemeData.greyDark200
+                            : AppThemeData.grey200,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 15.0,
+                  const SizedBox(height: 16),
+                  // Title
+                  Center(
+                    child: Text(
+                      "Transaction Details".tr(),
+                      style: AppThemeData.boldTextStyle(
+                        fontSize: 20,
+                        color: isDark
+                            ? AppThemeData.greyDark900
+                            : AppThemeData.grey900,
+                      ),
+                    ),
                   ),
-                  child: Card(
-                    elevation: 1.5,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                  const SizedBox(height: 20),
+                  // Transaction ID Card
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppThemeData.greyDark100
+                          : AppThemeData.grey100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark
+                            ? AppThemeData.greyDark200
+                            : AppThemeData.grey200,
+                      ),
+                    ),
                     child: Row(
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10.0, vertical: 12),
+                        Icon(
+                          Icons.receipt_long_outlined,
+                          color: isDark
+                              ? AppThemeData.greyDark800
+                              : AppThemeData.grey800,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 "Transaction ID".tr(),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 15,
+                                style: AppThemeData.mediumTextStyle(
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? AppThemeData.greyDark800
+                                      : AppThemeData.grey800,
                                 ),
                               ),
-                              SizedBox(
-                                height: 10,
-                              ),
-                              Opacity(
-                                opacity: 0.8,
-                                child: Text(
-                                  orderModel.id,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              Text(
+                                orderModel.id ?? '',
+                                style: AppThemeData.semiBoldTextStyle(
+                                  fontSize: 16,
+                                  color: isDark
+                                      ? AppThemeData.greyDark900
+                                      : AppThemeData.grey900,
                                 ),
                               ),
                             ],
@@ -2904,223 +2916,224 @@ class WalletScreenState extends State<WalletScreen> {
                       ],
                     ),
                   ),
-                ),
-                Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12.0, vertical: 30),
-                    child: Card(
-                      elevation: 1.5,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Row(
-                          //    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          // crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ClipOval(
-                              child: Container(
-                                color: Color(COLOR_PRIMARY).withOpacity(0.05),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Icon(
-                                      Icons.account_balance_wallet_rounded,
-                                      size: 28,
-                                      color: Color(COLOR_PRIMARY)),
-                                ),
-                              ),
-                            ),
-                            SizedBox(
-                              width: size.width * 0.70,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
+                  const SizedBox(height: 16),
+                  // Amount & Commission Card
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppThemeData.greyDark100
+                          : AppThemeData.grey100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark
+                            ? AppThemeData.greyDark200
+                            : AppThemeData.grey200,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // Order Amount
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
                                 children: [
-                                  SizedBox(
-                                    width: size.width * 0.40,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Order Amount".tr(),
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: 5,
-                                        ),
-                                        Text(
-                                          "Admin commission Deducted".tr(),
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: 5,
-                                        ),
-                                        Opacity(
-                                          opacity: 0.65,
-                                          child: Text(
-                                            "${DateFormat('KK:mm:ss a, dd MMM yyyy').format(orderModel.createdAt.toDate()).toUpperCase()}",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                  Icon(
+                                    Icons.attach_money,
+                                    color: isDark
+                                        ? AppThemeData.greyDark800
+                                        : AppThemeData.grey800,
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        right: 4.0, left: 4),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: [
-                                        Text(
-                                          //   "(${orderModel.paymentMethod.toLowerCase() != "cod" ? "+" : "-"} ${amountShow(amount: amount.toString())})",
-                                          orderModel.paymentMethod
-                                                      .toLowerCase() !=
-                                                  "cod"
-                                              ? "${"+"} ${amountShow(amount: amount.toString())}"
-                                              : "(${"-"} ${amountShow(amount: amount.toString())})",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: orderModel.paymentMethod
-                                                        .toLowerCase() !=
-                                                    "cod"
-                                                ? Colors.green
-                                                : Colors.red,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                        SizedBox(
-                                          height: 8,
-                                        ),
-                                        Text(
-                                          "(-${amountShow(amount: adminComm.toString())})",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.red,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                      ],
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "Order Amount".tr(),
+                                    style: AppThemeData.mediumTextStyle(
+                                      fontSize: 16,
+                                      color: isDark
+                                          ? AppThemeData.greyDark800
+                                          : AppThemeData.grey800,
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0),
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
-                    elevation: 2,
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 25.0, vertical: 8),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Date in UTC Format".tr(),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    Opacity(
-                                      opacity: 0.7,
-                                      child: Text(
-                                        "${DateFormat('KK:mm:ss a, dd MMM yyyy').format(orderModel.createdAt.toDate()).toUpperCase()}",
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                              Text(
+                                orderModel.paymentMethod.toLowerCase() != "cod"
+                                    ? "+ ${Constant.amountShow(amount: amount.toString())}"
+                                    : "- ${Constant.amountShow(amount: amount.toString())}",
+                                style: AppThemeData.semiBoldTextStyle(
+                                  fontSize: 18,
+                                  color:
+                                      orderModel.paymentMethod.toLowerCase() !=
+                                              "cod"
+                                          ? AppThemeData.success400
+                                          : AppThemeData.danger300,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        GestureDetector(
-                          onTap: () async {
-                            if (Constant.userModel!.serviceType ==
-                                "cab-service") {
-                              await FireStoreUtils.firestore
-                                  .collection(RIDESORDER)
-                                  .doc(orderModel.id)
-                                  .get()
-                                  .then((value) {
-                                CabOrderModel orderModel =
-                                    CabOrderModel.fromJson(value.data()!);
-                                Get.to(() => CabOrderDetails(),
-                                    arguments: {"cabOrderModel": orderModel});
-                              });
-                            } else if (Constant.userModel!.serviceType ==
-                                "parcel_delivery") {
-                              await FireStoreUtils.firestore
-                                  .collection(PARCELORDER)
-                                  .doc(orderModel.id)
-                                  .get()
-                                  .then((value) {
-                                ParcelOrderModel orderModel =
-                                    ParcelOrderModel.fromJson(value.data()!);
-                                Get.to(() => ParcelOrderDetails(),
-                                    arguments: orderModel);
-                              });
-                            } else if (Constant.userModel!.serviceType ==
-                                "rental-service") {
-                              await FireStoreUtils.firestore
-                                  .collection(RENTALORDER)
-                                  .doc(orderModel.id)
-                                  .get()
-                                  .then((value) {
-                                RentalOrderModel orderModel =
-                                    RentalOrderModel.fromJson(value.data()!);
-                                Get.to(() => RentalOrderDetailsScreen(),
-                                    arguments: {"rentalOrder": orderModel});
-                              });
-                            }
-                          },
-                          child: Text(
-                            "View Order".tr().toUpperCase(),
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Color(COLOR_PRIMARY),
-                              fontSize: 18,
-                            ),
+                        const Divider(
+                          color: AppThemeData.grey200,
+                        ),
+                        // Admin Commission
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.percent,
+                                    color: isDark
+                                        ? AppThemeData.greyDark800
+                                        : AppThemeData.grey800,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    "Admin Commission".tr(),
+                                    style: AppThemeData.mediumTextStyle(
+                                      fontSize: 16,
+                                      color: isDark
+                                          ? AppThemeData.greyDark800
+                                          : AppThemeData.grey800,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Text(
+                                "- ${Constant.amountShow(amount: adminComm.toString())}",
+                                style: AppThemeData.semiBoldTextStyle(
+                                  fontSize: 18,
+                                  color: AppThemeData.danger300,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: 10,
-                )
-              ],
+                  const SizedBox(height: 16),
+                  // Date & Time Card
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppThemeData.greyDark100
+                          : AppThemeData.grey100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isDark
+                            ? AppThemeData.greyDark200
+                            : AppThemeData.grey200,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.access_time,
+                          color: isDark
+                              ? AppThemeData.greyDark800
+                              : AppThemeData.grey800,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          DateFormat('KK:mm:ss a, dd MMM yyyy')
+                              .format(orderModel.createdAt.toDate())
+                              .toUpperCase(),
+                          style: AppThemeData.mediumTextStyle(
+                            fontSize: 15,
+                            color: isDark
+                                ? AppThemeData.greyDark800
+                                : AppThemeData.grey800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // View Order Button (aligned right)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () async {
+                          // Navigate to order detail based on service type
+                          if (Constant.userModel!.serviceType ==
+                              "cab-service") {
+                            await FireStoreUtils.firestore
+                                .collection(RIDESORDER)
+                                .doc(orderModel.id)
+                                .get()
+                                .then((value) {
+                              CabOrderModel orderModel =
+                                  CabOrderModel.fromJson(value.data()!);
+                              Get.to(() => CabOrderDetails(),
+                                  arguments: {"cabOrderModel": orderModel});
+                            });
+                          } else if (Constant.userModel!.serviceType ==
+                              "parcel_delivery") {
+                            await FireStoreUtils.firestore
+                                .collection(PARCELORDER)
+                                .doc(orderModel.id)
+                                .get()
+                                .then((value) {
+                              ParcelOrderModel orderModel =
+                                  ParcelOrderModel.fromJson(value.data()!);
+                              Get.to(() => ParcelOrderDetails(),
+                                  arguments: orderModel);
+                            });
+                          } else if (Constant.userModel!.serviceType ==
+                              "rental-service") {
+                            await FireStoreUtils.firestore
+                                .collection(RENTALORDER)
+                                .doc(orderModel.id)
+                                .get()
+                                .then((value) {
+                              RentalOrderModel orderModel =
+                                  RentalOrderModel.fromJson(value.data()!);
+                              Get.to(() => RentalOrderDetailsScreen(),
+                                  arguments: {"rentalOrder": orderModel});
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.arrow_forward_ios, size: 16),
+                        label: Text(
+                          "View Order".tr().toUpperCase(),
+                          style: AppThemeData.semiBoldTextStyle(
+                            fontSize: 16,
+                            color: AppThemeData.primary300,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppThemeData.primary300,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: const BorderSide(
+                              color: AppThemeData.primary300,
+                            ),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
             );
-          });
-        });
+          },
+        );
+      },
+    );
   }
 
   // Widget buildEarningCard({required var orderModel}) {
@@ -3828,7 +3841,7 @@ class WalletScreenState extends State<WalletScreen> {
                       //             style: TextStyle(
                       //               fontSize: 20,
                       //               fontWeight: FontWeight.w600,
-                      //               color: isDarkMode(context)
+                      //               color: isDark
                       //                   ? Colors.white.withOpacity(0.9)
                       //                   : Color(DARK_COLOR).withOpacity(0.9),
                       //             ),
@@ -3841,7 +3854,7 @@ class WalletScreenState extends State<WalletScreen> {
                       //             style: TextStyle(
                       //               fontSize: 18,
                       //               fontWeight: FontWeight.bold,
-                      //               color: isDarkMode(context)
+                      //               color: isDark
                       //                   ? Colors.white.withOpacity(0.7)
                       //                   : Color(DARK_COLOR).withOpacity(0.7),
                       //             ),
@@ -3857,7 +3870,7 @@ class WalletScreenState extends State<WalletScreen> {
                       //                 userBankDetail!.otherDetails,
                       //                 style: TextStyle(
                       //                   fontSize: 20,
-                      //                   color: isDarkMode(context)
+                      //                   color: isDark
                       //                       ? Colors.white.withOpacity(0.9)
                       //                       : Color(DARK_COLOR)
                       //                           .withOpacity(0.9),
@@ -3867,7 +3880,7 @@ class WalletScreenState extends State<WalletScreen> {
                       //                 userBankDetail!.branchName,
                       //                 style: TextStyle(
                       //                   fontSize: 18,
-                      //                   color: isDarkMode(context)
+                      //                   color: isDark
                       //                       ? Colors.white.withOpacity(0.7)
                       //                       : Color(DARK_COLOR)
                       //                           .withOpacity(0.7),
@@ -3893,7 +3906,7 @@ class WalletScreenState extends State<WalletScreen> {
                       //           text: "Amount to Withdraw".tr(),
                       //           style: TextStyle(
                       //             fontSize: 16,
-                      //             color: isDarkMode(context)
+                      //             color: isDark
                       //                 ? Colors.white70
                       //                 : Color(DARK_COLOR).withOpacity(0.7),
                       //           ),
@@ -3949,7 +3962,7 @@ class WalletScreenState extends State<WalletScreen> {
                       //             child: Text(
                       //               "${currencyData!.symbol}",
                       //               style: TextStyle(
-                      //                 color: isDarkMode(context)
+                      //                 color: isDark
                       //                     ? Colors.white
                       //                     : Color(DARK_COLOR),
                       //                 fontSize: 20,

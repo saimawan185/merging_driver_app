@@ -135,7 +135,7 @@ class ParcelSearchController extends GetxController {
     String subTotal = parcelBookingData.subTotal.toString();
     String discount = parcelBookingData.discount ?? "0.0";
     String taxAmount = "0.0";
-    for (var element in parcelBookingData.taxSetting!) {
+    for (var element in parcelBookingData.taxModel!) {
       taxAmount = (double.parse(taxAmount) +
               Constant.calculateTax(
                   amount: (double.parse(subTotal) - double.parse(discount))

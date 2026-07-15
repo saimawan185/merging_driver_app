@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/models/user_model.dart';
 import 'package:door_delights_driver/services/show_toast_dialog.dart';
+import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
@@ -16,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geoflutterfire2/geoflutterfire2.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/instance_manager.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart' as UrlLauncher;
 import 'package:http/http.dart' as http;
@@ -36,7 +38,7 @@ class CabHomeScreen extends StatefulWidget {
 }
 
 class _CabHomeScreenState extends State<CabHomeScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final fireStoreUtils = FireStoreUtils();
 
   GoogleMapController? _mapController;
@@ -285,10 +287,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     _mapController!.dispose();
     // await FireStoreUtils().driverStreamController.close();
     // FireStoreUtils().driverStreamSub?.cancel();
-
+    _markerAnimationController?.dispose();
     FireStoreUtils().cabOrdersStreamController?.close();
     FireStoreUtils().cabOrdersStreamSub?.cancel();
-    _markerAnimationController?.dispose();
     if (_timer != null) {
       _timer!.cancel();
     }
@@ -297,12 +298,16 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     super.dispose();
   }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
   bool isShow = false;
 
   @override
   Widget build(BuildContext context) {
-    isDarkMode(context)
+    final ThemeController themeController = Get.find<ThemeController>();
+    final isDark = themeController.isDark.value;
+
+    isDark
         ? _mapController?.setMapStyle('[{"featureType": "all","'
             'elementType": "'
             'geo'
@@ -311,7 +316,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         : _mapController?.setMapStyle(_lightModernMapStyle);
 
     return Scaffold(
-      key: _scaffoldKey,
+      key: scaffoldMessengerKey,
       body: (_driverModel == null)
           ? Center(
               child: CircularProgressIndicator(
@@ -439,7 +444,10 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     if (mounted) {
       setState(() {});
     }
-    if (isDarkMode(context)) {
+    final ThemeController themeController = Get.find<ThemeController>();
+    final isDark = themeController.isDark.value;
+
+    if (isDark) {
       _mapController?.setMapStyle('[{"featureType": "all","'
           'elementType": "'
           'geo'
@@ -763,6 +771,60 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                 ),
               ),
             ),
+            if (_driverModel!.orderCabRequestData!.paymentMethod == 'cod' &&
+                (double.tryParse(_driverModel!.orderCabRequestData!.discount
+                                ?.toString() ??
+                            '0') ??
+                        0) >
+                    0)
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade900.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey.shade800),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        Icons.local_offer_outlined,
+                        size: 20,
+                        color: Colors.amber.shade400,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: 'Discounted trip: ',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              TextSpan(
+                                text:
+                                    'Gross total will be higher than the cash collected',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -809,7 +871,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             duration: Duration(seconds: 2),
                             backgroundColor: Colors.black,
                           );
-                          ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+                          ScaffoldMessenger.of(
+                                  scaffoldMessengerKey.currentContext!)
                               .showSnackBar(snack);
                           if (mounted) {
                             setState(() {});
@@ -873,7 +936,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                               duration: Duration(seconds: 2),
                               backgroundColor: Colors.black,
                             );
-                            ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+                            ScaffoldMessenger.of(
+                                    scaffoldMessengerKey.currentContext!!)
                                 .showSnackBar(snack);
                             if (mounted) {
                               setState(() {});
@@ -1336,7 +1400,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       if (mounted) {
         setState(() {
           currentOrder = event;
-          log.log("Status: ${currentOrder!.status}");
           if (currentOrder!.status == ORDER_STATUS_DRIVER_REJECTED ||
               currentOrder!.status == ORDER_STATUS_DRIVER_PENDING ||
               currentOrder!.status == ORDER_STATUS_ACCEPTED) {
@@ -1377,6 +1440,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   getDriver() async {
     driverStream = FireStoreUtils().getDriver(Constant.userModel!.id!);
     driverStream.listen((event) {
+      log.log("New order");
       playSound(false);
       _driverModel = event;
       FireStoreUtils.getVehicle(_driverModel!.vehicleId).then((value) {
@@ -1465,14 +1529,16 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       isPickedUp = false;
     }
 
+    final ThemeController themeController = Get.find<ThemeController>();
+    final isDark = themeController.isDark.value;
+
     return Container(
-      margin: EdgeInsets.only(left: 8, right: 8),
       padding: EdgeInsets.symmetric(vertical: 15),
       width: MediaQuery.sizeOf(context).width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(8), topRight: Radius.circular(18)),
-        color: isDarkMode(context) ? Color(0xff000000) : Color(0xffFFFFFF),
+        color: isDark ? Color(0xff000000) : Color(0xffFFFFFF),
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -1493,7 +1559,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                           "ORDER ID ".tr(),
                           style: TextStyle(
                               fontSize: 14,
-                              color: isDarkMode(context)
+                              color: isDark
                                   ? Color(0xffFFFFFF)
                                   : Color(0xff555555),
                               fontFamily: "Poppinsr",
@@ -1506,7 +1572,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                                 fontSize: 14,
-                                color: isDarkMode(context)
+                                color: isDark
                                     ? Color(0xffFFFFFF)
                                     : Color(0xff000000),
                                 fontFamily: "Poppinsr",
@@ -1520,9 +1586,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                       child: Text(
                         '${currentOrder!.author?.firstName} ${currentOrder!.author?.lastName}',
                         style: TextStyle(
-                            color: isDarkMode(context)
-                                ? Color(0xffFFFFFF)
-                                : Color(0xff333333),
+                            color:
+                                isDark ? Color(0xffFFFFFF) : Color(0xff333333),
                             fontFamily: "Poppinsm",
                             letterSpacing: 0.5),
                       ),
@@ -1574,9 +1639,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: isDarkMode(context)
-                              ? Color(0xffFFFFFF)
-                              : Color(0xff000000),
+                          color: isDark ? Color(0xffFFFFFF) : Color(0xff000000),
                           fontFamily: "Poppinsm",
                           letterSpacing: 0.5),
                     ),
@@ -1603,7 +1666,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                   fontSize: 12,
-                                  color: isDarkMode(context)
+                                  color: isDark
                                       ? Color(0xffFFFFFF)
                                       : Color(0xff000000),
                                   fontFamily: "Poppinsr",
@@ -1663,9 +1726,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: isDarkMode(context)
-                              ? Color(0xffFFFFFF)
-                              : Color(0xff000000),
+                          color: isDark ? Color(0xffFFFFFF) : Color(0xff000000),
                           fontFamily: "Poppinsm",
                           letterSpacing: 0.5),
                     ),
@@ -1691,7 +1752,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  color: isDarkMode(context)
+                                  color: isDark
                                       ? Color(0xffFFFFFF)
                                       : Color(0xff000000),
                                   fontSize: 12,
@@ -1756,9 +1817,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            color: isDarkMode(context)
-                                ? Color(0xffFFFFFF)
-                                : Color(0xff333333),
+                            color:
+                                isDark ? Color(0xffFFFFFF) : Color(0xff333333),
                             fontFamily: "Poppinsr",
                             letterSpacing: 0.5),
                       ),
@@ -1808,9 +1868,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 16,
-                              color: isDarkMode(context)
-                                  ? Colors.white
-                                  : Colors.black,
+                              color: isDark ? Colors.white : Colors.black,
                             ),
                           ),
                         ),
@@ -1852,7 +1910,11 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                       ),
                 ],
               ),
-            if (currentOrder!.status == ORDER_REACHED_DESTINATION)
+            if (currentOrder!.status == ORDER_REACHED_DESTINATION &&
+                !(currentOrder!.tipAmount != null &&
+                    currentOrder!.tipAmount!.isNotEmpty &&
+                    (double.tryParse(currentOrder!.tipAmount.toString()) ?? 0) >
+                        0))
               ListTile(
                 leading: Icon(
                   Icons.payments_outlined,
@@ -1861,14 +1923,89 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                 title: Text(
                   'Total Amount: '.tr() + currentOrder!.subTotal.toString(),
                   style: TextStyle(
-                      color: isDarkMode(context) ? Colors.white : Colors.black,
+                      color: isDark ? Colors.white : Colors.black,
+                      fontFamily: "Poppinsr",
+                      letterSpacing: 0.5),
+                ),
+              ),
+            if (currentOrder!.status == ORDER_REACHED_DESTINATION &&
+                currentOrder!.tipAmount != null &&
+                currentOrder!.tipAmount!.isNotEmpty &&
+                (double.tryParse(currentOrder!.tipAmount.toString()) ?? 0) > 0)
+              ListTile(
+                leading: Icon(
+                  Icons.payments_outlined,
+                  color: Color(COLOR_PRIMARY),
+                ),
+                title: Text(
+                  'Fare Amount: '.tr() + currentOrder!.subTotal.toString(),
+                  style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontFamily: "Poppinsr",
+                      letterSpacing: 0.5),
+                ),
+              ),
+            if (currentOrder!.status == ORDER_REACHED_DESTINATION &&
+                currentOrder!.tipAmount != null &&
+                currentOrder!.tipAmount!.isNotEmpty &&
+                (double.tryParse(currentOrder!.tipAmount.toString()) ?? 0) > 0)
+              ListTile(
+                leading: Icon(
+                  Icons.payments_outlined,
+                  color: Color(COLOR_PRIMARY),
+                ),
+                title: Text(
+                  'Tip: '.tr() + currentOrder!.tipAmount.toString(),
+                  style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontFamily: "Poppinsr",
+                      letterSpacing: 0.5),
+                ),
+              ),
+            if (currentOrder!.status == ORDER_REACHED_DESTINATION &&
+                currentOrder!.tipAmount != null &&
+                currentOrder!.tipAmount!.isNotEmpty &&
+                (double.tryParse(currentOrder!.tipAmount.toString()) ?? 0) > 0)
+              ListTile(
+                leading: Icon(
+                  Icons.payments_outlined,
+                  color: Color(COLOR_PRIMARY),
+                ),
+                title: Text(
+                  'Total Amount: '.tr() +
+                      ((double.tryParse(currentOrder!.subTotal.toString()) ??
+                                  0.0) +
+                              (double.tryParse(
+                                      currentOrder!.tipAmount.toString()) ??
+                                  0.0))
+                          .toStringAsFixed(2),
+                  style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
                       fontFamily: "Poppinsr",
                       letterSpacing: 0.5),
                 ),
               ),
             if (currentOrder!.status == ORDER_REACHED_DESTINATION &&
                 currentOrder!.discount != null &&
-                currentOrder!.discount != 0)
+                currentOrder!.discount != 0 &&
+                currentOrder!.paymentMethod == 'cod')
+              ListTile(
+                leading: Icon(
+                  Icons.payments_outlined,
+                  color: Color(COLOR_PRIMARY),
+                ),
+                title: Text(
+                  'Discount: '.tr() + currentOrder!.discount.toString(),
+                  style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black,
+                      fontFamily: "Poppinsr",
+                      letterSpacing: 0.5),
+                ),
+              ),
+            if (currentOrder!.status == ORDER_REACHED_DESTINATION &&
+                currentOrder!.discount != null &&
+                currentOrder!.discount != 0 &&
+                currentOrder!.paymentMethod == 'cod')
               ListTile(
                 leading: Icon(
                   Icons.payments_outlined,
@@ -1877,10 +2014,14 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                 title: Text(
                   'Collect Cash from Customer: '.tr() +
                       (double.parse(currentOrder!.subTotal.toString()) -
-                              double.parse(currentOrder!.discount.toString()))
+                              double.parse(currentOrder!.discount.toString()) +
+                              (double.tryParse(
+                                      currentOrder!.tipAmount?.toString() ??
+                                          '0') ??
+                                  0))
                           .toStringAsFixed(2),
                   style: TextStyle(
-                      color: isDarkMode(context) ? Colors.white : Colors.black,
+                      color: isDark ? Colors.white : Colors.black,
                       fontFamily: "Poppinsr",
                       letterSpacing: 0.5),
                 ),
@@ -1899,7 +2040,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                               : currentOrder!.paymentMethod ?? 'cod'))
                       : "Customer payment is pending.".tr(),
                   style: TextStyle(
-                      color: isDarkMode(context) ? Colors.white : Colors.black,
+                      color: isDark ? Colors.white : Colors.black,
                       fontFamily: "Poppinsr",
                       letterSpacing: 0.5),
                 ),
@@ -1926,7 +2067,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             backgroundColor: Color(COLOR_PRIMARY),
                           ),
                           onPressed: () async {
+                            log.log("Hello");
                             playSound(false);
+                            if (!mounted) return;
                             if (currentOrder!.status == ORDER_STATUS_SHIPPED ||
                                 currentOrder!.status ==
                                     ORDER_STATUS_DRIVER_ACCEPTED) {
@@ -2192,7 +2335,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
           duration: Duration(seconds: 2),
           backgroundColor: Colors.black,
         );
-        ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(snack);
+        ScaffoldMessenger.of(scaffoldMessengerKey.currentContext!)
+            .showSnackBar(snack);
         setState(() {});
       } else {
         //Navigator.pop(context);

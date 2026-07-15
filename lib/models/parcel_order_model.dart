@@ -47,7 +47,7 @@ class ParcelOrderModel {
   G? destinationPoint;
   List<ParcelStatus>? statusHistory;
   String? platformFee;
-  List<TaxModel>? taxSetting;
+  List<TaxModel>? taxModel;
   List<TaxModel>? platformTax;
 
   ParcelOrderModel({
@@ -91,7 +91,7 @@ class ParcelOrderModel {
     this.driver,
     this.statusHistory,
     this.platformFee,
-    this.taxSetting,
+    this.taxModel,
     this.platformTax,
   });
 
@@ -147,9 +147,9 @@ class ParcelOrderModel {
         : null;
     platformFee = json['platformFee'];
     if (json['taxSetting'] != null) {
-      taxSetting = <TaxModel>[];
+      taxModel = <TaxModel>[];
       json['taxSetting'].forEach((v) {
-        taxSetting!.add(TaxModel.fromJson(v));
+        taxModel!.add(TaxModel.fromJson(v));
       });
     }
     if (json['platformTax'] != null) {
@@ -217,8 +217,8 @@ class ParcelOrderModel {
     data['receiverZoneId'] = receiverZoneId;
     data['receiverNote'] = receiverNote;
     data['platformFee'] = platformFee;
-    if (taxSetting != null) {
-      data['taxSetting'] = taxSetting!.map((v) => v.toJson()).toList();
+    if (taxModel != null) {
+      data['taxSetting'] = taxModel!.map((v) => v.toJson()).toList();
     }
     if (platformTax != null) {
       data['platformTax'] = platformTax!.map((v) => v.toJson()).toList();

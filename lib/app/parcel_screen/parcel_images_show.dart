@@ -1,4 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:door_delights_driver/services/helper.dart';
+import 'package:door_delights_driver/ui/fullScreenImageViewer/FullScreenImageViewer.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
 import 'package:flutter/material.dart';
@@ -37,23 +39,31 @@ class _ParcelImagesShowState extends State<ParcelImagesShow> {
                 itemBuilder: (BuildContext context, int index) {
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child: CachedNetworkImage(
-                        imageUrl: widget.images[index].toString(),
-                        imageBuilder: (context, imageProvider) => Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            image: DecorationImage(
-                                image: imageProvider, fit: BoxFit.cover),
+                    child: GestureDetector(
+                      onTap: () {
+                        push(
+                            context,
+                            FullScreenImageViewer(
+                                imageUrl: widget.images[index].toString()));
+                      },
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CachedNetworkImage(
+                          imageUrl: widget.images[index].toString(),
+                          imageBuilder: (context, imageProvider) => Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              image: DecorationImage(
+                                  image: imageProvider, fit: BoxFit.cover),
+                            ),
                           ),
+                          placeholder: (context, url) => Center(
+                              child: CircularProgressIndicator.adaptive(
+                            valueColor:
+                                AlwaysStoppedAnimation(Color(COLOR_PRIMARY)),
+                          )),
+                          fit: BoxFit.cover,
                         ),
-                        placeholder: (context, url) => Center(
-                            child: CircularProgressIndicator.adaptive(
-                          valueColor:
-                              AlwaysStoppedAnimation(Color(COLOR_PRIMARY)),
-                        )),
-                        fit: BoxFit.cover,
                       ),
                     ),
                   );
@@ -102,7 +112,7 @@ class _ParcelImagesShowState extends State<ParcelImagesShow> {
                       padding: EdgeInsets.all(15.0),
                       child: Text(
                         'Pickup Parcel'.tr(),
-                        style: TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: 15),
                       ),
                     ),
                   ),

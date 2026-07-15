@@ -2134,7 +2134,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
             _driverModel!.inProgressOrderID != null &&
                     currentOrder != null &&
                     isShow == true
-                ? buildOrderActionsCard()
+                ? buildOrderActionsCard(isDark: isDark)
                 : Container(),
             _driverModel!.orderParcelRequestData != null
                 ? showDriverBottomSheet()
@@ -3721,8 +3721,8 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
 
         if (currentOrder!.paymentMethod?.toLowerCase() != "cod") {
           double totalTax = 0.0;
-          if (currentOrder!.taxSetting != null) {
-            for (var element in currentOrder!.taxSetting!) {
+          if (currentOrder!.taxModel != null) {
+            for (var element in currentOrder!.taxModel!) {
               totalTax = totalTax +
                   calculateTax(
                     amount: (double.parse(currentOrder!.subTotal!.toString()) -

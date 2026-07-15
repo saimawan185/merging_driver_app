@@ -80,7 +80,7 @@ class SignupController extends GetxController {
   bool sectionNeedsVehicle(SectionModel section) =>
       section.serviceTypeFlag == 'cab-service' ||
       section.serviceTypeFlag == 'rental-service' ||
-      section.serviceTypeFlag == 'parcel_delivery';
+      section.serviceTypeFlag == 'delivery-service';
 
   bool get hasVehicleBasedSection =>
       selectedSection.value != null &&
@@ -221,7 +221,7 @@ class SignupController extends GetxController {
     List<VehicleType> types = [];
     if (section.serviceTypeFlag == 'cab-service') {
       types = await FireStoreUtils.getCabVehicleType(section.id.toString());
-    } else if (section.serviceTypeFlag == 'parcel_delivery') {
+    } else if (section.serviceTypeFlag == 'delivery-service') {
       types.add(VehicleType(name: 'Bike'));
       types.add(VehicleType(name: 'Carriage'));
     } else {

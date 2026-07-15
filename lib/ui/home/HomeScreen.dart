@@ -3086,9 +3086,8 @@ class HomeScreenState extends State<HomeScreen>
       totalPrice = totalPrice +
           double.parse(currentOrder!.tipAmount ?? '0.0') +
           double.parse(currentOrder!.serviceCharges!.toString());
-
-      totalPrice =
-          totalPrice - double.parse(currentOrder!.deliveryCharge!.toString());
+      totalPrice = totalPrice -
+          (double.tryParse(currentOrder!.deliveryDiscount.toString()) ?? 0.0);
 
       totalPrice = double.parse(totalPrice.toStringAsFixed(2));
     }
@@ -3953,7 +3952,7 @@ class HomeScreenState extends State<HomeScreen>
       orderModel.products!.forEach((element) {
         if (element.extras_price != null &&
             element.extras_price!.isNotEmpty &&
-            double.parse(element.extras_price!) != 0.0) {
+            (double.tryParse(element.extras_price!) ?? 0.0) != 0.0) {
           total += element.quantity * double.parse(element.extras_price!);
         }
         total += element.quantity * double.parse(element.price);
@@ -3961,12 +3960,13 @@ class HomeScreenState extends State<HomeScreen>
 
       if (orderModel.specialDiscount != null ||
           orderModel.specialDiscount!['special_discount'] != null) {
-        specialDiscount = double.parse(
-            orderModel.specialDiscount!['special_discount'].toString());
+        specialDiscount = double.tryParse(
+                orderModel.specialDiscount!['special_discount'].toString()) ??
+            0;
       }
 
       if (orderModel.discount != null) {
-        discount = double.parse(orderModel.discount.toString());
+        discount = double.tryParse(orderModel.discount.toString()) ?? 0;
       }
 
       var totalamount = total - discount - specialDiscount;
@@ -3987,8 +3987,9 @@ class HomeScreenState extends State<HomeScreen>
       }
 
       if (orderModel.paymentMethod!.toLowerCase() == "cod") {
-        driverAmount =
-            driverAmount - orderModel.serviceCharges! + orderModel.discount!;
+        driverAmount = driverAmount -
+            orderModel.serviceCharges! +
+            orderModel.deliveryDiscount!;
       }
 
       await FireStoreUtils.updateWalletAmount(
@@ -4018,7 +4019,6 @@ class HomeScreenState extends State<HomeScreen>
         currentOrder!.status = ORDER_STATUS_COMPLETED;
 
         await FireStoreUtils.updateOrder(currentOrder!);
-
         await updateWallateAmount(currentOrder!);
 
         Position? locationData = await getCurrentLocation();

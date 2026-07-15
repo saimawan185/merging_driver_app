@@ -401,10 +401,10 @@ class ParcelOrderDetails extends StatelessWidget {
 
                             // Tax List
                             ...List.generate(
-                                controller.parcelOrder.value.taxSetting!.length,
+                                controller.parcelOrder.value.taxModel!.length,
                                 (index) {
                               return _summaryTile(
-                                  "${controller.parcelOrder.value.taxSetting![index].title} ${controller.parcelOrder.value.taxSetting![index].type == 'fix' ? '' : '(${controller.parcelOrder.value.taxSetting![index].tax}%)'}",
+                                  "${controller.parcelOrder.value.taxModel![index].title} ${controller.parcelOrder.value.taxModel![index].type == 'fix' ? '' : '(${controller.parcelOrder.value.taxModel![index].tax}%)'}",
                                   Constant.amountShow(
                                     amount: Constant.getTaxValue(
                                       amount: ((double.tryParse(controller
@@ -421,7 +421,7 @@ class ParcelOrderDetails extends StatelessWidget {
                                                   0.0))
                                           .toString(),
                                       taxModel: controller
-                                          .parcelOrder.value.taxSetting![index],
+                                          .parcelOrder.value.taxModel![index],
                                     ).toString(),
                                   ),
                                   isDark,
