@@ -2067,7 +2067,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             backgroundColor: Color(COLOR_PRIMARY),
                           ),
                           onPressed: () async {
-                            log.log("Hello");
                             playSound(false);
                             if (!mounted) return;
                             if (currentOrder!.status == ORDER_STATUS_SHIPPED ||
@@ -2495,11 +2494,28 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                 .first['elements']
                 .first['duration']['text']
                 .toString();
-            if (vehicleModel != null &&
-                distance > ((double.tryParse(currentOrder!.distance!) ?? 0))) {
-              currentOrder!.subTotal =
-                  (vehicleModel!.delivery_charges_per_km! * distance)
-                      .toString();
+            if (vehicleModel != null) {
+              if (distance > (double.tryParse(currentOrder!.distance!) ?? 0)) {
+                currentOrder!.subTotal =
+                    (vehicleModel!.delivery_charges_per_km! * distance)
+                        .toString();
+              } else {
+                if (distance <=
+                    (double.tryParse(vehicleModel!
+                                .minimum_delivery_charges_within_km
+                                ?.toString() ??
+                            '0') ??
+                        0)) {
+                  currentOrder!.subTotal =
+                      (vehicleModel!.delivery_charges_per_km! *
+                              vehicleModel!.minimum_delivery_charges_within_km!)
+                          .toString();
+                } else {
+                  currentOrder!.subTotal =
+                      (vehicleModel!.delivery_charges_per_km! * distance)
+                          .toString();
+                }
+              }
               currentOrder!.actualDistance = distance.toString();
             }
             if (duration.isNotEmpty && duration != "null") {
