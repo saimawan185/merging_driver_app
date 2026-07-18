@@ -37,6 +37,7 @@ class OrderDetailsController extends GetxController {
   RxDouble platformTaxAmount = 0.0.obs;
   RxDouble totalTaxAmount = 0.0.obs;
   RxDouble taxAmount = 0.0.obs;
+  RxDouble serviceCharges = 0.0.obs;
   RxDouble totalAmount = 0.0.obs;
 
   Future<void> calculatePrice() async {
@@ -44,7 +45,7 @@ class OrderDetailsController extends GetxController {
     subTotal.value = 0.0;
     couponAmount.value = 0.0;
     specialDiscountAmount.value = 0.0;
-
+    serviceCharges.value = 0.0;
     productTaxAmount.value = 0.0;
     orderTaxAmount.value = 0.0;
     driverDeliveryTaxAmount.value = 0.0;
@@ -130,6 +131,8 @@ class OrderDetailsController extends GetxController {
     // ---------------- CHARGES ----------------
     deliveryCharges.value =
         double.parse(orderModel.value.deliveryCharge.toString());
+    serviceCharges.value =
+        double.parse(orderModel.value.serviceCharges.toString());
 
     deliveryTips.value = double.parse(orderModel.value.tipAmount.toString());
 
@@ -185,18 +188,21 @@ class OrderDetailsController extends GetxController {
             deliveryCharges.value +
             deliveryTips.value +
             packagingCharge.value +
-            platformFee.value;
+            platformFee.value +
+            serviceCharges.value;
       } else {
         totalAmount.value = (subTotal.value - totalDiscount) +
             totalTaxAmount.value +
             packagingCharge.value +
-            platformFee.value;
+            platformFee.value +
+            serviceCharges.value;
       }
     } else {
       // Online payment (delivery-only capture)
       totalAmount.value = deliveryCharges.value +
           deliveryTips.value +
-          driverDeliveryTaxAmount.value;
+          driverDeliveryTaxAmount.value +
+          serviceCharges.value;
     }
 
     isLoading.value = false;

@@ -105,9 +105,19 @@ class ChangeSectionController extends GetxController {
         .collection(CollectionName.users)
         .doc(user.id);
 
-    await docRef.set({
-      'vehicleDetails': newVehicleDetails ?? FieldValue.delete(),
-    }, SetOptions(mergeFields: ['vehicleDetails']));
+    await docRef.set(
+        {
+          'vehicleDetails': newVehicleDetails ?? FieldValue.delete(),
+          'carMakes': user.carMakes ?? FieldValue.delete(),
+          'carNumber': user.carNumber ?? FieldValue.delete(),
+          'carName': user.carName ?? FieldValue.delete(),
+        },
+        SetOptions(mergeFields: [
+          'vehicleDetails',
+          'carMakes',
+          'carNumber',
+          'carName'
+        ]));
 
     // Update local cache
     Constant.userModel = user;

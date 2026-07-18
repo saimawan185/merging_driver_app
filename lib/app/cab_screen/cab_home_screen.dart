@@ -2507,9 +2507,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                             '0') ??
                         0)) {
                   currentOrder!.subTotal =
-                      (vehicleModel!.delivery_charges_per_km! *
-                              vehicleModel!.minimum_delivery_charges_within_km!)
-                          .toString();
+                      vehicleModel!.minimum_delivery_charges!.toString();
                 } else {
                   currentOrder!.subTotal =
                       (vehicleModel!.delivery_charges_per_km! * distance)

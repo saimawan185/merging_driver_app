@@ -42,7 +42,7 @@ void main() async {
   ]);
   Get.put(ThemeController());
 
-  Future.wait([
+  await Future.wait([
     FirebaseAppCheck.instance.activate(
       webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
       androidProvider: AndroidProvider.playIntegrity,

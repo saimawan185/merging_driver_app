@@ -553,6 +553,13 @@ class OrderDetailsScreen extends StatelessWidget {
           sectionDivider(isDark),
         ],
         amountRow(
+          title: "Service Charges".tr,
+          amount: Constant.amountShow(
+              amount: controller.orderModel.value.serviceCharges.toString()),
+          isDark: isDark,
+        ),
+        sectionDivider(isDark),
+        amountRow(
           title: "Platform fee".tr,
           amount: Constant.amountShow(
               amount: controller.platformFee.value.toString()),
@@ -576,7 +583,7 @@ class OrderDetailsScreen extends StatelessWidget {
           title: "To Pay".tr,
           amount: Constant.amountShow(
               amount: controller.totalAmount.value.toString()),
-          amountColor: AppThemeData.primary300,
+          amountColor: AppThemeData.primary400,
           isDark: isDark,
         ),
       ],

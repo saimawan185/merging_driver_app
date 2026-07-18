@@ -223,6 +223,9 @@ class VehicleInformationController extends GetxController {
           };
           userModel.value.vehicleId = vehicle.id ?? '';
           userModel.value.vehicleType = vehicle.name ?? '';
+          userModel.value.carMakes = carMakes?.name ?? '';
+          userModel.value.carName = carModel?.name ?? '';
+          userModel.value.carNumber = carPlate;
 
           if (initialServiceType == 'cab-service') {
             userModel.value.rideType =

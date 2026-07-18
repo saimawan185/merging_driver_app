@@ -473,6 +473,10 @@ class SignupController extends GetxController {
         if (section.serviceTypeFlag == 'cab-service')
           'rideType': section.rideType ?? 'ride',
       };
+
+      userModel.value.carMakes = carMakes?.name ?? '';
+      userModel.value.carName = carModel?.name ?? '';
+      userModel.value.carNumber = carPlate;
     }
     if (vDetails.isNotEmpty) userModel.value.vehicleDetails = vDetails;
   }

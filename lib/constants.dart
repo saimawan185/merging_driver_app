@@ -41,7 +41,7 @@ const SECTION = 'sections';
 
 String appVersion = '';
 
-const STORAGE_ROOT = 'emart';
+const STORAGE_ROOT = 'DoorDelights';
 const REPORTS = 'reports';
 const CATEGORIES = 'vendor_categories';
 const VENDORS = 'vendors';
@@ -67,7 +67,7 @@ String SERVER_KEY =
 String GOOGLE_API_KEY = 'AIzaSyCQy1lcXsx_E1cibmuTKs2XL3M7gEqLIdY';
 
 String placeholderImage =
-    'https://firebasestorage.googleapis.com/v0/b/emart-8d99f.appspot.com/o/images%2Fplace_holder%20(2).png?alt=media&token=c2eb35a9-ddf2-4b66-9cc6-d7d82e48d97b';
+    'https://firebasestorage.googleapis.com/v0/b/doordelights-423407.appspot.com/o/app_logo.png?alt=media&token=f232ca89-df07-42ea-bf41-a7cc48d4d088';
 
 const ORDER_STATUS_PLACED = 'Order Placed';
 const ORDER_STATUS_ACCEPTED = 'Order Accepted';

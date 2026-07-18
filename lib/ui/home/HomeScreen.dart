@@ -896,7 +896,7 @@
 //       decoration: BoxDecoration(
 //         borderRadius: BorderRadius.only(
 //             topLeft: Radius.circular(8), topRight: Radius.circular(18)),
-//         color: isDarkMode(context) ? Color(0xff000000) : Color(0xffFFFFFF),
+//         color: isDark ? Color(0xff000000) : Color(0xffFFFFFF),
 //       ),
 //       child: SingleChildScrollView(
 //         child: Column(
@@ -911,7 +911,7 @@
 //                     title: Text(
 //                       title,
 //                       style: TextStyle(
-//                           color: isDarkMode(context)
+//                           color: isDark
 //                               ? Color(0xffFFFFFF)
 //                               : Color(0xff000000),
 //                           fontFamily: "Poppinsm",
@@ -923,7 +923,7 @@
 //                         '${currentOrder!.vendor!.location}',
 //                         maxLines: 2,
 //                         style: TextStyle(
-//                             color: isDarkMode(context)
+//                             color: isDark
 //                                 ? Color(0xffFFFFFF)
 //                                 : Color(0xff000000),
 //                             fontFamily: "Poppinsr",
@@ -974,7 +974,7 @@
 //                           Text(
 //                             'Prepration Time'.tr(),
 //                             style: TextStyle(
-//                                 color: isDarkMode(context)
+//                                 color: isDark
 //                                     ? Color(0xffFFFFFF)
 //                                     : Color(0xff555555),
 //                                 fontFamily: "Poppinsr",
@@ -987,7 +987,7 @@
 //                         child: Text(
 //                           _formatDuration(_remainingTime),
 //                           style: TextStyle(
-//                               color: isDarkMode(context)
+//                               color: isDark
 //                                   ? Color(0xffFFFFFF)
 //                                   : Color(0xff333333),
 //                               fontFamily: "Poppinsm",
@@ -1004,7 +1004,7 @@
 //                         Text(
 //                           'Payment Type'.tr(),
 //                           style: TextStyle(
-//                               color: isDarkMode(context)
+//                               color: isDark
 //                                   ? Color(0xffFFFFFF)
 //                                   : Color(0xff555555),
 //                               fontFamily: "Poppinsr",
@@ -1017,7 +1017,7 @@
 //                       child: Text(
 //                         '${currentOrder!.paymentMethod!.toUpperCase().toString()}',
 //                         style: TextStyle(
-//                             color: isDarkMode(context)
+//                             color: isDark
 //                                 ? Color(0xffFFFFFF)
 //                                 : Color(0xff333333),
 //                             fontFamily: "Poppinsm",
@@ -1036,7 +1036,7 @@
 //                         Text(
 //                           'ORDER ID '.tr(),
 //                           style: TextStyle(
-//                               color: isDarkMode(context)
+//                               color: isDark
 //                                   ? Color(0xffFFFFFF)
 //                                   : Color(0xff555555),
 //                               fontFamily: "Poppinsr",
@@ -1048,7 +1048,7 @@
 //                             maxLines: 2,
 //                             overflow: TextOverflow.ellipsis,
 //                             style: TextStyle(
-//                                 color: isDarkMode(context)
+//                                 color: isDark
 //                                     ? Color(0xffFFFFFF)
 //                                     : Color(0xff000000),
 //                                 fontFamily: "Poppinsr",
@@ -1062,7 +1062,7 @@
 //                       child: Text(
 //                         '${currentOrder!.author!.fullName()}',
 //                         style: TextStyle(
-//                             color: isDarkMode(context)
+//                             color: isDark
 //                                 ? Color(0xffFFFFFF)
 //                                 : Color(0xff333333),
 //                             fontFamily: "Poppinsm",
@@ -1087,7 +1087,7 @@
 //                       maxLines: 1,
 //                       overflow: TextOverflow.ellipsis,
 //                       style: TextStyle(
-//                           color: isDarkMode(context)
+//                           color: isDark
 //                               ? Color(0xffFFFFFF)
 //                               : Color(0xff000000),
 //                           fontFamily: "Poppinsm",
@@ -1114,7 +1114,7 @@
 //                               maxLines: 1,
 //                               overflow: TextOverflow.ellipsis,
 //                               style: TextStyle(
-//                                   color: isDarkMode(context)
+//                                   color: isDark
 //                                       ? Color(0xffFFFFFF)
 //                                       : Color(0xff000000),
 //                                   fontFamily: "Poppinsr",
@@ -1178,7 +1178,7 @@
 //                         maxLines: 2,
 //                         overflow: TextOverflow.ellipsis,
 //                         style: TextStyle(
-//                             color: isDarkMode(context)
+//                             color: isDark
 //                                 ? Color(0xffFFFFFF)
 //                                 : Color(0xff333333),
 //                             fontFamily: "Poppinsr",
@@ -1229,7 +1229,7 @@
 //                       maxLines: 2,
 //                       overflow: TextOverflow.ellipsis,
 //                       style: TextStyle(
-//                           color: isDarkMode(context)
+//                           color: isDark
 //                               ? Color(0xffFFFFFF)
 //                               : Color(0xff333333),
 //                           fontFamily: "Poppinsr",
@@ -1275,7 +1275,7 @@
 //                             title: Text(
 //                               "Deliver".tr() + ": ${currentOrder!.id}",
 //                               style: TextStyle(
-//                                   color: isDarkMode(context)
+//                                   color: isDark
 //                                       ? Color(0xffFFFFFF)
 //                                       : Color(0xff000000),
 //                                   fontFamily: "Poppinsr",
@@ -2448,10 +2448,8 @@ class HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    final themeController = Get.find<ThemeController>();
-
     return Obx(() {
-      final isDark = themeController.isDark.value;
+      final isDark = Get.find<ThemeController>().isDark.value;
 
       isDark
           ? _mapController?.setMapStyle('[{"featureType": "all","'
@@ -3092,6 +3090,8 @@ class HomeScreenState extends State<HomeScreen>
       totalPrice = double.parse(totalPrice.toStringAsFixed(2));
     }
 
+    final isDark = Get.find<ThemeController>().isDark.value;
+
     return Container(
       margin: EdgeInsets.only(left: 8, right: 8),
       padding: EdgeInsets.symmetric(vertical: 15),
@@ -3099,7 +3099,7 @@ class HomeScreenState extends State<HomeScreen>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
             topLeft: Radius.circular(8), topRight: Radius.circular(18)),
-        color: isDarkMode(context) ? Color(0xff000000) : Color(0xffFFFFFF),
+        color: isDark ? Color(0xff000000) : Color(0xffFFFFFF),
       ),
       child: SingleChildScrollView(
         child: Column(
@@ -3114,9 +3114,7 @@ class HomeScreenState extends State<HomeScreen>
                     title: Text(
                       title,
                       style: TextStyle(
-                          color: isDarkMode(context)
-                              ? Color(0xffFFFFFF)
-                              : Color(0xff000000),
+                          color: isDark ? Color(0xffFFFFFF) : Color(0xff000000),
                           fontFamily: "Poppinsm",
                           letterSpacing: 0.5),
                     ),
@@ -3126,9 +3124,8 @@ class HomeScreenState extends State<HomeScreen>
                         '${currentOrder!.vendor!.location}',
                         maxLines: 2,
                         style: TextStyle(
-                            color: isDarkMode(context)
-                                ? Color(0xffFFFFFF)
-                                : Color(0xff000000),
+                            color:
+                                isDark ? Color(0xffFFFFFF) : Color(0xff000000),
                             fontFamily: "Poppinsr",
                             letterSpacing: 0.5),
                       ),
@@ -3177,7 +3174,7 @@ class HomeScreenState extends State<HomeScreen>
                           Text(
                             'Prepration Time'.tr(),
                             style: TextStyle(
-                                color: isDarkMode(context)
+                                color: isDark
                                     ? Color(0xffFFFFFF)
                                     : Color(0xff555555),
                                 fontFamily: "Poppinsr",
@@ -3190,7 +3187,7 @@ class HomeScreenState extends State<HomeScreen>
                         child: Text(
                           _formatDuration(_remainingTime),
                           style: TextStyle(
-                              color: isDarkMode(context)
+                              color: isDark
                                   ? Color(0xffFFFFFF)
                                   : Color(0xff333333),
                               fontFamily: "Poppinsm",
@@ -3207,7 +3204,7 @@ class HomeScreenState extends State<HomeScreen>
                         Text(
                           'Payment Type'.tr(),
                           style: TextStyle(
-                              color: isDarkMode(context)
+                              color: isDark
                                   ? Color(0xffFFFFFF)
                                   : Color(0xff555555),
                               fontFamily: "Poppinsr",
@@ -3220,9 +3217,8 @@ class HomeScreenState extends State<HomeScreen>
                       child: Text(
                         '${currentOrder!.paymentMethod!.toUpperCase().toString()}',
                         style: TextStyle(
-                            color: isDarkMode(context)
-                                ? Color(0xffFFFFFF)
-                                : Color(0xff333333),
+                            color:
+                                isDark ? Color(0xffFFFFFF) : Color(0xff333333),
                             fontFamily: "Poppinsm",
                             letterSpacing: 0.5,
                             fontWeight: FontWeight.bold),
@@ -3239,7 +3235,7 @@ class HomeScreenState extends State<HomeScreen>
                         Text(
                           'ORDER ID '.tr(),
                           style: TextStyle(
-                              color: isDarkMode(context)
+                              color: isDark
                                   ? Color(0xffFFFFFF)
                                   : Color(0xff555555),
                               fontFamily: "Poppinsr",
@@ -3251,7 +3247,7 @@ class HomeScreenState extends State<HomeScreen>
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: isDarkMode(context)
+                                color: isDark
                                     ? Color(0xffFFFFFF)
                                     : Color(0xff000000),
                                 fontFamily: "Poppinsr",
@@ -3265,9 +3261,8 @@ class HomeScreenState extends State<HomeScreen>
                       child: Text(
                         '${currentOrder!.author!.fullName()}',
                         style: TextStyle(
-                            color: isDarkMode(context)
-                                ? Color(0xffFFFFFF)
-                                : Color(0xff333333),
+                            color:
+                                isDark ? Color(0xffFFFFFF) : Color(0xff333333),
                             fontFamily: "Poppinsm",
                             letterSpacing: 0.5),
                       ),
@@ -3290,9 +3285,7 @@ class HomeScreenState extends State<HomeScreen>
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: isDarkMode(context)
-                              ? Color(0xffFFFFFF)
-                              : Color(0xff000000),
+                          color: isDark ? Color(0xffFFFFFF) : Color(0xff000000),
                           fontFamily: "Poppinsm",
                           letterSpacing: 0.5),
                     ),
@@ -3317,7 +3310,7 @@ class HomeScreenState extends State<HomeScreen>
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  color: isDarkMode(context)
+                                  color: isDark
                                       ? Color(0xffFFFFFF)
                                       : Color(0xff000000),
                                   fontFamily: "Poppinsr",
@@ -3381,9 +3374,8 @@ class HomeScreenState extends State<HomeScreen>
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            color: isDarkMode(context)
-                                ? Color(0xffFFFFFF)
-                                : Color(0xff333333),
+                            color:
+                                isDark ? Color(0xffFFFFFF) : Color(0xff333333),
                             fontFamily: "Poppinsr",
                             letterSpacing: 0.5),
                       ),
@@ -3432,9 +3424,7 @@ class HomeScreenState extends State<HomeScreen>
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: isDarkMode(context)
-                              ? Color(0xffFFFFFF)
-                              : Color(0xff333333),
+                          color: isDark ? Color(0xffFFFFFF) : Color(0xff333333),
                           fontFamily: "Poppinsr",
                           letterSpacing: 0.5,
                           fontWeight: FontWeight.bold,
@@ -3478,7 +3468,7 @@ class HomeScreenState extends State<HomeScreen>
                             title: Text(
                               "Deliver".tr() + ": ${currentOrder!.id}",
                               style: TextStyle(
-                                  color: isDarkMode(context)
+                                  color: isDark
                                       ? Color(0xffFFFFFF)
                                       : Color(0xff000000),
                                   fontFamily: "Poppinsr",

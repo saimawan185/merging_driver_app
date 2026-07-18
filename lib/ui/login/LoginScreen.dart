@@ -44,7 +44,7 @@ class LoginScreen extends StatelessWidget {
                         fontFamily: AppThemeData.semiBold),
                   ),
                   Text(
-                    "Sign in to access your eMart account and manage your deliveries seamlessly."
+                    "Sign in to access your DoorDelights account and manage your deliveries seamlessly."
                         .tr,
                     style: TextStyle(
                         color:
