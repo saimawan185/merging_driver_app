@@ -1,5 +1,5 @@
 import 'dart:developer';
-
+import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:door_delights_driver/constant/collection_name.dart';
 import 'package:door_delights_driver/constant/show_toast_dialog.dart';
 import 'package:door_delights_driver/models/user_model.dart';
@@ -11,6 +11,7 @@ import '../constant/constant.dart' show Constant;
 import '../constants.dart';
 import '../model/CurrencyModel.dart';
 import '../themes/theme_controller.dart';
+import 'dash_board_controller.dart';
 
 class ParcelDashboardController extends GetxController {
   RxInt drawerIndex = 0.obs;
@@ -136,6 +137,12 @@ class ParcelDashboardController extends GetxController {
     try {
       PermissionStatus permissionStatus = await location.hasPermission();
       if (permissionStatus == PermissionStatus.granted) {
+        var backgroundLocation =
+            await permission.Permission.locationAlways.status;
+        if (!backgroundLocation.isGranted) {
+          await openBackgroundLocationDialog();
+        }
+
         try {
           await location.enableBackgroundMode(enable: true);
         } catch (_) {}
@@ -190,6 +197,7 @@ class ParcelDashboardController extends GetxController {
             ShowToastDialog.closeLoader();
           }
         });
+        await openBackgroundLocationDialog();
       }
     } catch (e) {
       print(e);

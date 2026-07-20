@@ -36,7 +36,7 @@ import 'package:get/route_manager.dart';
 
 import 'package:get/state_manager.dart';
 import 'package:http/http.dart' as http;
-import 'package:mercadopago_sdk/mercadopago_sdk.dart';
+// import 'package:mercadopago_sdk/mercadopago_sdk.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
@@ -1898,62 +1898,62 @@ class WalletScreenState extends State<WalletScreen> {
   ///MercadoPago Payment Method
 
   mercadoPagoMakePayment() {
-    makePreference().then((result) async {
-      if (result.isNotEmpty) {
-        var preferenceId = result['response']['id'];
+    // makePreference().then((result) async {
+    //   if (result.isNotEmpty) {
+    //     var preferenceId = result['response']['id'];
 
-        final bool isDone = await Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => PaymentURLScreen(
-                    initialURl: result['response']['init_point'])));
-        print(isDone);
-        print(result.toString());
-        print(preferenceId);
+    //     final bool isDone = await Navigator.push(
+    //         context,
+    //         MaterialPageRoute(
+    //             builder: (context) => PaymentURLScreen(
+    //                 initialURl: result['response']['init_point'])));
+    //     print(isDone);
+    //     print(result.toString());
+    //     print(preferenceId);
 
-        if (isDone) {
-          paymentCompleted(paymentMethod: "MercadoPago");
-        } else {
-          Navigator.pop(_scaffoldKey.currentContext!);
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!)
-              .showSnackBar(SnackBar(
-            content: Text("Payment UnSuccessful!!".tr() + "\n"),
-            backgroundColor: Colors.red,
-          ));
-        }
-      } else {
-        hideProgress();
+    //     if (isDone) {
+    //       paymentCompleted(paymentMethod: "MercadoPago");
+    //     } else {
+    //       Navigator.pop(_scaffoldKey.currentContext!);
+    //       ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+    //           .showSnackBar(SnackBar(
+    //         content: Text("Payment UnSuccessful!!".tr() + "\n"),
+    //         backgroundColor: Colors.red,
+    //       ));
+    //     }
+    //   } else {
+    //     hideProgress();
 
-        ScaffoldMessenger.of(_scaffoldKey.currentContext!)
-            .showSnackBar(SnackBar(
-          content: Text("Error while transaction!".tr() + "\n"),
-          backgroundColor: Colors.red,
-        ));
-      }
-    });
+    //     ScaffoldMessenger.of(_scaffoldKey.currentContext!)
+    //         .showSnackBar(SnackBar(
+    //       content: Text("Error while transaction!".tr() + "\n"),
+    //       backgroundColor: Colors.red,
+    //     ));
+    //   }
+    // });
   }
 
-  Future<Map<String, dynamic>> makePreference() async {
-    final mp = MP.fromAccessToken(mercadoPagoSettingData!.accessToken);
-    var pref = {
-      "items": [
-        {
-          "title": "Wallet TopUp",
-          "quantity": 1,
-          "unit_price": double.parse(_amountController.text)
-        }
-      ],
-      "auto_return": "all",
-      "back_urls": {
-        "failure": "${GlobalURL}payment/failure",
-        "pending": "${GlobalURL}payment/pending",
-        "success": "${GlobalURL}payment/success"
-      },
-    };
+  // Future<Map<String, dynamic>> makePreference() async {
+  // final mp = MP.fromAccessToken(mercadoPagoSettingData!.accessToken);
+  // var pref = {
+  //   "items": [
+  //     {
+  //       "title": "Wallet TopUp",
+  //       "quantity": 1,
+  //       "unit_price": double.parse(_amountController.text)
+  //     }
+  //   ],
+  //   "auto_return": "all",
+  //   "back_urls": {
+  //     "failure": "${GlobalURL}payment/failure",
+  //     "pending": "${GlobalURL}payment/pending",
+  //     "success": "${GlobalURL}payment/success"
+  //   },
+  // };
 
-    var result = await mp.createPreference(pref);
-    return result;
-  }
+  // var result = await mp.createPreference(pref);
+  // return result;
+  // }
 
   /// Paytm Payment Gateway
   bool isStaging = true;

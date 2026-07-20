@@ -6,8 +6,10 @@ import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/preferences.dart';
 import 'package:get/get.dart';
 import 'package:location/location.dart';
+import 'package:permission_handler/permission_handler.dart' as permission;
 
 import '../themes/theme_controller.dart';
+import 'dash_board_controller.dart';
 
 class RentalDashboardController extends GetxController {
   RxInt drawerIndex = 0.obs;
@@ -76,6 +78,12 @@ class RentalDashboardController extends GetxController {
     try {
       PermissionStatus permissionStatus = await location.hasPermission();
       if (permissionStatus == PermissionStatus.granted) {
+        var backgroundLocation =
+            await permission.Permission.locationAlways.status;
+        if (!backgroundLocation.isGranted) {
+          await openBackgroundLocationDialog();
+        }
+
         try {
           await location.enableBackgroundMode(enable: true);
         } catch (_) {}
@@ -130,6 +138,7 @@ class RentalDashboardController extends GetxController {
             ShowToastDialog.closeLoader();
           }
         });
+        await openBackgroundLocationDialog();
       }
     } catch (e) {
       print(e);

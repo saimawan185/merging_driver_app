@@ -1,7 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/instance_manager.dart';
+import 'package:get/state_manager.dart';
 import 'package:location/location.dart';
-
+import 'package:permission_handler/permission_handler.dart' as permission;
 import '../constant/collection_name.dart';
 import '../constant/constant.dart' show Constant;
 import '../constant/show_toast_dialog.dart';
@@ -48,7 +52,7 @@ class DashBoardController extends GetxController {
       } else {
         ShowToastDialog.showToast(
           "Document verification is pending. Please proceed to set up your document verification."
-              .tr,
+              .tr(),
         );
       }
     } else {
@@ -138,6 +142,12 @@ class DashBoardController extends GetxController {
     try {
       PermissionStatus permissionStatus = await location.hasPermission();
       if (permissionStatus == PermissionStatus.granted) {
+        var backgroundLocation =
+            await permission.Permission.locationAlways.status;
+        if (!backgroundLocation.isGranted) {
+          await openBackgroundLocationDialog();
+        }
+
         try {
           await location.enableBackgroundMode(enable: true);
         } catch (_) {}
@@ -190,9 +200,73 @@ class DashBoardController extends GetxController {
             ShowToastDialog.closeLoader();
           }
         });
+        await openBackgroundLocationDialog();
       }
     } catch (e) {
       print(e);
     }
   }
+}
+
+openBackgroundLocationDialog() {
+  final isDark = Get.find<ThemeController>().isDark.value;
+
+  return showDialog(
+      context: Get.context!,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(Radius.circular(16.0))),
+          contentPadding: EdgeInsets.only(top: 10.0),
+          content: Container(
+            //width: 300.0,
+            width: MediaQuery.of(context).size.width * 0.6,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Padding(
+                  padding:
+                      const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
+                  child: Text(
+                    "Background Location permission".tr(),
+                    style: TextStyle(
+                        color: isDark ? Color(0xffFFFFFF) : Color(0xff555555),
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8.0, right: 8.0, top: 8.0, bottom: 8.0),
+                  child: Text(
+                      "This app collects location data to enable location fetching at the time of you are on the way to deliver order or even when the app is in background."
+                          .tr()),
+                ),
+                InkWell(
+                  onTap: () async {
+                    await permission.Permission.locationAlways.request();
+                    Navigator.pop(context);
+                  },
+                  child: Container(
+                    padding: EdgeInsets.only(top: 20.0, bottom: 20.0),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(16.0),
+                          bottomRight: Radius.circular(16.0)),
+                    ),
+                    child: Text(
+                      "Okay",
+                      style: TextStyle(color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      });
 }
