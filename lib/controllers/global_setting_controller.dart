@@ -6,7 +6,9 @@ import 'package:door_delights_driver/models/user_model.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../constant/collection_name.dart';
 

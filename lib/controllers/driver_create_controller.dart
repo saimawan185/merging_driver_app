@@ -14,7 +14,9 @@ import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class DriverCreateController extends GetxController {
   RxBool isLoading = true.obs;
@@ -88,7 +90,7 @@ class DriverCreateController extends GetxController {
   }
 
   Future<void> getArguments() async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     try {
       await Future.wait([
         FireStoreUtils.getZone().then((v) {
@@ -189,7 +191,7 @@ class DriverCreateController extends GetxController {
     bool prefill = false,
   }) async {
     final sid = section.id!;
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     try {
       // Vehicle types
       final types = section.serviceType == 'rental-service'
@@ -261,7 +263,7 @@ class DriverCreateController extends GetxController {
   }
 
   Future<void> getCarModelForSection(String sectionId) async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     try {
       final carMakes = selectedCarMakesPerSection[sectionId]?.value;
       carModelListPerSection[sectionId]?.clear();
@@ -279,7 +281,7 @@ class DriverCreateController extends GetxController {
 
   Future<void> signUp() async {
     try {
-      ShowToastDialog.showLoader("Please wait".tr);
+      ShowToastDialog.showLoader("Please wait".tr());
       final secondaryApp = await Firebase.initializeApp(
         name: 'SecondaryApp',
         options: Firebase.app().options,
@@ -296,18 +298,18 @@ class DriverCreateController extends GetxController {
         driverModel.value.vehicleDetails = _buildVehicleDetails();
         await FireStoreUtils.updateUser(driverModel.value);
         ShowToastDialog.closeLoader();
-        ShowToastDialog.showToast("Driver created successfully".tr);
+        ShowToastDialog.showToast("Driver created successfully".tr());
         Get.back(result: true);
       }
     } on FirebaseAuthException catch (e) {
       ShowToastDialog.closeLoader();
       if (e.code == 'weak-password') {
-        ShowToastDialog.showToast("The password provided is too weak.".tr);
+        ShowToastDialog.showToast("The password provided is too weak.".tr());
       } else if (e.code == 'email-already-in-use') {
         ShowToastDialog.showToast(
-            "The account already exists for that email.".tr);
+            "The account already exists for that email.".tr());
       } else if (e.code == 'invalid-email') {
-        ShowToastDialog.showToast("Enter email is Invalid".tr);
+        ShowToastDialog.showToast("Enter email is Invalid".tr());
       } else {
         ShowToastDialog.showToast(e.message ?? e.toString());
       }
@@ -318,13 +320,13 @@ class DriverCreateController extends GetxController {
   }
 
   Future<void> updateDriver() async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     try {
       _applyCommonFields();
       driverModel.value.vehicleDetails = _buildVehicleDetails();
       await FireStoreUtils.updateUser(driverModel.value);
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("Driver updated successfully".tr);
+      ShowToastDialog.showToast("Driver updated successfully".tr());
       Get.back(result: true);
     } catch (e) {
       ShowToastDialog.closeLoader();

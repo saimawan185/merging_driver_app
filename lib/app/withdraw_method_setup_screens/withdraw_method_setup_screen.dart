@@ -11,7 +11,9 @@ import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/widget/my_separator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class WithdrawMethodSetupScreen extends StatelessWidget {
   const WithdrawMethodSetupScreen({super.key});
@@ -74,7 +76,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                                       ),
                                       Expanded(
                                         child: Text(
-                                          "Bank Transfer".tr,
+                                          "Bank Transfer".tr(),
                                           style: TextStyle(
                                               color: isDark
                                                   ? AppThemeData.grey50
@@ -128,7 +130,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                                       ? Row(
                                           children: [
                                             Text(
-                                              "Your Setup is pending".tr,
+                                              "Your Setup is pending".tr(),
                                               style: TextStyle(
                                                   color: isDark
                                                       ? AppThemeData.grey50
@@ -155,7 +157,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                                                 });
                                               },
                                               child: Text(
-                                                "Setup now".tr,
+                                                "Setup now".tr(),
                                                 style: TextStyle(
                                                     decoration: TextDecoration
                                                         .underline,
@@ -177,7 +179,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                                       : Row(
                                           children: [
                                             Text(
-                                              "Setup was done.".tr,
+                                              "Setup was done.".tr(),
                                               style: TextStyle(
                                                   color: isDark
                                                       ? AppThemeData.success400
@@ -235,7 +237,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             ),
                           //             Expanded(
                           //               child: Text(
-                          //                 "Flutter wave".tr,
+                          //                 "Flutter wave".tr(),
                           //                 style: TextStyle(
                           //                     color: isDark
                           //                         ? AppThemeData.grey50
@@ -304,7 +306,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                               ShowToastDialog
                           //                                   .showLoader(
                           //                                       "Please wait."
-                          //                                           .tr);
+                          //                                           .tr());
 
                           //                               await controller
                           //                                   .getPaymentMethod();
@@ -312,7 +314,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                                   .closeLoader();
                           //                               ShowToastDialog.showToast(
                           //                                   "Payment Method remove successfully"
-                          //                                       .tr);
+                          //                                       .tr());
                           //                             },
                           //                           );
                           //                         },
@@ -360,7 +362,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             ? Row(
                           //                 children: [
                           //                   Text(
-                          //                     "Your Setup is pending".tr,
+                          //                     "Your Setup is pending".tr(),
                           //                     style: TextStyle(
                           //                         color: isDark
                           //                             ? AppThemeData.grey50
@@ -384,7 +386,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                       );
                           //                     },
                           //                     child: Text(
-                          //                       "Setup now".tr,
+                          //                       "Setup now".tr(),
                           //                       style: TextStyle(
                           //                           decoration: TextDecoration
                           //                               .underline,
@@ -406,7 +408,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             : Row(
                           //                 children: [
                           //                   Text(
-                          //                     "Setup was done.".tr,
+                          //                     "Setup was done.".tr(),
                           //                     style: TextStyle(
                           //                         color: isDark
                           //                             ? AppThemeData.success400
@@ -464,7 +466,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             ),
                           //             Expanded(
                           //               child: Text(
-                          //                 "PayPal".tr,
+                          //                 "PayPal".tr(),
                           //                 style: TextStyle(
                           //                     color: isDark
                           //                         ? AppThemeData.grey50
@@ -533,7 +535,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                               ShowToastDialog
                           //                                   .showLoader(
                           //                                       "Please wait."
-                          //                                           .tr);
+                          //                                           .tr());
 
                           //                               await controller
                           //                                   .getPaymentMethod();
@@ -541,7 +543,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                                   .closeLoader();
                           //                               ShowToastDialog.showToast(
                           //                                   "Payment Method remove successfully"
-                          //                                       .tr);
+                          //                                       .tr());
                           //                             },
                           //                           );
                           //                         },
@@ -588,7 +590,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             ? Row(
                           //                 children: [
                           //                   Text(
-                          //                     "Your Setup is pending".tr,
+                          //                     "Your Setup is pending".tr(),
                           //                     style: TextStyle(
                           //                         color: isDark
                           //                             ? AppThemeData.grey50
@@ -612,7 +614,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                       );
                           //                     },
                           //                     child: Text(
-                          //                       "Setup now".tr,
+                          //                       "Setup now".tr(),
                           //                       style: TextStyle(
                           //                           decoration: TextDecoration
                           //                               .underline,
@@ -634,7 +636,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             : Row(
                           //                 children: [
                           //                   Text(
-                          //                     "Setup was done.".tr,
+                          //                     "Setup was done.".tr(),
                           //                     style: TextStyle(
                           //                         color: isDark
                           //                             ? AppThemeData.success400
@@ -692,7 +694,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             ),
                           //             Expanded(
                           //               child: Text(
-                          //                 "RazorPay".tr,
+                          //                 "RazorPay".tr(),
                           //                 style: TextStyle(
                           //                     color: isDark
                           //                         ? AppThemeData.grey50
@@ -761,7 +763,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                               ShowToastDialog
                           //                                   .showLoader(
                           //                                       "Please wait."
-                          //                                           .tr);
+                          //                                           .tr());
 
                           //                               await controller
                           //                                   .getPaymentMethod();
@@ -769,7 +771,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                                   .closeLoader();
                           //                               ShowToastDialog.showToast(
                           //                                   "Payment Method remove successfully"
-                          //                                       .tr);
+                          //                                       .tr());
                           //                             },
                           //                           );
                           //                         },
@@ -817,7 +819,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             ? Row(
                           //                 children: [
                           //                   Text(
-                          //                     "Your Setup is pending".tr,
+                          //                     "Your Setup is pending".tr(),
                           //                     style: TextStyle(
                           //                         color: isDark
                           //                             ? AppThemeData.grey50
@@ -841,7 +843,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                       );
                           //                     },
                           //                     child: Text(
-                          //                       "Setup now".tr,
+                          //                       "Setup now".tr(),
                           //                       style: TextStyle(
                           //                           decoration: TextDecoration
                           //                               .underline,
@@ -863,7 +865,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             : Row(
                           //                 children: [
                           //                   Text(
-                          //                     "Setup was done.".tr,
+                          //                     "Setup was done.".tr(),
                           //                     style: TextStyle(
                           //                         color: isDark
                           //                             ? AppThemeData.success400
@@ -921,7 +923,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             ),
                           //             Expanded(
                           //               child: Text(
-                          //                 "Stripe".tr,
+                          //                 "Stripe".tr(),
                           //                 style: TextStyle(
                           //                     color: isDark
                           //                         ? AppThemeData.grey50
@@ -990,7 +992,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                               ShowToastDialog
                           //                                   .showLoader(
                           //                                       "Please wait."
-                          //                                           .tr);
+                          //                                           .tr());
 
                           //                               await controller
                           //                                   .getPaymentMethod();
@@ -998,7 +1000,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                                   .closeLoader();
                           //                               ShowToastDialog.showToast(
                           //                                   "Payment Method remove successfully"
-                          //                                       .tr);
+                          //                                       .tr());
                           //                             },
                           //                           );
                           //                         },
@@ -1045,7 +1047,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             ? Row(
                           //                 children: [
                           //                   Text(
-                          //                     "Your Setup is pending".tr,
+                          //                     "Your Setup is pending".tr(),
                           //                     style: TextStyle(
                           //                         color: isDark
                           //                             ? AppThemeData.grey50
@@ -1069,7 +1071,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //                       );
                           //                     },
                           //                     child: Text(
-                          //                       "Setup now".tr,
+                          //                       "Setup now".tr(),
                           //                       style: TextStyle(
                           //                           decoration: TextDecoration
                           //                               .underline,
@@ -1091,7 +1093,7 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                           //             : Row(
                           //                 children: [
                           //                   Text(
-                          //                     "Setup was done.".tr,
+                          //                     "Setup was done.".tr(),
                           //                     style: TextStyle(
                           //                         color: isDark
                           //                             ? AppThemeData.success400
@@ -1129,25 +1131,25 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFieldWidget(
-                title: 'Account Number'.tr,
+                title: 'Account Number'.tr(),
                 controller: controller.accountNumberFlutterWave.value,
-                hintText: 'Account Number'.tr,
+                hintText: 'Account Number'.tr(),
               ),
               TextFieldWidget(
-                title: 'Bank Code'.tr,
+                title: 'Bank Code'.tr(),
                 controller: controller.bankCodeFlutterWave.value,
-                hintText: 'Bank Code'.tr,
+                hintText: 'Bank Code'.tr(),
               ),
               RoundedButtonFill(
-                title: "Save".tr,
+                title: "Save".tr(),
                 color: AppThemeData.primary300,
                 textColor: AppThemeData.grey50,
                 onPress: () async {
                   if (controller.accountNumberFlutterWave.value.text.isEmpty) {
-                    ShowToastDialog.showToast("Please enter account Number".tr);
+                    ShowToastDialog.showToast("Please enter account Number".tr());
                   } else if (controller
                       .bankCodeFlutterWave.value.text.isEmpty) {
-                    ShowToastDialog.showToast("Please enter bank code".tr);
+                    ShowToastDialog.showToast("Please enter bank code".tr());
                   } else {
                     FlutterWave? flutterWave =
                         controller.withdrawMethodModel.value.flutterWave;
@@ -1169,12 +1171,12 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                             controller.withdrawMethodModel.value)
                         .then(
                       (value) async {
-                        ShowToastDialog.showLoader("Please wait.".tr);
+                        ShowToastDialog.showLoader("Please wait.".tr());
 
                         await controller.getPaymentMethod();
                         ShowToastDialog.closeLoader();
                         ShowToastDialog.showToast(
-                            "Payment Method save successfully".tr);
+                            "Payment Method save successfully".tr());
                         Get.back();
                       },
                     );
@@ -1203,17 +1205,17 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFieldWidget(
-                title: 'Paypal Email'.tr,
+                title: 'Paypal Email'.tr(),
                 controller: controller.emailPaypal.value,
-                hintText: 'Paypal Email'.tr,
+                hintText: 'Paypal Email'.tr(),
               ),
               RoundedButtonFill(
-                title: "Save".tr,
+                title: "Save".tr(),
                 color: AppThemeData.primary300,
                 textColor: AppThemeData.grey50,
                 onPress: () async {
                   if (controller.emailPaypal.value.text.isEmpty) {
-                    ShowToastDialog.showToast("Please enter Paypal email".tr);
+                    ShowToastDialog.showToast("Please enter Paypal email".tr());
                   } else {
                     Paypal? payPal =
                         controller.withdrawMethodModel.value.paypal;
@@ -1229,12 +1231,12 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                             controller.withdrawMethodModel.value)
                         .then(
                       (value) async {
-                        ShowToastDialog.showLoader("Please wait.".tr);
+                        ShowToastDialog.showLoader("Please wait.".tr());
 
                         await controller.getPaymentMethod();
                         ShowToastDialog.closeLoader();
                         ShowToastDialog.showToast(
-                            "Payment Method save successfully".tr);
+                            "Payment Method save successfully".tr());
                         Get.back();
                       },
                     );
@@ -1263,14 +1265,14 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFieldWidget(
-                title: 'Razorpay account Id'.tr,
+                title: 'Razorpay account Id'.tr(),
                 controller: controller.accountIdRazorPay.value,
-                hintText: 'Razorpay account Id'.tr,
+                hintText: 'Razorpay account Id'.tr(),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Text(
-                  "Add your Account ID. For example, acc_GLGeLkU2JUeyDZ".tr,
+                  "Add your Account ID. For example, acc_GLGeLkU2JUeyDZ".tr(),
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color:
@@ -1281,13 +1283,13 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                 height: 20,
               ),
               RoundedButtonFill(
-                title: "Save".tr,
+                title: "Save".tr(),
                 color: AppThemeData.primary300,
                 textColor: AppThemeData.grey50,
                 onPress: () async {
                   if (controller.accountIdRazorPay.value.text.isEmpty) {
                     ShowToastDialog.showToast(
-                        "Please enter RazorPay account Id".tr);
+                        "Please enter RazorPay account Id".tr());
                   } else {
                     RazorpayModel? razorPay =
                         controller.withdrawMethodModel.value.razorpay;
@@ -1304,12 +1306,12 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                             controller.withdrawMethodModel.value)
                         .then(
                       (value) async {
-                        ShowToastDialog.showLoader("Please wait.".tr);
+                        ShowToastDialog.showLoader("Please wait.".tr());
 
                         await controller.getPaymentMethod();
                         ShowToastDialog.closeLoader();
                         ShowToastDialog.showToast(
-                            "Payment Method save successfully".tr);
+                            "Payment Method save successfully".tr());
                         Get.back();
                       },
                     );
@@ -1338,15 +1340,15 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFieldWidget(
-                title: 'Stripe Account Id'.tr,
+                title: 'Stripe Account Id'.tr(),
                 controller: controller.accountIdStripe.value,
-                hintText: 'Stripe Account Id'.tr,
+                hintText: 'Stripe Account Id'.tr(),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Text(
                   "Go to your Stripe account settings > Account details > Copy your account ID on the right-hand side. For example, acc_GLGeLkU2JUeyDZ"
-                      .tr,
+                      .tr(),
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color:
@@ -1357,13 +1359,13 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                 height: 20,
               ),
               RoundedButtonFill(
-                title: "Save".tr,
+                title: "Save".tr(),
                 color: AppThemeData.primary300,
                 textColor: AppThemeData.grey50,
                 onPress: () async {
                   if (controller.accountIdStripe.value.text.isEmpty) {
                     ShowToastDialog.showToast(
-                        "Please enter stripe account Id".tr);
+                        "Please enter stripe account Id".tr());
                   } else {
                     Stripe? stripe =
                         controller.withdrawMethodModel.value.stripe;
@@ -1379,12 +1381,12 @@ class WithdrawMethodSetupScreen extends StatelessWidget {
                             controller.withdrawMethodModel.value)
                         .then(
                       (value) async {
-                        ShowToastDialog.showLoader("Please wait.".tr);
+                        ShowToastDialog.showLoader("Please wait.".tr());
 
                         await controller.getPaymentMethod();
                         ShowToastDialog.closeLoader();
                         ShowToastDialog.showToast(
-                            "Payment Method save successfully".tr);
+                            "Payment Method save successfully".tr());
                         Get.back();
                       },
                     );

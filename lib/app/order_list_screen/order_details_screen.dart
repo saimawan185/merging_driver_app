@@ -6,7 +6,9 @@ import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:door_delights_driver/widget/my_separator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import '../../model/ProductModel.dart';
 
@@ -29,7 +31,7 @@ class OrderDetailsScreen extends StatelessWidget {
         centerTitle: false,
         titleSpacing: 0,
         title: Text(
-          "Order Details".tr,
+          "Order Details".tr(),
           textAlign: TextAlign.start,
           style: TextStyle(
             fontFamily: AppThemeData.medium,
@@ -46,7 +48,7 @@ class OrderDetailsScreen extends StatelessWidget {
           }
           final order = controller.orderModel.value;
           if (order.id == null) {
-            return Center(child: Text("No order data".tr));
+            return Center(child: Text("No order data".tr()));
           }
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -69,7 +71,7 @@ class OrderDetailsScreen extends StatelessWidget {
         } catch (e, stack) {
           // Log error – helps debugging
           debugPrint("OrderDetailsScreen error: $e\n$stack");
-          return Center(child: Text("Something went wrong".tr));
+          return Center(child: Text("Something went wrong".tr()));
         }
       }),
     );
@@ -83,8 +85,8 @@ class OrderDetailsScreen extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            "${'Order'.tr} ${Constant.orderId(orderId: order.id.toString())}"
-                .tr,
+            "${'Order'.tr()} ${Constant.orderId(orderId: order.id.toString())}"
+                .tr(),
             style: TextStyle(
               fontFamily: AppThemeData.semiBold,
               fontSize: 18,
@@ -99,7 +101,7 @@ class OrderDetailsScreen extends StatelessWidget {
           ),
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
           child: Text(
-            order.status.toString().tr,
+            order.status.toString().tr(),
             style: TextStyle(
               fontFamily: AppThemeData.bold,
               fontSize: 14,
@@ -209,7 +211,7 @@ class OrderDetailsScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Order Details".tr,
+          "Order Details".tr(),
           style: TextStyle(
             fontFamily: AppThemeData.semiBold,
             fontSize: 16,
@@ -368,7 +370,7 @@ class OrderDetailsScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Variants".tr,
+                  "Variants".tr(),
                   style: TextStyle(
                     fontFamily: AppThemeData.semiBold,
                     color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
@@ -415,7 +417,7 @@ class OrderDetailsScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  "Addons".tr,
+                  "Addons".tr(),
                   style: TextStyle(
                     fontFamily: AppThemeData.semiBold,
                     color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
@@ -477,7 +479,7 @@ class OrderDetailsScreen extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "Bill Details".tr,
+          "Bill Details".tr(),
           style: TextStyle(
             fontFamily: AppThemeData.semiBold,
             fontSize: 16,
@@ -510,14 +512,14 @@ class OrderDetailsScreen extends StatelessWidget {
     return Column(
       children: [
         amountRow(
-          title: "Item totals".tr,
+          title: "Item totals".tr(),
           amount:
               Constant.amountShow(amount: controller.subTotal.value.toString()),
           isDark: isDark,
         ),
         sectionDivider(isDark),
         amountRow(
-          title: "Coupon Discount",
+          title: "Coupon Discount".tr(),
           amount:
               "- (${Constant.amountShow(amount: controller.couponAmount.value.toString())})",
           isDark: isDark,
@@ -527,7 +529,7 @@ class OrderDetailsScreen extends StatelessWidget {
         if (controller.orderModel.value.vendor?.specialDiscountEnable ==
             true) ...[
           amountRow(
-            title: "Special Discount",
+            title: "Special Discount".tr(),
             amount:
                 "- (${Constant.amountShow(amount: controller.specialDiscountAmount.value.toString())})",
             isDark: isDark,
@@ -537,7 +539,7 @@ class OrderDetailsScreen extends StatelessWidget {
             const SizedBox(height: 5),
         ],
         amountRow(
-          title: "Packaging charge",
+          title: "Packaging charge".tr(),
           amount: Constant.amountShow(
               amount: controller.packagingCharge.value.toString()),
           isDark: isDark,
@@ -553,14 +555,14 @@ class OrderDetailsScreen extends StatelessWidget {
           sectionDivider(isDark),
         ],
         amountRow(
-          title: "Service Charges".tr,
+          title: "Service Charges".tr(),
           amount: Constant.amountShow(
               amount: controller.orderModel.value.serviceCharges.toString()),
           isDark: isDark,
         ),
         sectionDivider(isDark),
         amountRow(
-          title: "Platform fee".tr,
+          title: "Platform fee".tr(),
           amount: Constant.amountShow(
               amount: controller.platformFee.value.toString()),
           isDark: isDark,
@@ -570,7 +572,7 @@ class OrderDetailsScreen extends StatelessWidget {
           onTap: () =>
               showBillBifurcationDialog(Get.context!, isDark, controller),
           child: amountRow(
-            title: "Tax amount",
+            title: "Tax amount".tr(),
             amount: Constant.amountShow(
                 amount: controller.totalTaxAmount.value.toString()),
             isDark: isDark,
@@ -580,7 +582,7 @@ class OrderDetailsScreen extends StatelessWidget {
         ),
         sectionDivider(isDark),
         amountRow(
-          title: "To Pay".tr,
+          title: "To Pay".tr(),
           amount: Constant.amountShow(
               amount: controller.totalAmount.value.toString()),
           amountColor: AppThemeData.primary400,
@@ -609,7 +611,7 @@ class OrderDetailsScreen extends StatelessWidget {
             controller.orderModel.value.vendor?.isSelfDelivery != true)
           sectionDivider(isDark),
         amountRow(
-          title: "To Pay".tr,
+          title: "To Pay".tr(),
           amount: Constant.amountShow(
               amount: controller.totalAmount.value.toString()),
           amountColor: AppThemeData.primary300,
@@ -624,11 +626,11 @@ class OrderDetailsScreen extends StatelessWidget {
     final isFree = controller.orderModel.value.vendor?.isSelfDelivery == true ||
         controller.orderModel.value.isFreeDelivery == true;
     return amountRow(
-      title: "Delivery Fee",
+      title: "Delivery Fee".tr(),
       isDark: isDark,
       trailing: isFree
           ? Text(
-              'Free Delivery'.tr,
+              'Free Delivery'.tr(),
               style: TextStyle(
                 fontFamily: AppThemeData.regular,
                 color: AppThemeData.success400,
@@ -657,7 +659,7 @@ class OrderDetailsScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Delivery Tips".tr,
+                "Delivery Tips".tr(),
                 style: TextStyle(
                   fontFamily: AppThemeData.regular,
                   color: isDark ? AppThemeData.grey300 : AppThemeData.grey600,
@@ -693,7 +695,7 @@ class OrderDetailsScreen extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: amountRow(
-            title: "${tax.title} $taxLabel".tr,
+            title: "${tax.title} $taxLabel".tr(),
             amount: Constant.amountShow(
               amount: Constant.calculateTax(
                 taxModel: tax,
@@ -723,7 +725,7 @@ Widget amountRow({
     children: [
       Expanded(
         child: Text(
-          title.tr,
+          title.tr(),
           style: TextStyle(
             fontFamily: AppThemeData.regular,
             color: textColour ??
@@ -777,7 +779,7 @@ void showBillBifurcationDialog(
               children: [
                 const SizedBox(height: 10),
                 Text(
-                  "Tax Details".tr,
+                  "Tax Details".tr(),
                   style: TextStyle(
                     fontFamily: AppThemeData.medium,
                     fontSize: 18,
@@ -789,14 +791,14 @@ void showBillBifurcationDialog(
                 const SizedBox(height: 5),
                 if (controller.orderModel.value.taxScope == 'product')
                   amountRow(
-                    title: "Tax on item total".tr,
+                    title: "Tax on item total".tr(),
                     amount: Constant.amountShow(
                         amount: controller.productTaxAmount.value.toString()),
                     isDark: isDark,
                   )
                 else
                   amountRow(
-                    title: "Tax on Order Total".tr,
+                    title: "Tax on Order Total".tr(),
                     amount: Constant.amountShow(
                         amount: controller.orderTaxAmount.value.toString()),
                     isDark: isDark,
@@ -818,7 +820,7 @@ void showBillBifurcationDialog(
                     amountGetter: () => controller.platformFee.value),
                 sectionDivider(isDark),
                 amountRow(
-                  title: "Total Tax Amount".tr,
+                  title: "Total Tax Amount".tr(),
                   amount: Constant.amountShow(
                       amount: controller.totalTaxAmount.value.toString()),
                   amountColor: AppThemeData.primary300,
@@ -829,7 +831,7 @@ void showBillBifurcationDialog(
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text("Close".tr),
+                    child: Text("Close".tr()),
                   ),
                 ),
               ],
@@ -858,7 +860,7 @@ Widget _buildTaxListDialog(
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: amountRow(
-          title: "${tax.title} ${label.tr}",
+          title: "${tax.title} ${label.tr()}",
           amount: Constant.amountShow(
               amount: amount == 0.0
                   ? '0'

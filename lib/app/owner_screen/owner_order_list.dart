@@ -1,6 +1,8 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../constant/constant.dart';
 import '../../controllers/owner_order_list_controller.dart';
 import '../../models/cab_order_model.dart';
@@ -39,7 +41,7 @@ class OwnerOrderListScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ── Section dropdown ──────────────────────────────────
-                Text("Select Section".tr,
+                Text("Select Section".tr(),
                     style: TextStyle(
                         color: isDark
                             ? AppThemeData.grey50
@@ -77,7 +79,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 // ── Driver dropdown ──────────────────────────────────
-                Text("Select Driver".tr,
+                Text("Select Driver".tr(),
                     style: TextStyle(
                         color: isDark
                             ? AppThemeData.grey50
@@ -85,7 +87,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                 const SizedBox(height: 5),
                 Obx(() => DropdownButtonFormField<UserModel?>(
                       value: controller.selectedDriver.value,
-                      hint: Text("All Drivers".tr,
+                      hint: Text("All Drivers".tr(),
                           style: TextStyle(
                             color: isDark
                                 ? AppThemeData.grey50
@@ -96,7 +98,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                         DropdownMenuItem<UserModel?>(
                           value: null,
                           child: Text(
-                            "All Drivers".tr,
+                            "All Drivers".tr(),
                             style: TextStyle(
                               color: isDark
                                   ? AppThemeData.grey50
@@ -129,7 +131,7 @@ class OwnerOrderListScreen extends StatelessWidget {
 
                 // ── Search button ────────────────────────────────────
                 RoundedButtonFill(
-                  title: "Search",
+                  title: "Search".tr(),
                   height: 5.5,
                   color: AppThemeData.primary300,
                   textColor: AppThemeData.grey50,
@@ -156,7 +158,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                       default:
                         return Center(
                           child: Text(
-                            "Select a section to view orders".tr,
+                            "Select a section to view orders".tr(),
                             style: AppThemeData.mediumTextStyle(
                                 color: isDark
                                     ? AppThemeData.greyDark900
@@ -232,7 +234,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                 final orders = controller.getCabOrdersForTab(title);
                 if (orders.isEmpty) {
                   return Center(
-                    child: Text("No orders found".tr,
+                    child: Text("No orders found".tr(),
                         style: AppThemeData.mediumTextStyle(
                             color: isDark
                                 ? AppThemeData.greyDark900
@@ -415,7 +417,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                     controller.getParcelOrdersForTab(title);
                 if (orders.isEmpty) {
                   return Center(
-                    child: Text("No orders found".tr,
+                    child: Text("No orders found".tr(),
                         style: AppThemeData.mediumTextStyle(
                             color: isDark
                                 ? AppThemeData.greyDark900
@@ -502,7 +504,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                                     children: [
                                       _infoSection(
                                         "Pickup Address (Sender):"
-                                            .tr,
+                                            .tr(),
                                         order.sender?.name ?? '',
                                         order.sender?.address ??
                                             '',
@@ -513,7 +515,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                                       const SizedBox(height: 16),
                                       _infoSection(
                                         "Delivery Address (Receiver):"
-                                            .tr,
+                                            .tr(),
                                         order.receiver?.name ?? '',
                                         order.receiver?.address ??
                                             '',
@@ -631,7 +633,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                     controller.getRentalOrdersForTab(title);
                 if (orders.isEmpty) {
                   return Center(
-                    child: Text("No orders found".tr,
+                    child: Text("No orders found".tr(),
                         style: AppThemeData.mediumTextStyle(
                             color: isDark
                                 ? AppThemeData.greyDark900
@@ -755,7 +757,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            Text("Vehicle Type :".tr,
+                            Text("Vehicle Type :".tr(),
                                 style: AppThemeData.boldTextStyle(
                                     fontSize: 16,
                                     color: isDark
@@ -839,7 +841,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            Text("Package info :",
+                            Text("Package info :".tr(),
                                 style: AppThemeData.boldTextStyle(
                                     fontSize: 16,
                                     color: isDark
@@ -954,7 +956,7 @@ class OwnerOrderListScreen extends StatelessWidget {
                     controller.getVendorOrdersForTab(title);
                 if (orders.isEmpty) {
                   return Center(
-                    child: Text("No orders found".tr,
+                    child: Text("No orders found".tr(),
                         style: AppThemeData.mediumTextStyle(
                             color: isDark
                                 ? AppThemeData.greyDark900

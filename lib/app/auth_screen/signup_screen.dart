@@ -3,7 +3,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../constant/constant.dart';
 import '../../constant/show_toast_dialog.dart';
 import '../../controllers/signup_controller.dart';
@@ -39,7 +41,7 @@ class SignupScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "Create an Account".tr,
+                      "Create an Account".tr(),
                       style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey50
@@ -49,7 +51,7 @@ class SignupScreen extends StatelessWidget {
                     ),
                     Text(
                       "Sign up now to start your journey as a DoorDelights driver and begin earning with every delivery."
-                          .tr,
+                          .tr(),
                       style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey50
@@ -61,7 +63,7 @@ class SignupScreen extends StatelessWidget {
                       TextSpan(
                         children: [
                           TextSpan(
-                            text: 'Already Have an account?'.tr,
+                            text: 'Already Have an account?'.tr(),
                             style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey50
@@ -73,9 +75,9 @@ class SignupScreen extends StatelessWidget {
                           TextSpan(
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                Get.offAll(LoginScreen());
+                                Get.offAll(() => LoginScreen());
                               },
-                            text: 'Log in'.tr,
+                            text: 'Log in'.tr(),
                             style: TextStyle(
                               color: AppThemeData.primary300,
                               fontFamily: AppThemeData.medium,
@@ -118,7 +120,7 @@ class SignupScreen extends StatelessWidget {
                                     bottom: 0,
                                     right: 0,
                                     child: IconButton(
-                                      icon: Icon(Icons.camera_alt),
+                                      icon: const Icon(Icons.camera_alt),
                                       onPressed: () =>
                                           controller.pickImage(true),
                                     ),
@@ -155,7 +157,7 @@ class SignupScreen extends StatelessWidget {
                                     bottom: 0,
                                     right: 0,
                                     child: IconButton(
-                                      icon: Icon(Icons.camera_alt),
+                                      icon: const Icon(Icons.camera_alt),
                                       onPressed: () =>
                                           controller.pickImage(false),
                                     ),
@@ -171,7 +173,7 @@ class SignupScreen extends StatelessWidget {
 
                     // ── Individual / Company ─────────────────────────────
                     Text(
-                      'Continue as'.tr,
+                      'Continue as'.tr(),
                       style: AppThemeData.mediumTextStyle(
                           fontSize: 14,
                           color: isDark
@@ -182,7 +184,7 @@ class SignupScreen extends StatelessWidget {
                       children: [
                         Expanded(
                           child: RadioListTile<String>(
-                            title: Text('Individual'.tr,
+                            title: Text('Individual'.tr(),
                                 style: TextStyle(
                                     color: isDark
                                         ? AppThemeData.greyDark700
@@ -195,7 +197,7 @@ class SignupScreen extends StatelessWidget {
                         ),
                         Expanded(
                           child: RadioListTile<String>(
-                            title: Text('Company'.tr,
+                            title: Text('Company'.tr(),
                                 style: TextStyle(
                                     color: isDark
                                         ? AppThemeData.greyDark700
@@ -212,7 +214,7 @@ class SignupScreen extends StatelessWidget {
 
                     // ── Section selection ─────────────────────────────────
                     Text(
-                      "Select Sections".tr,
+                      "Select Sections".tr(),
                       style: TextStyle(
                           fontFamily: AppThemeData.semiBold,
                           fontSize: 14,
@@ -227,8 +229,8 @@ class SignupScreen extends StatelessWidget {
                               padding: const EdgeInsets.all(16),
                               child: Text(
                                   controller.allSections.isEmpty
-                                      ? "Loading sections...".tr
-                                      : "No sections available".tr,
+                                      ? "Loading sections...".tr()
+                                      : "No sections available".tr(),
                                   style: TextStyle(
                                       color: isDark
                                           ? AppThemeData.grey400
@@ -284,169 +286,208 @@ class SignupScreen extends StatelessWidget {
                           ),
                     const SizedBox(height: 10),
 
-                    // ── Per-section vehicle type + car details (cab / rental, Individual only) ───
-                    if (controller.selectedValue.value == "Individual")
-                      // ...controller.selectedSection
-                      //     .where((s) => controller.sectionNeedsVehicle(s))
-                      //     .map((section) {
+                    // ── Vehicle details (single block) ──────────────────
+                    Obx(() {
+                      final needsVehicle = controller.selectedSections
+                              .any((s) => controller.sectionNeedsVehicle(s)) &&
+                          controller.selectedValue.value != "Company";
+                      if (!needsVehicle) return const SizedBox.shrink();
 
-                      Obx(() {
-                        final section = controller.selectedSection.value;
-                        if (section == null) {
-                          return const SizedBox.shrink();
-                        }
-                        final sid = section.id;
-                        final vehicles =
-                            controller.vehicleTypesPerSection[sid] ?? [];
-                        final selectedVehicle =
-                            controller.selectedVehiclePerSection[sid];
-                        final sectionCarMakes =
-                            controller.selectedCarMakesPerSection[sid];
-                        final sectionCarModels =
-                            controller.carModelListPerSection[sid] ??
-                                <CarModel>[].obs;
-                        final sectionCarModel =
-                            controller.selectedCarModelPerSection[sid];
-                        final sectionCarPlate =
-                            controller.carPlatePerSection[sid];
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              section.name ?? '',
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 16),
+                          Text(
+                            'Vehicle Details',
+                            style: TextStyle(
+                                fontFamily: AppThemeData.semiBold,
+                                fontSize: 14,
+                                color: AppThemeData.primary300),
+                          ),
+                          const SizedBox(height: 5),
+                          // ── Vehicle Type ──
+                          if (controller.vehicleTypeOptions.isNotEmpty)
+                            DropdownButtonFormField<String>(
+                              hint: Text('Vehicle Type'.tr(),
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      color: AppThemeData.grey700,
+                                      fontFamily: AppThemeData.regular)),
+                              icon: const Icon(Icons.keyboard_arrow_down),
+                              dropdownColor: isDark
+                                  ? AppThemeData.grey900
+                                  : AppThemeData.grey50,
+                              decoration: _dropdownDecoration(isDark),
+                              value: controller.selectedVehicleTypeName.value,
+                              onChanged: (value) {
+                                if (value != null) {
+                                  controller.selectedVehicleTypeName.value =
+                                      value;
+                                  controller.selectedVehicleTypeId.value =
+                                      controller.vehicleTypeNameToId[value];
+                                  controller.update();
+                                }
+                              },
                               style: TextStyle(
-                                  fontFamily: AppThemeData.semiBold,
                                   fontSize: 14,
-                                  color: AppThemeData.primary300),
+                                  color: isDark
+                                      ? AppThemeData.grey50
+                                      : AppThemeData.grey900,
+                                  fontFamily: AppThemeData.medium),
+                              items: controller.vehicleTypeOptions
+                                  .map((item) => DropdownMenuItem<String>(
+                                        value: item,
+                                        child: Text(item),
+                                      ))
+                                  .toList(),
                             ),
-                            const SizedBox(height: 5),
-                            if (vehicles.isNotEmpty)
-                              DropdownButtonFormField<VehicleType>(
-                                hint: Text('Vehicle Type'.tr,
-                                    style: TextStyle(
-                                        fontSize: 14,
-                                        color: AppThemeData.grey700,
-                                        fontFamily: AppThemeData.regular)),
-                                icon: const Icon(Icons.keyboard_arrow_down),
-                                dropdownColor: isDark
-                                    ? AppThemeData.grey900
-                                    : AppThemeData.grey50,
-                                decoration: _dropdownDecoration(isDark),
-                                value: selectedVehicle,
-                                onChanged: (value) {
-                                  if (value != null) {
-                                    controller.selectedVehiclePerSection[sid!] =
-                                        value;
-                                    controller.update();
-                                  }
-                                },
+                          // ── Ride Type (only if cab section selected) ──
+                          if (controller.rideTypeOptions.isNotEmpty)
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Ride Type'.tr(),
+                                  style: TextStyle(
+                                    fontFamily: AppThemeData.semiBold,
+                                    fontSize: 14,
+                                    color: AppThemeData.primary300,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Obx(
+                                  () => Wrap(
+                                    spacing: 8,
+                                    children:
+                                        controller.rideTypeOptions.map((type) {
+                                      final isSelected =
+                                          controller.selectedRideType.value ==
+                                              type;
+                                      return ChoiceChip(
+                                        label: Text(
+                                          type[0].toUpperCase() +
+                                              type.substring(1),
+                                          style: TextStyle(
+                                            color: isSelected
+                                                ? Colors.white
+                                                : (isDark
+                                                    ? Colors.white70
+                                                    : Colors.grey.shade700),
+                                            fontWeight: isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.w400,
+                                          ),
+                                        ),
+                                        selected: isSelected,
+                                        onSelected: (_) => controller
+                                            .selectedRideType.value = type,
+                                        backgroundColor: isDark
+                                            ? AppThemeData.greyDark100
+                                            : Colors.white,
+                                        selectedColor: AppThemeData.primary300,
+                                        side: BorderSide(
+                                          color: isSelected
+                                              ? AppThemeData.primary300
+                                              : (isDark
+                                                  ? AppThemeData.greyDark400
+                                                  : Colors.grey.shade300),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 8),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          const SizedBox(height: 10),
+                          // ── Car Brand ──
+                          DropdownButtonFormField<CarMakes>(
+                            hint: Text('Car Brand'.tr(),
                                 style: TextStyle(
                                     fontSize: 14,
-                                    color: isDark
-                                        ? AppThemeData.grey50
-                                        : AppThemeData.grey900,
-                                    fontFamily: AppThemeData.medium),
-                                items: vehicles
-                                    .map((item) =>
-                                        DropdownMenuItem<VehicleType>(
-                                            value: item,
-                                            child: Text(item.name.toString())))
-                                    .toList(),
-                              ),
-                            const SizedBox(height: 10),
-                            DropdownButtonFormField<CarMakes>(
-                              hint: Text('Car Brand'.tr,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppThemeData.grey700,
-                                      fontFamily: AppThemeData.regular)),
-                              icon: const Icon(Icons.keyboard_arrow_down),
-                              dropdownColor: isDark
-                                  ? AppThemeData.grey900
-                                  : AppThemeData.grey50,
-                              decoration: _dropdownDecoration(isDark),
-                              value: sectionCarMakes?.value.id == null
-                                  ? null
-                                  : sectionCarMakes?.value,
-                              onChanged: (value) {
-                                if (value != null) {
-                                  controller.selectedCarMakesPerSection[sid]
-                                      ?.value = value;
-                                  controller.getCarModelForSection(sid!);
-                                  controller.update();
-                                }
-                              },
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: isDark
-                                      ? AppThemeData.grey50
-                                      : AppThemeData.grey900,
-                                  fontFamily: AppThemeData.medium),
-                              items: controller.carMakesList
-                                  .map((item) => DropdownMenuItem<CarMakes>(
-                                      value: item,
-                                      child: Text(item.name.toString())))
-                                  .toList(),
-                            ),
-                            const SizedBox(height: 10),
-                            DropdownButtonFormField<CarModel>(
-                              key: ValueKey(
-                                  'carModel_${sectionCarMakes?.value.id}_${sectionCarModels.length}'),
-                              hint: Text('Car Model'.tr,
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppThemeData.grey700,
-                                      fontFamily: AppThemeData.regular)),
-                              icon: const Icon(Icons.keyboard_arrow_down),
-                              dropdownColor: isDark
-                                  ? AppThemeData.grey900
-                                  : AppThemeData.grey50,
-                              decoration: _dropdownDecoration(isDark),
-                              value: sectionCarModel?.value.id == null
-                                  ? null
-                                  : sectionCarModel?.value,
-                              onChanged: (value) {
-                                if (value != null) {
-                                  controller.selectedCarModelPerSection[sid]
-                                      ?.value = value;
-                                  controller.update();
-                                }
-                              },
-                              style: TextStyle(
-                                  fontSize: 14,
-                                  color: isDark
-                                      ? AppThemeData.grey50
-                                      : AppThemeData.grey900,
-                                  fontFamily: AppThemeData.medium),
-                              items: sectionCarModels
-                                  .map((item) => DropdownMenuItem<CarModel>(
-                                      value: item,
-                                      child: Text(item.name.toString())))
-                                  .toList(),
-                            ),
-                            const SizedBox(height: 10),
-                            TextFieldWidget(
-                              title: 'Car Plate Number'.tr,
-                              controller: sectionCarPlate?.value ??
-                                  TextEditingController(),
-                              hintText: 'Enter Car Plate Number'.tr,
-                              textInputAction: TextInputAction.next,
-                            ),
-                            const SizedBox(height: 16),
-                          ],
-                        );
-                      }),
-                    // }).toList(),
+                                    color: AppThemeData.grey700,
+                                    fontFamily: AppThemeData.regular)),
+                            icon: const Icon(Icons.keyboard_arrow_down),
+                            dropdownColor: isDark
+                                ? AppThemeData.grey900
+                                : AppThemeData.grey50,
+                            decoration: _dropdownDecoration(isDark),
+                            value: controller.selectedCarMakes.value,
+                            onChanged: (value) {
+                              if (value != null) {
+                                controller.selectedCarMakes.value = value;
+                                controller.getCarModels();
+                                controller.update();
+                              }
+                            },
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
+                                fontFamily: AppThemeData.medium),
+                            items: controller.carMakesList
+                                .map((item) => DropdownMenuItem<CarMakes>(
+                                    value: item,
+                                    child: Text(item.name.toString())))
+                                .toList(),
+                          ),
+                          const SizedBox(height: 10),
+                          // ── Car Model ──
+                          DropdownButtonFormField<CarModel>(
+                            hint: Text('Car Model'.tr(),
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppThemeData.grey700,
+                                    fontFamily: AppThemeData.regular)),
+                            icon: const Icon(Icons.keyboard_arrow_down),
+                            dropdownColor: isDark
+                                ? AppThemeData.grey900
+                                : AppThemeData.grey50,
+                            decoration: _dropdownDecoration(isDark),
+                            value: controller.selectedCarModel.value,
+                            onChanged: (value) {
+                              if (value != null) {
+                                controller.selectedCarModel.value = value;
+                                controller.update();
+                              }
+                            },
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: isDark
+                                    ? AppThemeData.grey50
+                                    : AppThemeData.grey900,
+                                fontFamily: AppThemeData.medium),
+                            items: controller.carModelList
+                                .map((item) => DropdownMenuItem<CarModel>(
+                                    value: item,
+                                    child: Text(item.name.toString())))
+                                .toList(),
+                          ),
+                          const SizedBox(height: 10),
+                          // ── Car Plate ──
+                          TextFieldWidget(
+                            title: 'Car Plate Number'.tr(),
+                            controller: controller.carPlateController.value,
+                            hintText: 'Enter Car Plate Number'.tr(),
+                            textInputAction: TextInputAction.next,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                      );
+                    }),
 
                     // ── Name fields ───────────────────────────────────────
                     Row(
                       children: [
                         Expanded(
                           child: TextFieldWidget(
-                            title: 'First Name'.tr,
+                            title: 'First Name'.tr(),
                             controller:
                                 controller.firstNameEditingController.value,
-                            hintText: 'Enter First Name'.tr,
+                            hintText: 'Enter First Name'.tr(),
                             prefix: Padding(
                               padding: const EdgeInsets.all(12),
                               child: SvgPicture.asset(
@@ -463,10 +504,10 @@ class SignupScreen extends StatelessWidget {
                         const SizedBox(width: 10),
                         Expanded(
                           child: TextFieldWidget(
-                            title: 'Last Name'.tr,
+                            title: 'Last Name'.tr(),
                             controller:
                                 controller.lastNameEditingController.value,
-                            hintText: 'Enter Last Name'.tr,
+                            hintText: 'Enter Last Name'.tr(),
                             prefix: Padding(
                               padding: const EdgeInsets.all(12),
                               child: SvgPicture.asset(
@@ -485,10 +526,10 @@ class SignupScreen extends StatelessWidget {
 
                     // ── Email ─────────────────────────────────────────────
                     TextFieldWidget(
-                      title: 'Email Address'.tr,
+                      title: 'Email Address'.tr(),
                       textInputType: TextInputType.emailAddress,
                       controller: controller.emailEditingController.value,
-                      hintText: 'Enter Email Address'.tr,
+                      hintText: 'Enter Email Address'.tr(),
                       enable: controller.type.value == "google" ||
                               controller.type.value == "apple"
                           ? false
@@ -507,9 +548,9 @@ class SignupScreen extends StatelessWidget {
 
                     // ── Phone number ──────────────────────────────────────
                     TextFieldWidget(
-                      title: 'Phone Number'.tr,
+                      title: 'Phone Number'.tr(),
                       controller: controller.phoneNUmberEditingController.value,
-                      hintText: 'Enter Phone Number'.tr,
+                      hintText: 'Enter Phone Number'.tr(),
                       enable: controller.type.value == "mobileNumber"
                           ? false
                           : true,
@@ -575,7 +616,7 @@ class SignupScreen extends StatelessWidget {
                             mainAxisAlignment: MainAxisAlignment.start,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Zone".tr,
+                              Text("Zone".tr(),
                                   style: TextStyle(
                                       fontFamily: AppThemeData.semiBold,
                                       fontSize: 14,
@@ -584,7 +625,7 @@ class SignupScreen extends StatelessWidget {
                                           : AppThemeData.grey800)),
                               const SizedBox(height: 5),
                               DropdownButtonFormField<ZoneModel>(
-                                hint: Text('Select zone'.tr,
+                                hint: Text('Select zone'.tr(),
                                     style: TextStyle(
                                         fontSize: 14,
                                         color: isDark
@@ -675,10 +716,10 @@ class SignupScreen extends StatelessWidget {
                         : Column(
                             children: [
                               TextFieldWidget(
-                                title: 'Password'.tr,
+                                title: 'Password'.tr(),
                                 controller:
                                     controller.passwordEditingController.value,
-                                hintText: 'Enter Password'.tr,
+                                hintText: 'Enter Password'.tr(),
                                 obscureText: controller.passwordVisible.value,
                                 prefix: Padding(
                                   padding: const EdgeInsets.all(12),
@@ -711,10 +752,10 @@ class SignupScreen extends StatelessWidget {
                                 textInputAction: TextInputAction.next,
                               ),
                               TextFieldWidget(
-                                title: 'Confirm Password'.tr,
+                                title: 'Confirm Password'.tr(),
                                 controller: controller
                                     .conformPasswordEditingController.value,
-                                hintText: 'Enter Confirm Password'.tr,
+                                hintText: 'Enter Confirm Password'.tr(),
                                 obscureText:
                                     controller.conformPasswordVisible.value,
                                 prefix: Padding(
@@ -790,7 +831,7 @@ class SignupScreen extends StatelessWidget {
                                                             .vehicleLicenseImage
                                                             .value ==
                                                         null
-                                                    ? Icon(Icons.image,
+                                                    ? const Icon(Icons.image,
                                                         size: 50)
                                                     : null,
                                               ),
@@ -798,7 +839,8 @@ class SignupScreen extends StatelessWidget {
                                                 bottom: 0,
                                                 right: 0,
                                                 child: IconButton(
-                                                  icon: Icon(Icons.camera_alt,
+                                                  icon: const Icon(
+                                                      Icons.camera_alt,
                                                       size: 20),
                                                   onPressed: () => controller
                                                       .pickLicenseImage(false),
@@ -848,7 +890,7 @@ class SignupScreen extends StatelessWidget {
                                                             .driverLicenseImage
                                                             .value ==
                                                         null
-                                                    ? Icon(Icons.image,
+                                                    ? const Icon(Icons.image,
                                                         size: 50)
                                                     : null,
                                               ),
@@ -856,7 +898,8 @@ class SignupScreen extends StatelessWidget {
                                                 bottom: 0,
                                                 right: 0,
                                                 child: IconButton(
-                                                  icon: Icon(Icons.camera_alt,
+                                                  icon: const Icon(
+                                                      Icons.camera_alt,
                                                       size: 20),
                                                   onPressed: () => controller
                                                       .pickLicenseImage(true),
@@ -880,37 +923,6 @@ class SignupScreen extends StatelessWidget {
             bottomNavigationBar: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Text.rich(
-                //   TextSpan(
-                //     children: [
-                //       TextSpan(
-                //         text: 'Log in with'.tr,
-                //         style: TextStyle(
-                //             color: isDark
-                //                 ? AppThemeData.grey50
-                //                 : AppThemeData.grey900,
-                //             fontFamily: AppThemeData.medium,
-                //             fontWeight: FontWeight.w500),
-                //       ),
-                //       const WidgetSpan(child: SizedBox(width: 10)),
-                //       TextSpan(
-                //         recognizer: TapGestureRecognizer()
-                //           ..onTap = () {
-                //             Get.to(const PhoneNumberScreen());
-                //           },
-                //         text: 'Mobile Number'.tr,
-                //         style: TextStyle(
-                //           color: AppThemeData.primary300,
-                //           fontFamily: AppThemeData.medium,
-                //           fontWeight: FontWeight.w500,
-                //           decoration: TextDecoration.underline,
-                //           decorationColor: AppThemeData.primary300,
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-                // const SizedBox(height: 10),
                 InkWell(
                   onTap: () {
                     if (controller.profileImage.value == null) {
@@ -919,7 +931,7 @@ class SignupScreen extends StatelessWidget {
                       return;
                     }
                     if (controller.carImage.value == null) {
-                      ShowToastDialog.showToast('Please upload a car image.');
+                      ShowToastDialog.showToast('Please upload a car image.'.tr());
                       return;
                     }
                     if (controller.vehicleLicenseImage.value == null) {
@@ -932,36 +944,36 @@ class SignupScreen extends StatelessWidget {
                           'Please upload a driver license image.');
                       return;
                     }
-                    if (controller.selectedSection.value == null) {
+                    if (controller.selectedSections.isEmpty) {
                       ShowToastDialog.showToast(
-                          "Please select at least one section".tr);
+                          "Please select at least one section".tr());
                       return;
                     }
                     if (controller
                         .firstNameEditingController.value.text.isEmpty) {
-                      ShowToastDialog.showToast("Please enter first name".tr);
+                      ShowToastDialog.showToast("Please enter first name".tr());
                     } else if (controller
                         .lastNameEditingController.value.text.isEmpty) {
-                      ShowToastDialog.showToast("Please enter last name".tr);
+                      ShowToastDialog.showToast("Please enter last name".tr());
                     } else if (controller
                         .emailEditingController.value.text.isEmpty) {
-                      ShowToastDialog.showToast("Please enter valid email".tr);
+                      ShowToastDialog.showToast("Please enter valid email".tr());
                     } else if (controller
                         .phoneNUmberEditingController.value.text.isEmpty) {
-                      ShowToastDialog.showToast("Please enter Phone number".tr);
+                      ShowToastDialog.showToast("Please enter Phone number".tr());
                     } else if (controller.type.value != "google" &&
                         controller.type.value != "apple" &&
                         controller.type.value != "mobileNumber" &&
                         controller
                             .passwordEditingController.value.text.isEmpty) {
-                      ShowToastDialog.showToast("Please enter password".tr);
+                      ShowToastDialog.showToast("Please enter password".tr());
                     } else if (controller.type.value != "google" &&
                         controller.type.value != "apple" &&
                         controller.type.value != "mobileNumber" &&
                         controller.conformPasswordEditingController.value.text
                             .isEmpty) {
                       ShowToastDialog.showToast(
-                          "Please enter Confirm password".tr);
+                          "Please enter Confirm password".tr());
                     } else if (controller.type.value != "google" &&
                         controller.type.value != "apple" &&
                         controller.type.value != "mobileNumber" &&
@@ -969,10 +981,10 @@ class SignupScreen extends StatelessWidget {
                             controller
                                 .conformPasswordEditingController.value.text) {
                       ShowToastDialog.showToast(
-                          "Password and Confirm password doesn't match".tr);
+                          "Password and Confirm password doesn't match".tr());
                     } else if (controller.selectedValue.value == "Individual" &&
                         controller.selectedZone.value.id == null) {
-                      ShowToastDialog.showToast("Please select zone".tr);
+                      ShowToastDialog.showToast("Please select zone".tr());
                     } else {
                       controller.signUpWithEmailAndPassword();
                     }
@@ -983,7 +995,7 @@ class SignupScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Text(
-                        "Sign up".tr,
+                        "Sign up".tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                             color: AppThemeData.grey50,

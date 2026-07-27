@@ -118,7 +118,7 @@ class _PaymentURLScreenState extends State<PaymentURLScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-            title: const Text("Payment").tr(),
+            title: Text("Payment".tr()),
             centerTitle: false,
             leading: GestureDetector(
               onTap: () {
@@ -160,15 +160,15 @@ class _PaymentURLScreenState extends State<PaymentURLScreen> {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Cancel Payment').tr(),
+          title: Text('Cancel Payment'.tr()),
           content: SingleChildScrollView(
-            child: Text("Are you sure you want to cancel payment?").tr(),
+            child: Text("Are you sure you want to cancel payment?".tr()),
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text(
-                'Yes',
-                style: TextStyle(color: Colors.red),
+              child: Text(
+                'Yes'.tr(),
+                style: const TextStyle(color: Colors.red),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -176,9 +176,9 @@ class _PaymentURLScreenState extends State<PaymentURLScreen> {
               },
             ),
             TextButton(
-              child: const Text(
-                'No',
-                style: TextStyle(color: Colors.green),
+              child: Text(
+                'No'.tr(),
+                style: const TextStyle(color: Colors.green),
               ),
               onPressed: () {
                 Navigator.of(context).pop();

@@ -1,6 +1,8 @@
 import 'package:door_delights_driver/app/parcel_screen/parcel_order_details.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../constant/constant.dart';
 import '../../controllers/parcel_order_list_controller.dart';
 import '../../themes/app_them_data.dart';
@@ -54,7 +56,7 @@ class ParcelOrderListScreen extends StatelessWidget {
                               if (orders.isEmpty) {
                                 return Center(
                                   child: Text(
-                                    "No orders found".tr,
+                                    "No orders found".tr(),
                                     style: AppThemeData.mediumTextStyle(
                                         color: isDark
                                             ? AppThemeData.greyDark900
@@ -109,7 +111,7 @@ class ParcelOrderListScreen extends StatelessWidget {
                                             child: Row(
                                               children: [
                                                 Text(
-                                                  "${'Section:'.tr} ",
+                                                  "${'Section:'.tr()} ",
                                                   style: AppThemeData
                                                       .regularTextStyle(
                                                           fontSize: 13,
@@ -177,7 +179,7 @@ class ParcelOrderListScreen extends StatelessWidget {
                                                   children: [
                                                     _infoSection(
                                                       "Pickup Address (Sender):"
-                                                          .tr,
+                                                          .tr(),
                                                       order.sender?.name ?? '',
                                                       order.sender?.address ??
                                                           '',
@@ -191,7 +193,7 @@ class ParcelOrderListScreen extends StatelessWidget {
                                                     const SizedBox(height: 16),
                                                     _infoSection(
                                                       "Delivery Address (Receiver):"
-                                                          .tr,
+                                                          .tr(),
                                                       order.receiver?.name ??
                                                           '',
                                                       order.receiver?.address ??

@@ -21,7 +21,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -36,6 +38,7 @@ class OwnerDashboardScreen extends StatelessWidget {
     final themeController = Get.find<ThemeController>();
     return Obx(() {
       final isDark = themeController.isDark.value;
+      final _ = themeController.localeCode.value;
       return GetX(
         init: OwnerDashboardController(),
         builder: (controller) {
@@ -48,7 +51,7 @@ class OwnerDashboardScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome Back 👋'.tr,
+                    'Welcome Back 👋'.tr(),
                     style: TextStyle(
                       color:
                           isDark ? AppThemeData.grey50 : AppThemeData.grey900,
@@ -57,7 +60,7 @@ class OwnerDashboardScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    Constant.userModel!.fullName().tr,
+                    Constant.userModel!.fullName(),
                     style: TextStyle(
                       color:
                           isDark ? AppThemeData.grey50 : AppThemeData.grey900,
@@ -167,6 +170,7 @@ class DrawerView extends StatelessWidget {
     final themeController = Get.find<ThemeController>();
     return Obx(() {
       var isDark = themeController.isDark.value;
+      final _ = themeController.localeCode.value;
       return GetX(
           init: OwnerDashboardController(),
           builder: (controller) {
@@ -201,7 +205,7 @@ class DrawerView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                Constant.userModel!.fullName().tr,
+                                Constant.userModel!.fullName(),
                                 style: TextStyle(
                                   color: isDark
                                       ? AppThemeData.grey50
@@ -211,7 +215,7 @@ class DrawerView extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '${Constant.userModel!.email}'.tr,
+                                '${Constant.userModel!.email}',
                                 style: TextStyle(
                                   color: isDark
                                       ? AppThemeData.grey50
@@ -231,7 +235,7 @@ class DrawerView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
-                        'About App'.tr,
+                        'About App'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey400
@@ -254,7 +258,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Home'.tr,
+                        'Home'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -281,7 +285,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Orders'.tr,
+                        'Orders'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -310,7 +314,7 @@ class DrawerView extends StatelessWidget {
                             size: 24),
                         dense: true,
                         title: Text(
-                          'Wallet'.tr,
+                          'Wallet'.tr(),
                           style: TextStyle(
                             color: isDark
                                 ? AppThemeData.grey100
@@ -338,7 +342,7 @@ class DrawerView extends StatelessWidget {
                             size: 24),
                         dense: true,
                         title: Text(
-                          'Withdrawal Method'.tr,
+                          'Withdrawal Method'.tr(),
                           style: TextStyle(
                             color: isDark
                                 ? AppThemeData.grey100
@@ -366,7 +370,7 @@ class DrawerView extends StatelessWidget {
                                 size: 24),
                             dense: true,
                             title: Text(
-                              'Document Verification'.tr,
+                              'Document Verification'.tr(),
                               style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey100
@@ -394,7 +398,7 @@ class DrawerView extends StatelessWidget {
                             size: 24),
                         dense: true,
                         title: Text(
-                          'Inbox'.tr,
+                          'Inbox'.tr(),
                           style: TextStyle(
                             color: isDark
                                 ? AppThemeData.grey100
@@ -414,7 +418,7 @@ class DrawerView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
-                        'App Preferences'.tr,
+                        'App Preferences'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey400
@@ -436,7 +440,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Change Language'.tr,
+                        'Change Language'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -469,7 +473,7 @@ class DrawerView extends StatelessWidget {
                       ),
                       dense: true,
                       title: Text(
-                        'Dark Mode'.tr,
+                        'Dark Mode'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -484,7 +488,7 @@ class DrawerView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
-                        'Social'.tr,
+                        'Social'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey400
@@ -506,7 +510,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Share app'.tr,
+                        'Share app'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -517,8 +521,8 @@ class DrawerView extends StatelessWidget {
                       onTap: () {
                         Get.back();
                         Share.share(
-                            '${'Check out DoorDelights, your ultimate food delivery application!'.tr} \n\n${'Google Play:'.tr} ${Constant.googlePlayLink} \n\n${'App Store:'.tr} ${Constant.appStoreLink}',
-                            subject: 'Look what I made!'.tr);
+                            '${'Check out DoorDelights, your ultimate food delivery application!'.tr()} \n\n${'Google Play:'.tr()} ${Constant.googlePlayLink} \n\n${'App Store:'.tr()} ${Constant.appStoreLink}',
+                            subject: 'Look what I made!'.tr());
                       },
                     ),
                     ListTile(
@@ -533,7 +537,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Rate the app'.tr,
+                        'Rate the app'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -553,7 +557,7 @@ class DrawerView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
-                        'Legal'.tr,
+                        'Legal'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey400
@@ -577,7 +581,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Terms and Conditions'.tr,
+                        'Terms and Conditions'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -604,7 +608,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Privacy Policy'.tr,
+                        'Privacy Policy'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -633,7 +637,7 @@ class DrawerView extends StatelessWidget {
                             size: 24),
                         dense: true,
                         title: Text(
-                          'Change Password'.tr,
+                          'Change Password'.tr(),
                           style: TextStyle(
                             color: isDark
                                 ? AppThemeData.grey100
@@ -666,7 +670,7 @@ class DrawerView extends StatelessWidget {
                       ),
                       dense: true,
                       title: Text(
-                        'Log out'.tr,
+                        'Log out'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.danger300
@@ -680,12 +684,12 @@ class DrawerView extends StatelessWidget {
                             context: context,
                             builder: (BuildContext context) {
                               return CustomDialogBox(
-                                title: "Log out".tr,
+                                title: "Log out".tr(),
                                 descriptions:
                                     "Are you sure you want to log out? You will need to enter your credentials to log back in."
-                                        .tr,
-                                positiveString: "Log out".tr,
-                                negativeString: "Cancel".tr,
+                                        .tr(),
+                                positiveString: "Log out".tr(),
+                                negativeString: "Cancel".tr(),
                                 positiveClick: () async {
                                   await AudioPlayerService.playSound(false);
                                   Constant.userModel!.fcmToken = "";
@@ -715,24 +719,24 @@ class DrawerView extends StatelessWidget {
                             context: context,
                             builder: (BuildContext context) {
                               return CustomDialogBox(
-                                title: "Delete Account".tr,
+                                title: "Delete Account".tr(),
                                 descriptions:
                                     "Are you sure you want to delete your account? This action is irreversible and will permanently remove all your data."
-                                        .tr,
-                                positiveString: "Delete".tr,
-                                negativeString: "Cancel".tr,
+                                        .tr(),
+                                positiveString: "Delete".tr(),
+                                negativeString: "Cancel".tr(),
                                 positiveClick: () async {
-                                  ShowToastDialog.showLoader("Please wait".tr);
+                                  ShowToastDialog.showLoader("Please wait".tr());
                                   await FireStoreUtils.deleteUser()
                                       .then((value) {
                                     ShowToastDialog.closeLoader();
                                     if (value == true) {
                                       ShowToastDialog.showToast(
-                                          "Account deleted successfully".tr);
+                                          "Account deleted successfully".tr());
                                       Get.offAll(const LoginScreen());
                                     } else {
                                       ShowToastDialog.showToast(
-                                          "Contact Administrator".tr);
+                                          "Contact Administrator".tr());
                                     }
                                   });
                                 },
@@ -760,7 +764,7 @@ class DrawerView extends StatelessWidget {
                             width: 10,
                           ),
                           Text(
-                            'Delete Account'.tr,
+                            'Delete Account'.tr(),
                             style: TextStyle(
                               color: isDark
                                   ? AppThemeData.danger300

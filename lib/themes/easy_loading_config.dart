@@ -2,7 +2,9 @@ import 'package:door_delights_driver/themes/app_them_data.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 Future<void> configEasyLoading() async {
   final themeController = Get.find<ThemeController>();

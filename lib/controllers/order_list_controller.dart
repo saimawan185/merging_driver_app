@@ -4,7 +4,9 @@ import 'package:door_delights_driver/constant/collection_name.dart';
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/models/order_model.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class OrderListController extends GetxController {
   RxBool isLoading = true.obs;

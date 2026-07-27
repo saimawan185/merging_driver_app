@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import 'app_them_data.dart';
 import 'responsive.dart';
@@ -57,7 +59,7 @@ class RoundedButtonFill extends StatelessWidget {
                   child: icon),
             isCenter == true
                 ? Text(
-                    title.tr,
+                    title.tr(),
                     textAlign: TextAlign.center,
                     style: AppThemeData.semiBoldTextStyle(
                         fontSize: fontSizes ?? 16,
@@ -67,7 +69,7 @@ class RoundedButtonFill extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.only(right: isRight == null ? 0 : 30),
                       child: Text(
-                        title.tr,
+                        title.tr(),
                         textAlign: TextAlign.center,
                         style: AppThemeData.semiBoldTextStyle(
                             fontSize: fontSizes ?? 16,

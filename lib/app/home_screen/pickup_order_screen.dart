@@ -10,7 +10,9 @@ import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:door_delights_driver/widget/my_separator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class PickupOrderScreen extends StatelessWidget {
   const PickupOrderScreen({super.key});
@@ -36,7 +38,7 @@ class PickupOrderScreen extends StatelessWidget {
                       Constant.orderId(
                               orderId:
                                   controller.orderModel.value.id.toString())
-                          .tr,
+                          .tr(),
                       style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey50
@@ -55,7 +57,7 @@ class PickupOrderScreen extends StatelessWidget {
                               child: Image.asset(
                                   "assets/images/order_pickup.gif")),
                           Text(
-                            "Order Ready to pickup".tr,
+                            "Order Ready to pickup".tr(),
                             style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey50
@@ -68,7 +70,7 @@ class PickupOrderScreen extends StatelessWidget {
                           ),
                           Text(
                             "Your order has been ready pickup the order and deliver to the customer’s locations."
-                                .tr,
+                                .tr(),
                             style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey50
@@ -79,7 +81,7 @@ class PickupOrderScreen extends StatelessWidget {
                             height: 20,
                           ),
                           Text(
-                            "Item and Deliver to the".tr,
+                            "Item and Deliver to the".tr(),
                             style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey100
@@ -237,7 +239,7 @@ class PickupOrderScreen extends StatelessWidget {
                                                               .start,
                                                       children: [
                                                         Text(
-                                                          "Variants".tr,
+                                                          "Variants".tr(),
                                                           textAlign:
                                                               TextAlign.start,
                                                           style: TextStyle(
@@ -322,7 +324,7 @@ class PickupOrderScreen extends StatelessWidget {
                                                         height: 10,
                                                       ),
                                                       Text(
-                                                        "Addons".tr,
+                                                        "Addons".tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: TextStyle(
@@ -417,7 +419,7 @@ class PickupOrderScreen extends StatelessWidget {
                                         },
                                       ),
                                       Text(
-                                        "Confirm Pickup".tr,
+                                        "Confirm Pickup".tr(),
                                         style: TextStyle(
                                             color: isDark
                                                 ? AppThemeData.success400
@@ -464,7 +466,7 @@ class PickupOrderScreen extends StatelessWidget {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              "Deliver to the".tr,
+                                              "Deliver to the".tr(),
                                               textAlign: TextAlign.start,
                                               style: TextStyle(
                                                 fontFamily:
@@ -518,9 +520,9 @@ class PickupOrderScreen extends StatelessWidget {
                   bottomNavigationBar: InkWell(
                     onTap: () async {
                       if (controller.conformPickup.value == false) {
-                        ShowToastDialog.showToast("Conform pickup order".tr);
+                        ShowToastDialog.showToast("Conform pickup order".tr());
                       } else {
-                        ShowToastDialog.showLoader("Please wait".tr);
+                        ShowToastDialog.showLoader("Please wait".tr());
                         controller.orderModel.value.status =
                             Constant.orderInTransit;
                         await FireStoreUtils.setOrder(
@@ -535,7 +537,7 @@ class PickupOrderScreen extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         child: Text(
-                          "Picked Order".tr,
+                          "Picked Order".tr(),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: isDark

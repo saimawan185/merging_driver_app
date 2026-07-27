@@ -1,6 +1,8 @@
 import 'package:door_delights_driver/constant/show_toast_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class OtpController extends GetxController {
@@ -39,7 +41,7 @@ class OtpController extends GetxController {
       codeSent: (String verificationId0, int? resendToken0) async {
         verificationId.value = verificationId0;
         resendToken.value = resendToken0!;
-        ShowToastDialog.showToast("OTP sent".tr);
+        ShowToastDialog.showToast("OTP sent".tr());
       },
       timeout: const Duration(seconds: 25),
       forceResendingToken: resendToken.value,

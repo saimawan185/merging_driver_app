@@ -9,7 +9,9 @@ import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:latlong2/latlong.dart' as latLng2;
@@ -158,7 +160,7 @@ class DriverLocationController extends GetxController {
                 children: [
                   Expanded(
                     child: RoundedButtonFill(
-                      title: "Call".tr,
+                      title: "Call".tr(),
                       height: 5,
                       width: 100,
                       borderRadius: 10,
@@ -172,7 +174,7 @@ class DriverLocationController extends GetxController {
                   const SizedBox(width: 20),
                   Expanded(
                     child: RoundedButtonFill(
-                      title: "View Booking".tr,
+                      title: "View Booking".tr(),
                       height: 5,
                       width: 100,
                       borderRadius: 10,

@@ -6,7 +6,9 @@ import '../../models/rental_order_model.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/round_button_fill.dart';
 import '../../themes/theme_controller.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class RentalOrderListScreen extends StatelessWidget {
@@ -55,7 +57,7 @@ class RentalOrderListScreen extends StatelessWidget {
                           if (orders.isEmpty) {
                             return Center(
                               child: Text(
-                                "No orders found".tr,
+                                "No orders found".tr(),
                                 style: AppThemeData.mediumTextStyle(
                                     color: isDark
                                         ? AppThemeData.greyDark900
@@ -187,7 +189,7 @@ class RentalOrderListScreen extends StatelessWidget {
                                       Row(
                                         children: [
                                           Text(
-                                            "${'Section:'.tr} ",
+                                            "${'Section:'.tr()} ",
                                             style:
                                                 AppThemeData.regularTextStyle(
                                                     fontSize: 13,
@@ -210,7 +212,7 @@ class RentalOrderListScreen extends StatelessWidget {
                                         ],
                                       ),
                                       const SizedBox(height: 12),
-                                      Text("Vehicle Type :".tr,
+                                      Text("Vehicle Type :".tr(),
                                           style: AppThemeData.boldTextStyle(
                                               fontSize: 16,
                                               color: isDark
@@ -294,7 +296,7 @@ class RentalOrderListScreen extends StatelessWidget {
                                           ],
                                         ),
                                       ),
-                                      Text("Package info :".tr,
+                                      Text("Package info :".tr(),
                                           style: AppThemeData.boldTextStyle(
                                               fontSize: 16,
                                               color: isDark
@@ -369,7 +371,7 @@ class RentalOrderListScreen extends StatelessWidget {
                                                 Constant.driverAccepted)
                                           Expanded(
                                             child: RoundedButtonFill(
-                                              title: "Cancel Booking".tr,
+                                              title: "Cancel Booking".tr(),
                                               onPress: () {
                                                 // controller.cancelRentalRequest(order);
                                               },

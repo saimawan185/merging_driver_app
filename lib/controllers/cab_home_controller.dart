@@ -21,7 +21,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
@@ -160,7 +162,7 @@ class CabHomeController extends GetxController {
   Future<void> acceptOrder() async {
     try {
       await AudioPlayerService.playSound(false);
-      ShowToastDialog.showLoader("Please wait".tr);
+      ShowToastDialog.showLoader("Please wait".tr());
 
       driverModel.value.inProgressOrderID ??= '';
       driverModel.value.inProgressOrderID = currentOrder.value.id;
@@ -254,7 +256,7 @@ class CabHomeController extends GetxController {
 
   Future<void> onRideStatus() async {
     await AudioPlayerService.playSound(false);
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     currentOrder.value.status = Constant.orderInTransit;
     await FireStoreUtils.setCabOrder(currentOrder.value);
     ShowToastDialog.closeLoader();
@@ -263,7 +265,7 @@ class CabHomeController extends GetxController {
 
   Future<void> completeRide() async {
     try {
-      ShowToastDialog.showLoader("Please wait".tr);
+      ShowToastDialog.showLoader("Please wait".tr());
       await updateCabWalletAmount(currentOrder.value);
 
       await FireStoreUtils.getFirestOrderOrNOtCabService(currentOrder.value)

@@ -5,7 +5,9 @@ import 'package:door_delights_driver/themes/responsive.dart';
 import 'package:door_delights_driver/themes/text_field_widget.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class BankDetailsScreen extends StatelessWidget {
   const BankDetailsScreen({super.key});
@@ -25,7 +27,7 @@ class BankDetailsScreen extends StatelessWidget {
                   isDark ? AppThemeData.surfaceDark : AppThemeData.surface,
               centerTitle: false,
               title: Text(
-                "Bank Setup".tr,
+                "Bank Setup".tr(),
                 style: TextStyle(
                     color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
                     fontSize: 18,
@@ -38,29 +40,29 @@ class BankDetailsScreen extends StatelessWidget {
                 child: Column(
                   children: [
                     TextFieldWidget(
-                      title: 'Bank Name'.tr,
+                      title: 'Bank Name'.tr(),
                       controller: controller.bankNameController.value,
-                      hintText: 'Enter Bank Name'.tr,
+                      hintText: 'Enter Bank Name'.tr(),
                     ),
                     TextFieldWidget(
-                      title: 'Branch Name'.tr,
+                      title: 'Branch Name'.tr(),
                       controller: controller.branchNameController.value,
-                      hintText: 'Enter Branch Name'.tr,
+                      hintText: 'Enter Branch Name'.tr(),
                     ),
                     TextFieldWidget(
-                      title: 'Holder Name'.tr,
+                      title: 'Holder Name'.tr(),
                       controller: controller.holderNameController.value,
-                      hintText: 'Enter Holder Name'.tr,
+                      hintText: 'Enter Holder Name'.tr(),
                     ),
                     TextFieldWidget(
-                      title: 'Account Number'.tr,
+                      title: 'Account Number'.tr(),
                       controller: controller.accountNoController.value,
-                      hintText: 'Enter Account Number'.tr,
+                      hintText: 'Enter Account Number'.tr(),
                     ),
                     TextFieldWidget(
-                      title: 'Other Information'.tr,
+                      title: 'Other Information'.tr(),
                       controller: controller.otherInfoController.value,
-                      hintText: 'Enter Other Information'.tr,
+                      hintText: 'Enter Other Information'.tr(),
                     ),
                   ],
                 ),
@@ -69,13 +71,13 @@ class BankDetailsScreen extends StatelessWidget {
             bottomNavigationBar: InkWell(
               onTap: () {
                 if (controller.bankNameController.value.text.isEmpty) {
-                  ShowToastDialog.showToast("Please enter bank name".tr);
+                  ShowToastDialog.showToast("Please enter bank name".tr());
                 } else if (controller.branchNameController.value.text.isEmpty) {
-                  ShowToastDialog.showToast("Please enter branch name".tr);
+                  ShowToastDialog.showToast("Please enter branch name".tr());
                 } else if (controller.holderNameController.value.text.isEmpty) {
-                  ShowToastDialog.showToast("Please enter holder name".tr);
+                  ShowToastDialog.showToast("Please enter holder name".tr());
                 } else if (controller.accountNoController.value.text.isEmpty) {
-                  ShowToastDialog.showToast("Please enter account number".tr);
+                  ShowToastDialog.showToast("Please enter account number".tr());
                 } else {
                   controller.saveBank();
                 }
@@ -86,7 +88,7 @@ class BankDetailsScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(
-                    "Save Details".tr,
+                    "Save Details".tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,

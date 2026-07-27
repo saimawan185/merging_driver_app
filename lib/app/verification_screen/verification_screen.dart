@@ -5,7 +5,9 @@ import 'package:door_delights_driver/models/driver_document_model.dart';
 import 'package:door_delights_driver/themes/app_them_data.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import 'verification_details_upload_screen.dart';
 
@@ -32,7 +34,7 @@ class VerificationScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Document Verification".tr,
+                            "Document Verification".tr(),
                             style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey100
@@ -45,7 +47,7 @@ class VerificationScreen extends StatelessWidget {
                           ),
                           Text(
                             "Upload your ID Proof to complete the verification process and ensure compliance."
-                                .tr,
+                                .tr(),
                             style: TextStyle(
                                 fontSize: 14,
                                 color: isDark
@@ -125,7 +127,7 @@ class VerificationScreen extends StatelessWidget {
                                                 height: 5,
                                               ),
                                               Text(
-                                                "${documentModel.frontSide == true ? "Front" : ""} ${documentModel.backSide == true ? "And Back" : ""} ${'Photo'.tr}",
+                                                "${documentModel.frontSide == true ? "Front" : ""} ${documentModel.backSide == true ? "And Back" : ""} ${'Photo'.tr()}",
                                                 style: TextStyle(
                                                   color: isDark
                                                       ? AppThemeData.grey300
@@ -142,13 +144,13 @@ class VerificationScreen extends StatelessWidget {
                                               horizontal: 10, vertical: 6),
                                           child: Text(
                                             documents.status == "approved"
-                                                ? "Verified".tr
+                                                ? "Verified".tr()
                                                 : documents.status == "rejected"
-                                                    ? "Rejected".tr
+                                                    ? "Rejected".tr()
                                                     : documents.status ==
                                                             "uploaded"
-                                                        ? "Uploaded".tr
-                                                        : "Pending".tr,
+                                                        ? "Uploaded".tr()
+                                                        : "Pending".tr(),
                                             style: TextStyle(
                                                 color: documents.status ==
                                                         "approved"

@@ -3,7 +3,9 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class MidtransScreen extends StatefulWidget {
@@ -92,14 +94,14 @@ class _MidtransScreenState extends State<MidtransScreen> {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Cancel Payment'.tr),
+          title: Text('Cancel Payment'.tr()),
           content: SingleChildScrollView(
-            child: Text("cancelPayment?".tr),
+            child: Text("cancelPayment?".tr()),
           ),
           actions: <Widget>[
             TextButton(
               child: Text(
-                'Cancel'.tr,
+                'Cancel'.tr(),
                 style: const TextStyle(color: Colors.red),
               ),
               onPressed: () {
@@ -109,7 +111,7 @@ class _MidtransScreenState extends State<MidtransScreen> {
             ),
             TextButton(
               child: Text(
-                'Continue'.tr,
+                'Continue'.tr(),
                 style: const TextStyle(color: Colors.green),
               ),
               onPressed: () {

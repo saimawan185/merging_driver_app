@@ -5,7 +5,9 @@ import 'dart:convert';
 
 import 'package:door_delights_driver/models/payment_model/orange_money.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:http/http.dart' as http;
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -157,14 +159,14 @@ class _OrangeMoneyScreenState extends State<OrangeMoneyScreen> {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Cancel Payment'.tr),
+          title: Text('Cancel Payment'.tr()),
           content: SingleChildScrollView(
-            child: Text("cancelPayment?".tr),
+            child: Text("cancelPayment?".tr()),
           ),
           actions: <Widget>[
             TextButton(
               child: Text(
-                'Cancel'.tr,
+                'Cancel'.tr(),
                 style: const TextStyle(color: Colors.red),
               ),
               onPressed: () {
@@ -174,7 +176,7 @@ class _OrangeMoneyScreenState extends State<OrangeMoneyScreen> {
             ),
             TextButton(
               child: Text(
-                'Continue'.tr,
+                'Continue'.tr(),
                 style: const TextStyle(color: Colors.green),
               ),
               onPressed: () {

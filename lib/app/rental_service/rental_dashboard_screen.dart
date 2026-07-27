@@ -22,21 +22,115 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../ui/home/HomeScreen.dart';
 import '../../ui/wallet/walletScreen.dart';
+import '../cab_screen/cab_home_screen.dart';
+import '../home_screen/home_screen_multiple_order.dart';
+import '../parcel_screen/parcel_home_screen.dart';
 import '../vehicle_information_screen/vehicle_information_screen.dart';
 
 class RentalDashboardScreen extends StatelessWidget {
   const RentalDashboardScreen({super.key});
+
+  Widget _buildHomeWithBottomNav(
+      RentalDashboardController controller, BuildContext context) {
+    final sections = controller.userSections;
+    if (sections.isEmpty) {
+      // Fallback: show delivery home
+      return Constant.singleOrderReceive
+          ? const HomeScreen(isAppBarShow: false)
+          : const HomeScreenMultipleOrder();
+    }
+
+    // Build bottom nav items
+    final items = sections.map((section) {
+      final flag = section.serviceTypeFlag ?? 'delivery-service';
+      return BottomNavigationBarItem(
+        icon: Icon(_getSectionIcon(flag)),
+        label: _getSectionLabel(flag).tr(),
+      );
+    }).toList();
+
+    // Build widgets for each section
+    final widgets = sections.map((section) {
+      final flag = section.serviceTypeFlag ?? 'delivery-service';
+      return _buildSectionWidget(flag);
+    }).toList();
+
+    return Scaffold(
+      // No app bar here – the parent scaffold already has one
+      body: IndexedStack(
+        index: controller.sectionIndex.value,
+        children: widgets,
+      ),
+      bottomNavigationBar: Obx(
+        () => BottomNavigationBar(
+          currentIndex: controller.sectionIndex.value,
+          onTap: (index) => controller.sectionIndex.value = index,
+          items: items,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          selectedItemColor: AppThemeData.parcelService400,
+          unselectedItemColor: Colors.grey,
+          elevation: 8,
+        ),
+      ),
+    );
+  }
+
+  String _getSectionLabel(String flag) {
+    switch (flag) {
+      case 'cab-service':
+        return 'Cab';
+      case 'parcel_delivery':
+        return 'Parcel';
+      case 'rental-service':
+        return 'Rental';
+      default:
+        return 'Delivery';
+    }
+  }
+
+  IconData _getSectionIcon(String flag) {
+    switch (flag) {
+      case 'cab-service':
+        return Icons.directions_car;
+      case 'parcel_delivery':
+        return Icons.local_shipping;
+      case 'rental-service':
+        return Icons.home_work;
+      default:
+        return Icons.restaurant;
+    }
+  }
+
+  Widget _buildSectionWidget(String flag) {
+    switch (flag) {
+      case 'cab-service':
+        return CabHomeScreen(refresh: () {});
+      case 'parcel_delivery':
+        return const ParcelHomeScreen();
+      case 'rental-service':
+        return const RentalHomeScreen();
+      default:
+        return Constant.singleOrderReceive
+            ? const HomeScreen(isAppBarShow: false)
+            : const HomeScreenMultipleOrder();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
     return Obx(() {
       final isDark = themeController.isDark.value;
+      final _ = themeController.localeCode.value;
       return GetX(
         init: RentalDashboardController(),
         builder: (controller) {
@@ -49,7 +143,7 @@ class RentalDashboardScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Welcome Back 👋'.tr,
+                    'Welcome Back 👋'.tr(),
                     style: TextStyle(
                       color:
                           isDark ? AppThemeData.grey50 : AppThemeData.grey900,
@@ -58,7 +152,7 @@ class RentalDashboardScreen extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    Constant.userModel!.fullName().tr,
+                    Constant.userModel!.fullName(),
                     style: TextStyle(
                       color:
                           isDark ? AppThemeData.grey50 : AppThemeData.grey900,
@@ -118,7 +212,7 @@ class RentalDashboardScreen extends StatelessWidget {
             ),
             drawer: const DrawerView(),
             body: controller.drawerIndex.value == 0
-                ? const RentalHomeScreen()
+                ? _buildHomeWithBottomNav(controller, context)
                 : controller.drawerIndex.value == 1
                     ? RentalOrderListScreen()
                     : controller.drawerIndex.value == 2
@@ -160,6 +254,7 @@ class DrawerView extends StatelessWidget {
     final themeController = Get.find<ThemeController>();
     return Obx(() {
       var isDark = themeController.isDark.value;
+      final _ = themeController.localeCode.value;
       return GetX(
           init: RentalDashboardController(),
           builder: (controller) {
@@ -194,7 +289,7 @@ class DrawerView extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                Constant.userModel!.fullName().tr,
+                                Constant.userModel!.fullName(),
                                 style: TextStyle(
                                   color: isDark
                                       ? AppThemeData.grey50
@@ -204,7 +299,7 @@ class DrawerView extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                '${Constant.userModel!.email}'.tr,
+                                '${Constant.userModel!.email}',
                                 style: TextStyle(
                                   color: isDark
                                       ? AppThemeData.grey50
@@ -245,7 +340,7 @@ class DrawerView extends StatelessWidget {
                               } else {
                                 ShowToastDialog.showToast(
                                     "Document verification is pending. Please proceed to set up your document verification."
-                                        .tr);
+                                        .tr());
                               }
                             } else {
                               controller.userModel.value.isActive = value;
@@ -260,7 +355,7 @@ class DrawerView extends StatelessWidget {
                       ),
                       dense: true,
                       title: Text(
-                        'Available Status'.tr,
+                        'Available Status'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -275,7 +370,7 @@ class DrawerView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
-                        'About App'.tr,
+                        'About App'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey400
@@ -298,7 +393,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Home'.tr,
+                        'Home'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -328,7 +423,7 @@ class DrawerView extends StatelessWidget {
                             size: 24),
                         dense: true,
                         title: Text(
-                          'Change Section'.tr,
+                          'Change Section'.tr(),
                           style: TextStyle(
                             color: isDark
                                 ? AppThemeData.grey100
@@ -355,7 +450,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Orders'.tr,
+                        'Orders'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -386,7 +481,7 @@ class DrawerView extends StatelessWidget {
                                 size: 24),
                             dense: true,
                             title: Text(
-                              'Wallet'.tr,
+                              'Wallet'.tr(),
                               style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey100
@@ -415,7 +510,7 @@ class DrawerView extends StatelessWidget {
                                 size: 24),
                             dense: true,
                             title: Text(
-                              'Withdrawal Method'.tr,
+                              'Withdrawal Method'.tr(),
                               style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey100
@@ -446,7 +541,7 @@ class DrawerView extends StatelessWidget {
                                 size: 24),
                             dense: true,
                             title: Text(
-                              'Document Verification'.tr,
+                              'Document Verification'.tr(),
                               style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey100
@@ -470,7 +565,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Vehicle Information'.tr,
+                        'Vehicle Information'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -495,7 +590,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Inbox'.tr,
+                        'Inbox'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -514,7 +609,7 @@ class DrawerView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
-                        'App Preferences'.tr,
+                        'App Preferences'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey400
@@ -536,7 +631,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Change Language'.tr,
+                        'Change Language'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -569,7 +664,7 @@ class DrawerView extends StatelessWidget {
                       ),
                       dense: true,
                       title: Text(
-                        'Dark Mode'.tr,
+                        'Dark Mode'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -584,7 +679,7 @@ class DrawerView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
-                        'Social'.tr,
+                        'Social'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey400
@@ -606,7 +701,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Share app'.tr,
+                        'Share app'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -617,8 +712,8 @@ class DrawerView extends StatelessWidget {
                       onTap: () {
                         Get.back();
                         Share.share(
-                            '${'Check out DoorDelights, your ultimate food delivery application!'.tr} \n\n${'Google Play:'.tr} ${Constant.googlePlayLink} \n\n${'App Store:'.tr} ${Constant.appStoreLink}',
-                            subject: 'Look what I made!'.tr);
+                            '${'Check out DoorDelights, your ultimate food delivery application!'.tr()} \n\n${'Google Play:'.tr()} ${Constant.googlePlayLink} \n\n${'App Store:'.tr()} ${Constant.appStoreLink}',
+                            subject: 'Look what I made!'.tr());
                       },
                     ),
                     ListTile(
@@ -633,7 +728,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Rate the app'.tr,
+                        'Rate the app'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -653,7 +748,7 @@ class DrawerView extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Text(
-                        'Legal'.tr,
+                        'Legal'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey400
@@ -677,7 +772,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Terms and Conditions'.tr,
+                        'Terms and Conditions'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -704,7 +799,7 @@ class DrawerView extends StatelessWidget {
                           size: 24),
                       dense: true,
                       title: Text(
-                        'Privacy Policy'.tr,
+                        'Privacy Policy'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey100
@@ -733,7 +828,7 @@ class DrawerView extends StatelessWidget {
                             size: 24),
                         dense: true,
                         title: Text(
-                          'Change Password'.tr,
+                          'Change Password'.tr(),
                           style: TextStyle(
                             color: isDark
                                 ? AppThemeData.grey100
@@ -766,7 +861,7 @@ class DrawerView extends StatelessWidget {
                       ),
                       dense: true,
                       title: Text(
-                        'Log out'.tr,
+                        'Log out'.tr(),
                         style: TextStyle(
                           color: isDark
                               ? AppThemeData.danger300
@@ -780,12 +875,12 @@ class DrawerView extends StatelessWidget {
                             context: context,
                             builder: (BuildContext context) {
                               return CustomDialogBox(
-                                title: "Log out".tr,
+                                title: "Log out".tr(),
                                 descriptions:
                                     "Are you sure you want to log out? You will need to enter your credentials to log back in."
-                                        .tr,
-                                positiveString: "Log out".tr,
-                                negativeString: "Cancel".tr,
+                                        .tr(),
+                                positiveString: "Log out".tr(),
+                                negativeString: "Cancel".tr(),
                                 positiveClick: () async {
                                   await AudioPlayerService.playSound(false);
                                   Constant.userModel!.fcmToken = "";
@@ -815,24 +910,25 @@ class DrawerView extends StatelessWidget {
                             context: context,
                             builder: (BuildContext context) {
                               return CustomDialogBox(
-                                title: "Delete Account".tr,
+                                title: "Delete Account".tr(),
                                 descriptions:
                                     "Are you sure you want to delete your account? This action is irreversible and will permanently remove all your data."
-                                        .tr,
-                                positiveString: "Delete".tr,
-                                negativeString: "Cancel".tr,
+                                        .tr(),
+                                positiveString: "Delete".tr(),
+                                negativeString: "Cancel".tr(),
                                 positiveClick: () async {
-                                  ShowToastDialog.showLoader("Please wait".tr);
+                                  ShowToastDialog.showLoader(
+                                      "Please wait".tr());
                                   await FireStoreUtils.deleteUser()
                                       .then((value) {
                                     ShowToastDialog.closeLoader();
                                     if (value == true) {
                                       ShowToastDialog.showToast(
-                                          "Account deleted successfully".tr);
+                                          "Account deleted successfully".tr());
                                       Get.offAll(const LoginScreen());
                                     } else {
                                       ShowToastDialog.showToast(
-                                          "Contact Administrator".tr);
+                                          "Contact Administrator".tr());
                                     }
                                   });
                                 },
@@ -860,7 +956,7 @@ class DrawerView extends StatelessWidget {
                             width: 10,
                           ),
                           Text(
-                            'Delete Account'.tr,
+                            'Delete Account'.tr(),
                             style: TextStyle(
                               color: isDark
                                   ? AppThemeData.danger300

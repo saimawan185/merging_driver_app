@@ -1,11 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:door_delights_driver/constants.dart';
 import 'package:door_delights_driver/services/FirebaseHelper.dart';
 import 'package:door_delights_driver/services/helper.dart';
 import 'package:door_delights_driver/services/show_toast_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:get/instance_manager.dart';
 import '../../models/order_model.dart';
+import '../../theme/app_them_data.dart';
 
 class PickOrder extends StatefulWidget {
   final OrderModel? currentOrder;
@@ -22,8 +25,11 @@ class PickOrder extends StatefulWidget {
 class _PickOrderState extends State<PickOrder> {
   bool _value = false;
   int val = -1;
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Get.find<ThemeController>().isDark.value;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -34,7 +40,7 @@ class _PickOrderState extends State<PickOrder> {
         title: Text(
           "Pick".tr() + ": ${widget.currentOrder!.id}",
           style: TextStyle(
-            color: isDarkMode(context) ? Color(0xffFFFFFF) : Color(0xff000000),
+            color: isDark ? Color(0xffFFFFFF) : Color(0xff000000),
             fontFamily: "Poppinsr",
           ),
         ),
@@ -49,16 +55,18 @@ class _PickOrderState extends State<PickOrder> {
               Container(
                 padding: EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(2),
-                    border: Border.all(color: Colors.grey.shade100, width: 0.1),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.grey.shade200,
-                          blurRadius: 2.0,
-                          spreadRadius: 0.4,
-                          offset: Offset(0.2, 0.2)),
-                    ],
-                    color: Colors.white),
+                  borderRadius: BorderRadius.circular(2),
+                  border: Border.all(color: Colors.grey.shade100, width: 0.1),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.grey.shade200,
+                        blurRadius: 2.0,
+                        spreadRadius: 0.4,
+                        offset: Offset(0.2, 0.2)),
+                  ],
+                  color:
+                      isDark ? AppThemeData.grey900 : AppThemeData.greyDark900,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -142,7 +150,7 @@ class _PickOrderState extends State<PickOrder> {
                                           style: TextStyle(
                                               fontFamily: 'Poppinsr',
                                               letterSpacing: 0.5,
-                                              color: isDarkMode(context)
+                                              color: isDark
                                                   ? Color(0xffFFFFFF)
                                                   : Color(0xff333333)),
                                         ),
@@ -175,7 +183,7 @@ class _PickOrderState extends State<PickOrder> {
                                     style: TextStyle(
                                       fontFamily: 'Poppinsm',
                                       fontSize: 16,
-                                      color: isDarkMode(context)
+                                      color: isDark
                                           ? Color(0xffFFFFFF)
                                           : Color(0xff333333),
                                     )),
@@ -189,16 +197,18 @@ class _PickOrderState extends State<PickOrder> {
               SizedBox(height: 28),
               Container(
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.grey, width: 0.1),
-                    // boxShadow: [
-                    //   BoxShadow(
-                    //       color: Colors.grey.shade200,
-                    //       blurRadius: 8.0,
-                    //       spreadRadius: 1.2,
-                    //       offset: Offset(0.2, 0.2)),
-                    // ],
-                    color: Colors.white),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.grey, width: 0.1),
+                  // boxShadow: [
+                  //   BoxShadow(
+                  //       color: Colors.grey.shade200,
+                  //       blurRadius: 8.0,
+                  //       spreadRadius: 1.2,
+                  //       offset: Offset(0.2, 0.2)),
+                  // ],
+                  color:
+                      isDark ? AppThemeData.grey900 : AppThemeData.greyDark900,
+                ),
                 child: ListTile(
                   onTap: () {
                     setState(() {
@@ -229,16 +239,18 @@ class _PickOrderState extends State<PickOrder> {
               SizedBox(height: 26),
               Container(
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: Colors.grey, width: 0.1),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.grey.shade200,
-                          blurRadius: 2.0,
-                          spreadRadius: 0.4,
-                          offset: Offset(0.2, 0.2)),
-                    ],
-                    color: Colors.white),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: Colors.grey, width: 0.1),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.grey.shade200,
+                        blurRadius: 2.0,
+                        spreadRadius: 0.4,
+                        offset: Offset(0.2, 0.2)),
+                  ],
+                  color:
+                      isDark ? AppThemeData.grey900 : AppThemeData.greyDark900,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -256,13 +268,15 @@ class _PickOrderState extends State<PickOrder> {
                       title: Text(
                         '${widget.currentOrder!.author!.fullName()}',
                         style: TextStyle(
-                          color: Color(0xff333333),
+                          color: isDark
+                              ? AppThemeData.greyDark900
+                              : AppThemeData.grey900,
                           fontFamily: "Poppinsm",
                         ),
                       ),
                       subtitle: Text(
                         '${widget.currentOrder!.address!.getFullAddress()}',
-                        maxLines: 2,
+                        maxLines: 3,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: Color(0xff9091A4),

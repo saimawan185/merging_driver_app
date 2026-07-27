@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'tax_model.dart';
 import 'user_model.dart';
 import 'vendor_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ParcelOrderModel {
   UserModel? author;

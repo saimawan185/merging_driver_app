@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../constant/constant.dart';
 import '../../controllers/rental_review_controller.dart';
 import '../../themes/app_them_data.dart';
@@ -30,7 +32,7 @@ class RentalReviewScreen extends StatelessWidget {
               child: Icon(Icons.arrow_back_ios, color: isDark ? Colors.white : Colors.black),
             ),
             title: Text(
-              controller.ratingModel.value != null ? "Update Review".tr : "Add Review".tr,
+              controller.ratingModel.value != null ? "Update Review".tr() : "Add Review".tr(),
               style: TextStyle(color: isDark ? Colors.white : Colors.black, fontSize: 16),
             ),
           ),
@@ -85,14 +87,14 @@ class RentalReviewScreen extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.only(top: 16),
                                       child: Text(
-                                        'How was your customer?'.tr,
+                                        'How was your customer?'.tr(),
                                         style: TextStyle(fontSize: 18, color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.bold, letterSpacing: 1),
                                       ),
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 8),
                                       child: Text(
-                                        "Share your feedback about the customer.".tr,
+                                        "Share your feedback about the customer.".tr(),
                                         textAlign: TextAlign.center,
                                         style: TextStyle(color: isDark ? Colors.white : Colors.black.withOpacity(0.60), letterSpacing: 0.8),
                                       ),
@@ -102,7 +104,7 @@ class RentalReviewScreen extends StatelessWidget {
                                     Padding(
                                       padding: const EdgeInsets.only(top: 20),
                                       child: Text(
-                                        'Rate the Customer'.tr,
+                                        'Rate the Customer'.tr(),
                                         style: TextStyle(fontSize: 16, color: isDark ? Colors.white : Colors.black.withOpacity(0.60), letterSpacing: 0.8),
                                       ),
                                     ),
@@ -123,14 +125,14 @@ class RentalReviewScreen extends StatelessWidget {
                                     // Comment
                                     Padding(
                                       padding: const EdgeInsets.all(20.0),
-                                      child: TextFieldWidget(hintText: "Type comment....".tr, controller: controller.comment.value, maxLine: 5),
+                                      child: TextFieldWidget(hintText: "Type comment....".tr(), controller: controller.comment.value, maxLine: 5),
                                     ),
 
                                     // Submit
                                     Padding(
                                       padding: const EdgeInsets.all(20.0),
                                       child: RoundedButtonFill(
-                                        title: controller.ratingModel.value != null ? "Update Review".tr : "Add Review".tr,
+                                        title: controller.ratingModel.value != null ? "Update Review".tr() : "Add Review".tr(),
                                         color: AppThemeData.primary300,
                                         textColor: isDark ? Colors.white : Colors.black,
                                         onPress: controller.submitReview,

@@ -17,7 +17,9 @@ import 'package:door_delights_driver/widget/firebase_pagination/src/firestore_pa
 import 'package:door_delights_driver/widget/firebase_pagination/src/models/view_type.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 
 class HelpSupportScreen extends StatelessWidget {
@@ -55,7 +57,7 @@ class HelpSupportScreen extends StatelessWidget {
             //     ),
             //   ),
             //   title: Text(
-            //     'Help & Support'.tr,
+            //     'Help & Support'.tr(),
             //     style: TextStyle(color: isDark ? AppThemeData.grey100 : AppThemeData.grey800, fontFamily: AppThemeData.bold, fontSize: 18),
             //   ),
             //   elevation: 0,
@@ -88,7 +90,7 @@ class HelpSupportScreen extends StatelessWidget {
                         shrinkWrap: true,
                         reverse: true,
                         onEmpty: Constant.showEmptyView(
-                            message: "No conversion found".tr, isDark: isDark),
+                            message: "No conversion found".tr(), isDark: isDark),
                         viewType: ViewType.list,
                         // to fetch real-time data
                         itemBuilder: (context, documentSnapshots, index) {
@@ -187,7 +189,7 @@ class HelpSupportScreen extends StatelessWidget {
                                   controller.messageController.value.clear();
                                 } else {
                                   ShowToastDialog.showToast(
-                                      "Please enter text".tr);
+                                      "Please enter text".tr());
                                 }
                               },
                               icon: Icon(Icons.send_rounded,
@@ -207,7 +209,7 @@ class HelpSupportScreen extends StatelessWidget {
                                       ? AppThemeData.grey500
                                       : AppThemeData.grey800),
                             ),
-                            hintText: 'Start typing with admin...'.tr,
+                            hintText: 'Start typing with admin...'.tr(),
                             hintStyle: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey50
@@ -510,7 +512,7 @@ class HelpSupportScreen extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("Admin",
+                      Text("Admin".tr(),
                           style: TextStyle(
                             color: isDark
                                 ? AppThemeData.grey100
@@ -540,7 +542,7 @@ class HelpSupportScreen extends StatelessWidget {
       required HelpSupportController controller,
       required BuildContext context}) {
     final action = CupertinoActionSheet(
-      message: Text('Send Media'.tr,
+      message: Text('Send Media'.tr(),
           style: TextStyle(
             color: isDark ? AppThemeData.grey800 : AppThemeData.grey100,
             fontFamily: AppThemeData.semiBold,
@@ -568,7 +570,7 @@ class HelpSupportScreen extends StatelessWidget {
                   "Storage permission is not enabled. Please allow it.");
             }
           },
-          child: Text("Choose image from gallery".tr),
+          child: Text("Choose image from gallery".tr()),
         ),
         CupertinoActionSheetAction(
           isDefaultAction: false,
@@ -587,11 +589,11 @@ class HelpSupportScreen extends StatelessWidget {
                     videoThumbnail: videoContainer.thumbnailUrl,
                     messageType: 'video');
               } else {
-                ShowToastDialog.showToast("Message sent failed");
+                ShowToastDialog.showToast("Message sent failed".tr());
               }
             }
           },
-          child: Text("Choose video from gallery".tr),
+          child: Text("Choose video from gallery".tr()),
         ),
         CupertinoActionSheetAction(
           isDestructiveAction: false,
@@ -614,7 +616,7 @@ class HelpSupportScreen extends StatelessWidget {
                   "Camera access is not enabled. Please allow camera permission.");
             }
           },
-          child: Text("Take a Photo".tr),
+          child: Text("Take a Photo".tr()),
         ),
         CupertinoActionSheetAction(
           isDestructiveAction: false,
@@ -633,16 +635,16 @@ class HelpSupportScreen extends StatelessWidget {
                     videoThumbnail: videoContainer.thumbnailUrl,
                     messageType: 'video');
               } else {
-                ShowToastDialog.showToast("Message sent failed");
+                ShowToastDialog.showToast("Message sent failed".tr());
               }
             }
           },
-          child: Text("Record video".tr),
+          child: Text("Record video".tr()),
         )
       ],
       cancelButton: CupertinoActionSheetAction(
         child: Text(
-          'Cancel'.tr,
+          'Cancel'.tr(),
         ),
         onPressed: () {
           Navigator.pop(context);

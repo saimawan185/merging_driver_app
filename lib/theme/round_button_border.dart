@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_them_data.dart';
 import 'responsive.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class RoundedButtonBorder extends StatelessWidget {
   final String title;

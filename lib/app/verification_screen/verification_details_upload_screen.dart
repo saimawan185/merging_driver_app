@@ -11,7 +11,9 @@ import 'package:door_delights_driver/themes/round_button_fill.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 
 class VerificationDetailsUploadScreen extends StatelessWidget {
@@ -59,7 +61,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "${'Upload'.tr} ${controller.documentModel.value.title} ${'for Verification'.tr}",
+                            "${'Upload'.tr()} ${controller.documentModel.value.title} ${'for Verification'.tr()}",
                             style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey100
@@ -71,8 +73,8 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                             height: 5,
                           ),
                           Text(
-                            "${'Please upload a valid'.tr} ${controller.documentModel.value.title} ${'to verify your identity complete the registration process.'.tr}"
-                                .tr,
+                            "${'Please upload a valid'.tr()} ${controller.documentModel.value.title} ${'to verify your identity complete the registration process.'.tr()}"
+                                .tr(),
                             style: TextStyle(
                                 fontSize: 16,
                                 color: isDark
@@ -198,7 +200,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                                                     ),
                                                     Text(
                                                       "Choose a image and upload here"
-                                                          .tr,
+                                                          .tr(),
                                                       style: TextStyle(
                                                           color: isDark
                                                               ? AppThemeData
@@ -214,7 +216,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                                                       height: 5,
                                                     ),
                                                     Text(
-                                                      "JPEG, PNG".tr,
+                                                      "JPEG, PNG".tr(),
                                                       style: TextStyle(
                                                           fontSize: 12,
                                                           color: isDark
@@ -230,7 +232,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                                                       height: 10,
                                                     ),
                                                     RoundedButtonFill(
-                                                      title: "Brows Image".tr,
+                                                      title: "Brows Image".tr(),
                                                       color: AppThemeData
                                                           .carRent50,
                                                       textColor: AppThemeData
@@ -263,7 +265,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "${'Back side of'.tr} ${controller.documentModel.value.title.toString()}",
+                                    "${'Back side of'.tr()} ${controller.documentModel.value.title.toString()}",
                                     style: TextStyle(
                                         color: isDark
                                             ? AppThemeData.grey50
@@ -367,7 +369,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                                                     ),
                                                     Text(
                                                       "Choose a image and upload here"
-                                                          .tr,
+                                                          .tr(),
                                                       style: TextStyle(
                                                           color: isDark
                                                               ? AppThemeData
@@ -383,7 +385,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                                                       height: 5,
                                                     ),
                                                     Text(
-                                                      "JPEG, PNG".tr,
+                                                      "JPEG, PNG".tr(),
                                                       style: TextStyle(
                                                           fontSize: 12,
                                                           color: isDark
@@ -399,7 +401,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                                                       height: 10,
                                                     ),
                                                     RoundedButtonFill(
-                                                      title: "Brows Image".tr,
+                                                      title: "Brows Image".tr(),
                                                       color: AppThemeData
                                                           .carRent50,
                                                       textColor: AppThemeData
@@ -437,14 +439,14 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                       if (controller.documentModel.value.frontSide == true &&
                           controller.frontImage.value.isEmpty) {
                         ShowToastDialog.showToast(
-                            "Please upload front side of document.".tr);
+                            "Please upload front side of document.".tr());
                       } else if (controller.documentModel.value.backSide ==
                               true &&
                           controller.backImage.value.isEmpty) {
                         ShowToastDialog.showToast(
-                            "Please upload back side of document.".tr);
+                            "Please upload back side of document.".tr());
                       } else {
-                        ShowToastDialog.showLoader("Please wait.".tr);
+                        ShowToastDialog.showLoader("Please wait.".tr());
                         controller.uploadDocument();
                       }
                     },
@@ -454,7 +456,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         child: Text(
-                          "Upload Document".tr,
+                          "Upload Document".tr(),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: isDark
@@ -488,7 +490,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(top: 15),
                     child: Text(
-                      "Please Select".tr,
+                      "Please Select".tr(),
                       style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey50
@@ -515,7 +517,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                                 )),
                             Padding(
                               padding: const EdgeInsets.only(top: 3),
-                              child: Text("Camera".tr),
+                              child: Text("Camera".tr()),
                             ),
                           ],
                         ),
@@ -535,7 +537,7 @@ class VerificationDetailsUploadScreen extends StatelessWidget {
                                 )),
                             Padding(
                               padding: const EdgeInsets.only(top: 3),
-                              child: Text("Gallery".tr),
+                              child: Text("Gallery".tr()),
                             ),
                           ],
                         ),

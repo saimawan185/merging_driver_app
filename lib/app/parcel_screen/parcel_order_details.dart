@@ -2,7 +2,9 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:door_delights_driver/themes/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../constant/constant.dart';
 import '../../controllers/parcel_order_details_controller.dart';
 import '../../themes/app_them_data.dart';
@@ -22,7 +24,7 @@ class ParcelOrderDetails extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              "Order Details".tr,
+              "Order Details".tr(),
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black,
               ),
@@ -53,8 +55,8 @@ class ParcelOrderDetails extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         child: Text(
-                          "${'Order Id:'.tr} ${Constant.orderId(orderId: controller.parcelOrder.value.id.toString())}"
-                              .tr,
+                          "${'Order Id:'.tr()} ${Constant.orderId(orderId: controller.parcelOrder.value.id.toString())}"
+                              .tr(),
                           textAlign: TextAlign.start,
                           style: TextStyle(
                             fontFamily: AppThemeData.semiBold,
@@ -117,7 +119,7 @@ class ParcelOrderDetails extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       _infoSection(
-                                        "Pickup Address (Sender):".tr,
+                                        "Pickup Address (Sender):".tr(),
                                         controller.parcelOrder.value.sender
                                                 ?.name ??
                                             '',
@@ -134,7 +136,7 @@ class ParcelOrderDetails extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 16),
                                       _infoSection(
-                                        "Delivery Address (Receiver):".tr,
+                                        "Delivery Address (Receiver):".tr(),
                                         controller.parcelOrder.value.receiver
                                                 ?.name ??
                                             '',
@@ -160,7 +162,7 @@ class ParcelOrderDetails extends StatelessWidget {
                                 padding: const EdgeInsets.only(bottom: 8.0),
                                 child: Text(
                                   "Schedule Pickup time: ${controller.formatDate(controller.parcelOrder.value.senderPickupDateTime!)}"
-                                      .tr,
+                                      .tr(),
                                   style: AppThemeData.mediumTextStyle(
                                       fontSize: 14,
                                       color: AppThemeData.info400),
@@ -170,7 +172,7 @@ class ParcelOrderDetails extends StatelessWidget {
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: Text(
                                 "Order Date:${controller.parcelOrder.value.isSchedule == true ? controller.formatDate(controller.parcelOrder.value.createdAt!) : controller.formatDate(controller.parcelOrder.value.senderPickupDateTime!)}"
-                                    .tr,
+                                    .tr(),
                                 style: AppThemeData.mediumTextStyle(
                                     fontSize: 14, color: AppThemeData.info400),
                               ),
@@ -179,7 +181,7 @@ class ParcelOrderDetails extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
-                                  "Parcel Type:".tr,
+                                  "Parcel Type:".tr(),
                                   style: AppThemeData.semiBoldTextStyle(
                                     fontSize: 16,
                                     color: isDark
@@ -268,13 +270,13 @@ class ParcelOrderDetails extends StatelessWidget {
                           children: [
                             _iconTile(
                               "${controller.parcelOrder.value.distance ?? '--'} ${Constant.distanceType}",
-                              "Distance".tr,
+                              "Distance".tr(),
                               "assets/icons/ic_distance_parcel.svg",
                               isDark,
                             ),
                             _iconTile(
                               controller.parcelOrder.value.parcelWeight ?? '--',
-                              "Weight".tr,
+                              "Weight".tr(),
                               "assets/icons/ic_weight_parcel.svg",
                               isDark,
                             ),
@@ -282,7 +284,7 @@ class ParcelOrderDetails extends StatelessWidget {
                               Constant.amountShow(
                                   amount:
                                       controller.parcelOrder.value.subTotal),
-                              "Rate".tr,
+                              "Rate".tr(),
                               "assets/icons/ic_rate_parcel.svg",
                               isDark,
                             ),
@@ -307,7 +309,7 @@ class ParcelOrderDetails extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("About Customer".tr,
+                                Text("About Customer".tr(),
                                     style: AppThemeData.boldTextStyle(
                                         fontSize: 14,
                                         color: isDark
@@ -376,14 +378,14 @@ class ParcelOrderDetails extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Order Summary".tr,
+                            Text("Order Summary".tr(),
                                 style: AppThemeData.boldTextStyle(
                                     fontSize: 14, color: AppThemeData.grey500)),
                             const SizedBox(height: 8),
 
                             // Subtotal
                             _summaryTile(
-                                "Subtotal".tr,
+                                "Subtotal".tr(),
                                 Constant.amountShow(
                                     amount:
                                         controller.subTotal.value.toString()),
@@ -392,7 +394,7 @@ class ParcelOrderDetails extends StatelessWidget {
 
                             // Discount
                             _summaryTile(
-                                "Discount".tr,
+                                "Discount".tr(),
                                 Constant.amountShow(
                                     amount:
                                         controller.discount.value.toString()),
@@ -432,7 +434,7 @@ class ParcelOrderDetails extends StatelessWidget {
 
                             // Total
                             _summaryTile(
-                                "Order Total".tr,
+                                "Order Total".tr(),
                                 Constant.amountShow(
                                     amount: controller.totalAmount.value
                                         .toString()),
@@ -440,7 +442,7 @@ class ParcelOrderDetails extends StatelessWidget {
                                 null),
                             _summaryTile(
                               "Admin Commission (${controller.parcelOrder.value.adminCommission}${controller.parcelOrder.value.adminCommissionType == "Percentage" || controller.parcelOrder.value.adminCommissionType == "percentage" ? "%" : Constant.currencyModel!.symbol})"
-                                  .tr,
+                                  .tr(),
                               Constant.amountShow(
                                   amount: controller.adminCommission.value
                                       .toString()),

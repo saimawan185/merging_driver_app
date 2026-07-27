@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../app/auth_screen/phone_number_screen.dart';
 import '../../app/auth_screen/signup_screen.dart';
@@ -36,7 +38,7 @@ class LoginScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Log In to Your Account".tr,
+                    "Log In to Your Account".tr(),
                     style: TextStyle(
                         color:
                             isDark ? AppThemeData.grey50 : AppThemeData.grey900,
@@ -45,7 +47,7 @@ class LoginScreen extends StatelessWidget {
                   ),
                   Text(
                     "Sign in to access your DoorDelights account and manage your deliveries seamlessly."
-                        .tr,
+                        .tr(),
                     style: TextStyle(
                         color:
                             isDark ? AppThemeData.grey50 : AppThemeData.grey500,
@@ -58,7 +60,7 @@ class LoginScreen extends StatelessWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                            text: "Didn’t Have an account?".tr,
+                            text: "Didn’t Have an account?".tr(),
                             style: TextStyle(
                               color: isDark
                                   ? AppThemeData.grey50
@@ -75,7 +77,7 @@ class LoginScreen extends StatelessWidget {
                               ..onTap = () {
                                 Get.to(() => SignupScreen());
                               },
-                            text: 'Sign up'.tr,
+                            text: 'Sign up'.tr(),
                             style: TextStyle(
                                 color: AppThemeData.primary300,
                                 fontFamily: AppThemeData.medium,
@@ -89,9 +91,9 @@ class LoginScreen extends StatelessWidget {
                     height: 32,
                   ),
                   TextFieldWidget(
-                    title: 'Email Address'.tr,
+                    title: 'Email Address'.tr(),
                     controller: controller.emailEditingController.value,
-                    hintText: 'Enter email address'.tr,
+                    hintText: 'Enter email address'.tr(),
                     textInputType: TextInputType.emailAddress,
                     prefix: Padding(
                       padding: const EdgeInsets.all(12),
@@ -106,9 +108,9 @@ class LoginScreen extends StatelessWidget {
                     textInputAction: TextInputAction.next,
                   ),
                   TextFieldWidget(
-                    title: 'Password'.tr,
+                    title: 'Password'.tr(),
                     controller: controller.passwordEditingController.value,
-                    hintText: 'Enter password'.tr,
+                    hintText: 'Enter password'.tr(),
                     obscureText: controller.passwordVisible.value,
                     textInputType: TextInputType.visiblePassword,
                     prefix: Padding(
@@ -157,7 +159,7 @@ class LoginScreen extends StatelessWidget {
                     child: Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        "Forgot Password".tr,
+                        "Forgot Password".tr(),
                         style: TextStyle(
                             decoration: TextDecoration.underline,
                             decorationColor: AppThemeData.primary300,
@@ -185,7 +187,7 @@ class LoginScreen extends StatelessWidget {
                 //     mainAxisSize: MainAxisSize.min,
                 //     children: [
                 //       RoundedButtonFill(
-                //         title: "Continue with Mobile Number".tr,
+                //         title: "Continue with Mobile Number".tr(),
                 //         textColor: isDark
                 //             ? AppThemeData.grey100
                 //             : AppThemeData.grey900,
@@ -210,8 +212,8 @@ class LoginScreen extends StatelessWidget {
                 //           Expanded(
                 //             child: RoundedButtonFill(
                 //               title: Platform.isIOS
-                //                   ? "with Google".tr
-                //                   : 'Continue with Google'.tr,
+                //                   ? "with Google".tr()
+                //                   : 'Continue with Google'.tr(),
                 //               textColor: isDark
                 //                   ? AppThemeData.grey100
                 //                   : AppThemeData.grey900,
@@ -234,8 +236,8 @@ class LoginScreen extends StatelessWidget {
                 //           //     ? Expanded(
                 //           //         child: RoundedButtonFill(
                 //           //           title: Platform.isIOS
-                //           //               ? "with Apple".tr
-                //           //               : 'Continue with Apple'.tr,
+                //           //               ? "with Apple".tr()
+                //           //               : 'Continue with Apple'.tr(),
                 //           //           textColor: isDark
                 //           //               ? AppThemeData.grey100
                 //           //               : AppThemeData.grey900,
@@ -261,12 +263,12 @@ class LoginScreen extends StatelessWidget {
                     if (controller.emailEditingController.value.text
                         .trim()
                         .isEmpty) {
-                      ShowToastDialog.showToast("Please enter valid email".tr);
+                      ShowToastDialog.showToast("Please enter valid email".tr());
                     } else if (controller.passwordEditingController.value.text
                         .trim()
                         .isEmpty) {
                       ShowToastDialog.showToast(
-                          "Please enter valid password".tr);
+                          "Please enter valid password".tr());
                     } else {
                       controller.loginWithEmailAndPassword();
                     }
@@ -278,7 +280,7 @@ class LoginScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Text(
-                        "Log in".tr,
+                        "Log in".tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: isDark

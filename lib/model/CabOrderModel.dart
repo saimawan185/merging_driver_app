@@ -3,6 +3,7 @@ import 'package:door_delights_driver/model/VehicleType.dart';
 
 import '../models/tax_model.dart';
 import '../models/user_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class CabOrderModel {
   String authorID;
@@ -96,7 +97,7 @@ class CabOrderModel {
     int this.currentStopIndex = 0,
   })  : author = author ?? UserModel(),
         sourceLocation = sourceLocation ?? UserLocationData(),
-        this.trigger_delevery = trigger_delevery ?? Timestamp.now(),
+        trigger_delevery = trigger_delevery ?? Timestamp.now(),
         destinationLocation = destinationLocation ?? UserLocationData(),
         createdAt = createdAt ?? Timestamp.now();
 
@@ -220,7 +221,7 @@ class CabOrderModel {
       "subTotal": subTotal,
       "otpCode": otpCode,
       "rejectedByDrivers": this.rejectedByDrivers,
-      "trigger_delevery": this.trigger_delevery,
+      "trigger_delevery": trigger_delevery,
       "sourceLocationName": this.sourceLocationName,
       "destinationLocationName": this.destinationLocationName,
       "sectionId": sectionId,

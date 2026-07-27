@@ -734,7 +734,7 @@
 //       if (includeDriverMarker && _driverModel != null) {
 //         _markers['Driver'] = Marker(
 //           markerId: const MarkerId('Driver'),
-//           infoWindow: const InfoWindow(title: "Driver"),
+//           infoWindow: InfoWindow(title: "Driver".tr()),
 //           position: LatLng(
 //             _driverModel!.location?.latitude ?? 0,
 //             _driverModel!.location?.longitude ?? 0,
@@ -747,7 +747,7 @@
 //       // Add departure marker
 //       _markers['Departure'] = Marker(
 //         markerId: const MarkerId('Departure'),
-//         infoWindow: const InfoWindow(title: "Departure"),
+//         infoWindow: InfoWindow(title: "Departure".tr()),
 //         position: LatLng(
 //           currentOrder!.senderLatLong!.latitude ?? 0,
 //           currentOrder!.senderLatLong!.longitude ?? 0,
@@ -758,7 +758,7 @@
 //       // Add destination marker
 //       _markers['Destination'] = Marker(
 //         markerId: const MarkerId('Destination'),
-//         infoWindow: const InfoWindow(title: "Destination"),
+//         infoWindow: InfoWindow(title: "Destination".tr()),
 //         position: LatLng(
 //           currentOrder!.receiverLatLong!.latitude ?? 0,
 //           currentOrder!.receiverLatLong!.longitude ?? 0,
@@ -940,7 +940,7 @@
 //                     subtitle: Padding(
 //                       padding: const EdgeInsets.only(top: 4.0),
 //                       child: Text(
-//                         '${currentOrder!.sender!.name}'.tr(),
+//                         '${currentOrder!.sender!.name}',
 //                         style: TextStyle(
 //                           color: Color(0xff555555),
 //                           fontSize: 12,
@@ -1005,7 +1005,7 @@
 //                     subtitle: Padding(
 //                       padding: const EdgeInsets.only(top: 4.0),
 //                       child: Text(
-//                         '${currentOrder!.receiver!.name}'.tr(),
+//                         '${currentOrder!.receiver!.name}',
 //                         style: TextStyle(
 //                           color: Color(0xff555555),
 //                           fontSize: 12,
@@ -1188,7 +1188,7 @@
 //                     subtitle: Padding(
 //                       padding: const EdgeInsets.only(top: 4.0),
 //                       child: Text(
-//                         '${currentOrder!.sender!.name}'.tr(),
+//                         '${currentOrder!.sender!.name}',
 //                         style: TextStyle(
 //                           color: Color(0xff555555),
 //                           fontSize: 12,
@@ -1253,7 +1253,7 @@
 //                     subtitle: Padding(
 //                       padding: const EdgeInsets.only(top: 4.0),
 //                       child: Text(
-//                         '${currentOrder!.receiver!.name}'.tr(),
+//                         '${currentOrder!.receiver!.name}',
 //                         style: TextStyle(
 //                           color: Color(0xff555555),
 //                           fontSize: 12,
@@ -2231,7 +2231,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
       _isFirstDriverUpdate = false;
       _markers['Driver'] = Marker(
         markerId: const MarkerId('Driver'),
-        infoWindow: const InfoWindow(title: "Driver"),
+        infoWindow: InfoWindow(title: "Driver".tr()),
         position: newPosition,
         icon: taxiIcon!,
         rotation: targetRotation,
@@ -2299,7 +2299,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
 
       _markers['Driver'] = Marker(
         markerId: const MarkerId('Driver'),
-        infoWindow: const InfoWindow(title: "Driver"),
+        infoWindow: InfoWindow(title: "Driver".tr()),
         position: animatedPosition,
         icon: taxiIcon!,
         rotation:
@@ -2873,7 +2873,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
         );
         _markers['Driver'] = Marker(
           markerId: const MarkerId('Driver'),
-          infoWindow: const InfoWindow(title: "Driver"),
+          infoWindow: InfoWindow(title: "Driver".tr()),
           position: driverLatLng,
           icon: taxiIcon!,
           rotation: _lastKnownDriverRotation != 0
@@ -2888,7 +2888,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
 
       _markers['Departure'] = Marker(
         markerId: const MarkerId('Departure'),
-        infoWindow: const InfoWindow(title: "Departure"),
+        infoWindow: InfoWindow(title: "Departure".tr()),
         position: LatLng(
           currentOrder!.senderLatLong!.latitude ?? 0,
           currentOrder!.senderLatLong!.longitude ?? 0,
@@ -2898,7 +2898,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
 
       _markers['Destination'] = Marker(
         markerId: const MarkerId('Destination'),
-        infoWindow: const InfoWindow(title: "Destination"),
+        infoWindow: InfoWindow(title: "Destination".tr()),
         position: LatLng(
           currentOrder!.receiverLatLong!.latitude ?? 0,
           currentOrder!.receiverLatLong!.longitude ?? 0,
@@ -3076,7 +3076,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
-                        '${currentOrder!.sender!.name}'.tr(),
+                        '${currentOrder!.sender!.name}',
                         style: TextStyle(
                           color: Color(0xff555555),
                           fontSize: 12,
@@ -3141,7 +3141,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
-                        '${currentOrder!.receiver!.name}'.tr(),
+                        '${currentOrder!.receiver!.name}',
                         style: TextStyle(
                           color: Color(0xff555555),
                           fontSize: 12,
@@ -3324,7 +3324,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
-                        '${currentOrder!.sender!.name}'.tr(),
+                        '${currentOrder!.sender!.name}',
                         style: TextStyle(
                           color: Color(0xff555555),
                           fontSize: 12,
@@ -3389,7 +3389,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
                       child: Text(
-                        '${currentOrder!.receiver!.name}'.tr(),
+                        '${currentOrder!.receiver!.name}',
                         style: TextStyle(
                           color: Color(0xff555555),
                           fontSize: 12,

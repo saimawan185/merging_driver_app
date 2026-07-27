@@ -4,7 +4,9 @@ import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:door_delights_driver/widget/osm_map/map_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:latlong2/latlong.dart';
 
 class MapPickerPage extends StatelessWidget {
@@ -24,7 +26,7 @@ class MapPickerPage extends StatelessWidget {
         centerTitle: false,
         titleSpacing: 0,
         title: Text(
-          "PickUp Location".tr,
+          "PickUp Location".tr(),
           textAlign: TextAlign.start,
           style: TextStyle(
               fontFamily: AppThemeData.medium,
@@ -83,7 +85,7 @@ class MapPickerPage extends StatelessWidget {
                             ? AppThemeData.grey900
                             : AppThemeData.grey900),
                     decoration: InputDecoration(
-                      hintText: 'Search location...'.tr,
+                      hintText: 'Search location...'.tr(),
                       hintStyle: TextStyle(
                           color: isDark
                               ? AppThemeData.grey900
@@ -139,8 +141,8 @@ class MapPickerPage extends StatelessWidget {
             children: [
               Text(
                 controller.pickedPlace.value != null
-                    ? "Picked Location:".tr
-                    : "No Location Picked".tr,
+                    ? "Picked Location:".tr()
+                    : "No Location Picked".tr(),
                 style: TextStyle(
                     color: isDark
                         ? AppThemeData.primary300
@@ -162,7 +164,7 @@ class MapPickerPage extends StatelessWidget {
                 children: [
                   Expanded(
                     child: RoundedButtonFill(
-                      title: "Confirm Location".tr,
+                      title: "Confirm Location".tr(),
                       color: AppThemeData.primary300,
                       textColor: AppThemeData.grey50,
                       height: 5,

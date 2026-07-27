@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class MercadoPagoScreen extends StatefulWidget {
@@ -67,7 +69,7 @@ class _MercadoPagoScreenState extends State<MercadoPagoScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-            title: Text("Payment".tr),
+            title: Text("Payment".tr()),
             centerTitle: false,
             leading: GestureDetector(
               onTap: () {
@@ -95,14 +97,14 @@ class _MercadoPagoScreenState extends State<MercadoPagoScreen> {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Cancel Payment'.tr),
+          title: Text('Cancel Payment'.tr()),
           content: SingleChildScrollView(
-            child: Text("cancelPayment?".tr),
+            child: Text("cancelPayment?".tr()),
           ),
           actions: <Widget>[
             TextButton(
               child: Text(
-                'Cancel'.tr,
+                'Cancel'.tr(),
                 style: const TextStyle(color: Colors.red),
               ),
               onPressed: () {
@@ -112,7 +114,7 @@ class _MercadoPagoScreenState extends State<MercadoPagoScreen> {
             ),
             TextButton(
               child: Text(
-                'Continue'.tr,
+                'Continue'.tr(),
                 style: const TextStyle(color: Colors.green),
               ),
               onPressed: () {

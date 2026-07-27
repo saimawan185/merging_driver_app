@@ -9,7 +9,9 @@ import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/widget/geoflutterfire/src/geoflutterfire.dart';
 import 'package:door_delights_driver/widget/geoflutterfire/src/models/point.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as latlong;
 import 'package:intl/intl.dart';
@@ -85,7 +87,7 @@ class ParcelSearchController extends GetxController {
 
   Future<void> acceptParcelBooking(ParcelOrderModel parcelBookingData) async {
     try {
-      ShowToastDialog.showLoader("Accepting order...".tr);
+      ShowToastDialog.showLoader("Accepting order...".tr());
 
       // Update section model to match this order's section (multi-section support)
       final sid = parcelBookingData.sectionId;
@@ -118,15 +120,15 @@ class ParcelSearchController extends GetxController {
           // FCM failure should not block order acceptance
           print("FCM send failed: $e");
         }
-        ShowToastDialog.showToast("Order accepted successfully".tr);
+        ShowToastDialog.showToast("Order accepted successfully".tr());
         Get.back(result: true);
       } else {
         ShowToastDialog.showToast(
-            "Failed to accept order. Please try again.".tr);
+            "Failed to accept order. Please try again.".tr());
       }
     } catch (e) {
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("Error accepting order: $e".tr);
+      ShowToastDialog.showToast("Error accepting order: $e".tr());
       print("acceptParcelBooking error: $e");
     }
   }

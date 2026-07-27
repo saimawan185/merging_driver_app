@@ -1,5 +1,6 @@
 import 'admin_commission.dart';
 import 'platform_fee_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class SectionModel {
   String? referralAmount;

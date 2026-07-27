@@ -15,7 +15,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
@@ -92,7 +94,7 @@ class HomeController extends GetxController {
   }
 
   Future<void> acceptOrder() async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
 
     await AudioPlayerService.playSound(false);
 
@@ -115,7 +117,7 @@ class HomeController extends GetxController {
   }
 
   Future<void> rejectOrder() async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     // 🔊 Stop any ongoing alert sound (if playing)
     await AudioPlayerService.playSound(false);
 

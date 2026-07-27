@@ -11,7 +11,9 @@ import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'driver_order_list.dart';
 
 class OwnerHomeScreen extends StatelessWidget {
@@ -56,7 +58,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                 height: 12,
                               ),
                               Text(
-                                "Document Verification in Pending".tr,
+                                "Document Verification in Pending".tr(),
                                 style: TextStyle(
                                     color: isDark
                                         ? AppThemeData.grey100
@@ -69,7 +71,7 @@ class OwnerHomeScreen extends StatelessWidget {
                               ),
                               Text(
                                 "Your documents are being reviewed. We will notify you once the verification is complete."
-                                    .tr,
+                                    .tr(),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: isDark
@@ -82,7 +84,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                 height: 20,
                               ),
                               RoundedButtonFill(
-                                title: "View Status".tr,
+                                title: "View Status".tr(),
                                 width: 55,
                                 height: 5.5,
                                 color: AppThemeData.primary300,
@@ -122,7 +124,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                                   const EdgeInsets.all(8.0),
                                               child: Text(
                                                 "You must have a minimum of ${Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept.toString())} in your wallet to receive orders to your driver"
-                                                    .tr,
+                                                    .tr(),
                                                 style: TextStyle(
                                                   color: AppThemeData.danger300,
                                                   fontSize: 14,
@@ -173,7 +175,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                                 height: 5,
                                               ),
                                               Text(
-                                                'Total Bookings'.tr,
+                                                'Total Bookings'.tr(),
                                                 textAlign: TextAlign.center,
                                                 style: AppThemeData
                                                     .mediumTextStyle(
@@ -221,7 +223,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                                 height: 5,
                                               ),
                                               Text(
-                                                'Total Drivers'.tr,
+                                                'Total Drivers'.tr(),
                                                 textAlign: TextAlign.center,
                                                 style: AppThemeData
                                                     .mediumTextStyle(
@@ -268,7 +270,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                           height: 5,
                                         ),
                                         Text(
-                                          'Earnings'.tr,
+                                          'Earnings'.tr(),
                                           textAlign: TextAlign.center,
                                           style: AppThemeData.mediumTextStyle(
                                             fontSize: 12,
@@ -299,7 +301,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                                   children: [
                                                     Text(
                                                       'Your Available Drivers'
-                                                          .tr,
+                                                          .tr(),
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: AppThemeData
@@ -314,7 +316,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                                     ),
                                                     Text(
                                                       'Real-time status and earnings summary'
-                                                          .tr,
+                                                          .tr(),
                                                       textAlign:
                                                           TextAlign.center,
                                                       style: AppThemeData
@@ -341,7 +343,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                                   );
                                                 },
                                                 child: Text(
-                                                  'View all'.tr,
+                                                  'View all'.tr(),
                                                   textAlign: TextAlign.center,
                                                   style: AppThemeData
                                                       .mediumTextStyle(
@@ -457,8 +459,8 @@ class OwnerHomeScreen extends StatelessWidget {
                                                         title: driverModel
                                                                     .isActive ==
                                                                 false
-                                                            ? "Offline"
-                                                            : "Online".tr,
+                                                            ? "Offline".tr()
+                                                            : "Online".tr(),
                                                         height: 3.5,
                                                         width: 18,
                                                         borderRadius: 10,
@@ -525,7 +527,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                                                 'Edit Driver',
                                                             child: Text(
                                                                 'Edit Driver'
-                                                                    .tr,
+                                                                    .tr(),
                                                                 style: TextStyle(
                                                                     color: isDark
                                                                         ? AppThemeData
@@ -538,7 +540,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                                                 'Delete Driver',
                                                             child: Text(
                                                                 'Delete Driver'
-                                                                    .tr,
+                                                                    .tr(),
                                                                 style: TextStyle(
                                                                     color: isDark
                                                                         ? AppThemeData
@@ -551,7 +553,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                                                 'View All Order',
                                                             child: Text(
                                                                 'View All Order'
-                                                                    .tr,
+                                                                    .tr(),
                                                                 style: TextStyle(
                                                                     color: isDark
                                                                         ? AppThemeData

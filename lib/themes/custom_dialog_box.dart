@@ -2,7 +2,9 @@ import 'package:door_delights_driver/themes/app_them_data.dart';
 import 'package:door_delights_driver/themes/responsive.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class CustomDialogBox extends StatelessWidget {
   final String title, descriptions, positiveString;

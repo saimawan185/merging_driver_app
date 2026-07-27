@@ -472,7 +472,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                                       ? Colors.grey.shade200
                                       : Colors.grey.shade600,
                         ),
-                        title: const Text('Language').tr(),
+                        title: Text('Language'.tr()),
                         onTap: () {
                           Navigator.pop(context);
                           setState(() {
@@ -492,7 +492,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                         selected:
                             _drawerSelection == DrawerSelection.termsCondition,
                         leading: const Icon(Icons.policy),
-                        title: const Text('Terms and Condition').tr(),
+                        title: Text('Terms and Condition'.tr()),
                         onTap: () async {
                           push(context, const TermsAndCondition());
                         },
@@ -505,7 +505,7 @@ class _ContainerScreen extends State<ContainerScreen> {
                         selected:
                             _drawerSelection == DrawerSelection.privacyPolicy,
                         leading: const Icon(Icons.privacy_tip),
-                        title: const Text('Privacy policy').tr(),
+                        title: Text('Privacy policy'.tr()),
                         onTap: () async {
                           push(context, const PrivacyPolicyScreen());
                         },

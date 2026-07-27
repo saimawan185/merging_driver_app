@@ -8,7 +8,9 @@ import 'package:door_delights_driver/models/parcel_order_model.dart';
 import 'package:door_delights_driver/models/user_model.dart';
 import 'package:door_delights_driver/models/wallet_transaction_model.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ParcelHomeController extends GetxController {
   RxList<ParcelOrderModel> parcelOrdersList = <ParcelOrderModel>[].obs;
@@ -67,7 +69,7 @@ class ParcelHomeController extends GetxController {
   }
 
   Future<void> pickupParcel(ParcelOrderModel parcelBookingData) async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     parcelBookingData.status = Constant.orderInTransit;
     await FireStoreUtils.setParcelOrder(parcelBookingData);
     await getParcelList();

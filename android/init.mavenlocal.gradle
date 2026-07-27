@@ -1,0 +1,6 @@
+settingsEvaluated { settings ->
+    settings.pluginManagement.repositories.clear()
+    settings.pluginManagement.repositories.mavenLocal()
+    settings.pluginManagement.repositories.google()
+    settings.pluginManagement.repositories.mavenCentral()
+}

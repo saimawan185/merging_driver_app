@@ -5,7 +5,9 @@ import 'package:door_delights_driver/themes/round_button_fill.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:door_delights_driver/widget/place_picker/location_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class LocationPickerScreen extends StatelessWidget {
@@ -120,7 +122,7 @@ class LocationPickerScreen extends StatelessWidget {
                             children: [
                               Icon(Icons.search),
                               SizedBox(width: 8),
-                              Text("Search place...".tr),
+                              Text("Search place...".tr()),
                             ],
                           ),
                         ),
@@ -152,7 +154,7 @@ class LocationPickerScreen extends StatelessWidget {
                             )),
                         const SizedBox(height: 10),
                         RoundedButtonFill(
-                          title: "Confirm Location".tr,
+                          title: "Confirm Location".tr(),
                           height: 5.5,
                           color: AppThemeData.primary300,
                           textColor: AppThemeData.grey50,

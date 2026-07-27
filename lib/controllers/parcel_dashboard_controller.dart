@@ -5,11 +5,14 @@ import 'package:door_delights_driver/constant/show_toast_dialog.dart';
 import 'package:door_delights_driver/models/user_model.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/preferences.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:location/location.dart';
 import '../constant/constant.dart' show Constant;
 import '../constants.dart';
 import '../model/CurrencyModel.dart';
+import '../models/section_model.dart';
 import '../themes/theme_controller.dart';
 import 'dash_board_controller.dart';
 
@@ -20,7 +23,37 @@ class ParcelDashboardController extends GetxController {
   void onInit() {
     getUser();
     getTheme();
+    loadUserSections();
     super.onInit();
+  }
+
+  final RxInt sectionIndex = 0.obs;
+  final RxList<SectionModel> userSections = <SectionModel>[].obs;
+
+  Future<void> loadUserSections() async {
+    final user = Constant.userModel;
+    if (user == null || user.sectionIds == null || user.sectionIds!.isEmpty) {
+      userSections.clear();
+      return;
+    }
+
+    try {
+      final allSections = await FireStoreUtils.getAllActiveSections();
+
+      final filtered = allSections
+          .where((section) => user.sectionIds!.contains(section.id))
+          .toList();
+
+      // Store in the cache for later use
+      for (final section in filtered) {
+        Constant.sectionModels[section.id!] = section;
+      }
+
+      userSections.value = filtered;
+    } catch (e) {
+      print('Error loading user sections: $e');
+      userSections.clear();
+    }
   }
 
   Rx<UserModel> userModel = UserModel().obs;
@@ -48,7 +81,7 @@ class ParcelDashboardController extends GetxController {
         userModel.value.isActive = false;
         ShowToastDialog.showToast(
           "Document verification is pending. Please proceed to set up your document verification."
-              .tr,
+              .tr(),
         );
       }
     } else {

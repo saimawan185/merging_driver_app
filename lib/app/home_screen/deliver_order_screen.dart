@@ -11,7 +11,9 @@ import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class DeliverOrderScreen extends StatelessWidget {
   const DeliverOrderScreen({super.key});
@@ -37,7 +39,7 @@ class DeliverOrderScreen extends StatelessWidget {
                       Constant.orderId(
                               orderId:
                                   controller.orderModel.value.id.toString())
-                          .tr,
+                          .tr(),
                       style: TextStyle(
                           color: isDark
                               ? AppThemeData.grey50
@@ -71,7 +73,7 @@ class DeliverOrderScreen extends StatelessWidget {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          "Deliver to the".tr,
+                                          "Deliver to the".tr(),
                                           textAlign: TextAlign.start,
                                           style: TextStyle(
                                             fontFamily: AppThemeData.semiBold,
@@ -114,7 +116,7 @@ class DeliverOrderScreen extends StatelessWidget {
                                   InkWell(
                                     onTap: () async {
                                       ShowToastDialog.showLoader(
-                                          "Please wait".tr);
+                                          "Please wait".tr());
 
                                       UserModel? customer =
                                           await FireStoreUtils.getUserProfile(
@@ -309,7 +311,7 @@ class DeliverOrderScreen extends StatelessWidget {
                                                             .start,
                                                     children: [
                                                       Text(
-                                                        "Variants".tr,
+                                                        "Variants".tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: TextStyle(
@@ -392,7 +394,7 @@ class DeliverOrderScreen extends StatelessWidget {
                                                       height: 10,
                                                     ),
                                                     Text(
-                                                      "Addons".tr,
+                                                      "Addons".tr(),
                                                       textAlign:
                                                           TextAlign.start,
                                                       style: TextStyle(
@@ -485,8 +487,8 @@ class DeliverOrderScreen extends StatelessWidget {
                                         },
                                       ),
                                       Text(
-                                        "${'Give'.tr} ${controller.totalQuantity.value.toString()} ${'Items to the customer'.tr}"
-                                            .tr,
+                                        "${'Give'.tr()} ${controller.totalQuantity.value.toString()} ${'Items to the customer'.tr()}"
+                                            .tr(),
                                         style: TextStyle(
                                             color: isDark
                                                 ? AppThemeData.success400
@@ -507,7 +509,7 @@ class DeliverOrderScreen extends StatelessWidget {
                   bottomNavigationBar: InkWell(
                     onTap: () async {
                       if (controller.conformPickup.value == false) {
-                        ShowToastDialog.showToast("Conform Deliver order".tr);
+                        ShowToastDialog.showToast("Conform Deliver order".tr());
                       } else {
                         await controller.completedOrder();
                       }
@@ -518,7 +520,7 @@ class DeliverOrderScreen extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         child: Text(
-                          "Make Order Delivered".tr,
+                          "Make Order Delivered".tr(),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: isDark

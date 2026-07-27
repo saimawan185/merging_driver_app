@@ -10,7 +10,9 @@ import 'package:door_delights_driver/models/user_model.dart';
 import 'package:door_delights_driver/models/wallet_transaction_model.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../constant/show_toast_dialog.dart' show ShowToastDialog;
 
@@ -87,7 +89,7 @@ class RentalHomeController extends GetxController {
   }
 
   Future<void> completeParcel(RentalOrderModel parcelBookingData) async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     parcelBookingData.status = Constant.orderCompleted;
 
     await updateCabWalletAmount(parcelBookingData);
@@ -104,7 +106,7 @@ class RentalHomeController extends GetxController {
         await FireStoreUtils.updateRentalReferralAmount(parcelBookingData);
       }
     });
-    ShowToastDialog.showToast("Ride completed successfully".tr);
+    ShowToastDialog.showToast("Ride completed successfully".tr());
     ShowToastDialog.closeLoader();
   }
 

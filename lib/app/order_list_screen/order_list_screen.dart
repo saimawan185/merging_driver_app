@@ -9,7 +9,9 @@ import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:door_delights_driver/widget/my_separator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 
 class OrderListScreen extends StatelessWidget {
@@ -53,7 +55,7 @@ class OrderListScreen extends StatelessWidget {
                                 height: 12,
                               ),
                               Text(
-                                "Document Verification in Pending".tr,
+                                "Document Verification in Pending".tr(),
                                 style: TextStyle(
                                     color: isDark
                                         ? AppThemeData.grey100
@@ -66,7 +68,7 @@ class OrderListScreen extends StatelessWidget {
                               ),
                               Text(
                                 "Your documents are being reviewed. We will notify you once the verification is complete."
-                                    .tr,
+                                    .tr(),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: isDark
@@ -79,7 +81,7 @@ class OrderListScreen extends StatelessWidget {
                                 height: 20,
                               ),
                               RoundedButtonFill(
-                                title: "View Status".tr,
+                                title: "View Status".tr(),
                                 width: 55,
                                 height: 5.5,
                                 color: AppThemeData.primary300,
@@ -98,7 +100,7 @@ class OrderListScreen extends StatelessWidget {
                               horizontal: 16, vertical: 10),
                           child: controller.orderList.isEmpty
                               ? Constant.showEmptyView(
-                                  message: "Order Not found".tr, isDark: isDark)
+                                  message: "Order Not found".tr(), isDark: isDark)
                               : ListView.builder(
                                   shrinkWrap: true,
                                   itemCount: controller.orderList.length,
@@ -135,7 +137,7 @@ class OrderListScreen extends StatelessWidget {
                                                   children: [
                                                     Expanded(
                                                       child: Text(
-                                                        "Order ID".tr,
+                                                        "Order ID".tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: TextStyle(
@@ -177,7 +179,7 @@ class OrderListScreen extends StatelessWidget {
                                                   children: [
                                                     Expanded(
                                                       child: Text(
-                                                        "Status".tr,
+                                                        "Status".tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: TextStyle(
@@ -218,7 +220,7 @@ class OrderListScreen extends StatelessWidget {
                                                   children: [
                                                     Expanded(
                                                       child: Text(
-                                                        "Date".tr,
+                                                        "Date".tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: TextStyle(
@@ -259,7 +261,7 @@ class OrderListScreen extends StatelessWidget {
                                                   children: [
                                                     Expanded(
                                                       child: Text(
-                                                        "Section".tr,
+                                                        "Section".tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: TextStyle(
@@ -448,7 +450,7 @@ class OrderListScreen extends StatelessWidget {
                                                                 children: [
                                                                   Text(
                                                                     "Deliver to the"
-                                                                        .tr,
+                                                                        .tr(),
                                                                     textAlign:
                                                                         TextAlign
                                                                             .start,
@@ -521,7 +523,7 @@ class OrderListScreen extends StatelessWidget {
                                                         Expanded(
                                                           child: Text(
                                                             "Delivery Charge"
-                                                                .tr,
+                                                                .tr(),
                                                             textAlign:
                                                                 TextAlign.start,
                                                             style: TextStyle(
@@ -577,7 +579,7 @@ class OrderListScreen extends StatelessWidget {
                                                         children: [
                                                           Expanded(
                                                             child: Text(
-                                                              "Tips".tr,
+                                                              "Tips".tr(),
                                                               textAlign:
                                                                   TextAlign
                                                                       .start,

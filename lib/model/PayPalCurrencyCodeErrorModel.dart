@@ -3,6 +3,7 @@
 //     final payPalCurrencyCodeErrorModel = payPalCurrencyCodeErrorModelFromJson(jsonString);
 
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 
 PayPalCurrencyCodeErrorModel payPalCurrencyCodeErrorModelFromJson(String str) => PayPalCurrencyCodeErrorModel.fromJson(json.decode(str));
 

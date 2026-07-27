@@ -12,7 +12,9 @@ import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:door_delights_driver/widget/firebase_pagination/src/firestore_pagination.dart';
 import 'package:door_delights_driver/widget/firebase_pagination/src/models/view_type.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class DriverInboxScreen extends StatelessWidget {
   const DriverInboxScreen({super.key});
@@ -27,7 +29,7 @@ class DriverInboxScreen extends StatelessWidget {
       //   centerTitle: false,
       //   titleSpacing: 0,
       //   title: Text(
-      //     "Driver Inbox".tr,
+      //     "Driver Inbox".tr(),
       //     textAlign: TextAlign.start,
       //     style: TextStyle(
       //       fontFamily: AppThemeData.medium,
@@ -64,7 +66,7 @@ class DriverInboxScreen extends StatelessWidget {
                   UserModel? customerData = snapshot.data;
                   return InkWell(
                     onTap: () async {
-                      ShowToastDialog.showLoader("Please wait".tr);
+                      ShowToastDialog.showLoader("Please wait".tr());
                       UserModel? driverData =
                           await FireStoreUtils.getUserProfile(
                               FireStoreUtils.getCurrentUid());
@@ -149,7 +151,7 @@ class DriverInboxScreen extends StatelessWidget {
                                       height: 5,
                                     ),
                                     Text(
-                                      "${"Order".tr} ${Constant.orderId(orderId: inboxModel.orderId.toString())}",
+                                      "${"Order".tr()} ${Constant.orderId(orderId: inboxModel.orderId.toString())}",
                                       textAlign: TextAlign.start,
                                       style: TextStyle(
                                         fontFamily: AppThemeData.medium,
@@ -174,7 +176,7 @@ class DriverInboxScreen extends StatelessWidget {
 
         shrinkWrap: true,
         onEmpty: Constant.showEmptyView(
-            message: "No Conversion found".tr, isDark: isDark),
+            message: "No Conversion found".tr(), isDark: isDark),
         // orderBy is compulsory to enable pagination
         //Change types customerId
         viewType: ViewType.list,

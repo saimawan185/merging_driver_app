@@ -5,6 +5,7 @@ import 'cab_order_model.dart';
 import 'order_model.dart';
 import 'subscription_plan_model.dart';
 import 'parcel_order_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class UserModel {
   // ── Base fields ──────────────────────────────────────────────
@@ -27,8 +28,11 @@ class UserModel {
   UserBankDetails? userBankDetails;
   List<ShippingAddress>? shippingAddress;
   String? carPictureURL;
+  String? appVersion;
   String? inProgressOrderID;
+  List<String>? deliveryInProgressOrderIds;
   OrderModel? orderRequestData;
+  List<OrderModel>? deliveryOrderRequests;
   String? vendorID;
   String? zoneId;
   num? rotation;
@@ -98,7 +102,9 @@ class UserModel {
     this.shippingAddress,
     this.carPictureURL,
     this.inProgressOrderID,
+    this.deliveryInProgressOrderIds,
     this.orderRequestData,
+    this.deliveryOrderRequests,
     this.vendorID,
     this.zoneId,
     this.rotation,
@@ -114,6 +120,7 @@ class UserModel {
     this.reviewsSum = 0,
     this.adminCommissionModel,
     this.orderCabRequestData,
+    this.appVersion,
     this.rideType,
     this.ownerId,
     this.isOwner,
@@ -180,10 +187,17 @@ class UserModel {
           : null,
       carPictureURL: json['carPictureURL'],
       inProgressOrderID: json['inProgressOrderID'],
-      orderRequestData: json.containsKey('orderRequestData') &&
-              json['orderRequestData'] != null
-          ? OrderModel.fromJson(json['orderRequestData'])
+      deliveryInProgressOrderIds: json['deliveryInProgressOrderIds'] != null
+          ? (json['deliveryInProgressOrderIds'] as List)
+              .map((e) => e.toString())
+              .toList()
           : null,
+      deliveryOrderRequests: json.containsKey('deliveryOrderRequests') &&
+              json['deliveryOrderRequests'] != null
+          ? (json['deliveryOrderRequests'] as List)
+              .map((e) => OrderModel.fromJson(e))
+              .toList()
+          : [],
       vendorID: json['vendorID'] ?? '',
       zoneId: json['zoneId'] ?? '',
       rotation: json['rotation'],
@@ -247,6 +261,7 @@ class UserModel {
       paymentCutomerId: json['paymentCutomerId'],
       serviceType: json['serviceType'],
       sectionId: json['sectionId'],
+      appVersion: json['appVersion'],
     );
   }
 
@@ -278,6 +293,8 @@ class UserModel {
     data['reviewsSum'] = reviewsSum;
     data['isAutoVerify'] = isAutoVerify;
     data['inProgressOrderID'] = inProgressOrderID;
+    data['deliveryInProgressOrderIds'] = deliveryInProgressOrderIds;
+    data['appVersion'] = '1.1.2';
 
     // Nested objects
     if (location != null) data['location'] = location!.toJson();
@@ -311,6 +328,9 @@ class UserModel {
       data['vendorID'] = vendorID;
       data['carPictureURL'] = carPictureURL;
       data['orderRequestData'] = this.orderRequestData?.toJson();
+      data['deliveryOrderRequests'] =
+          deliveryOrderRequests?.map((e) => e.toJson()).toList();
+
       if (orderCabRequestData != null)
         data['ordercabRequestData'] = orderCabRequestData!.toJson();
       data['ownerId'] = ownerId;

@@ -8,7 +8,9 @@ import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../controllers/rental_order_details_controller.dart';
 import '../../themes/app_them_data.dart';
 import '../../themes/responsive.dart';
@@ -26,7 +28,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              "Order Details".tr,
+              "Order Details".tr(),
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black,
               ),
@@ -78,7 +80,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                           text: controller.order.value.id
                                               .toString()));
                                       ShowToastDialog.showToast(
-                                          "Booking ID copied to clipboard".tr);
+                                          "Booking ID copied to clipboard".tr());
                                     },
                                     child: Icon(Icons.copy),
                                   ),
@@ -151,7 +153,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Your Preference",
+                                Text("Your Preference".tr(),
                                     style: AppThemeData.boldTextStyle(
                                         fontSize: 14,
                                         color: isDark
@@ -232,7 +234,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text("About Customer".tr,
+                                    Text("About Customer".tr(),
                                         style: AppThemeData.boldTextStyle(
                                             fontSize: 14,
                                             color: isDark
@@ -318,7 +320,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                         InkWell(
                                           onTap: () async {
                                             ShowToastDialog.showLoader(
-                                                "Please wait".tr);
+                                                "Please wait".tr());
 
                                             UserModel? customer =
                                                 await FireStoreUtils
@@ -383,7 +385,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                     //   child: Padding(
                                     //     padding: const EdgeInsets.symmetric(vertical: 10),
                                     //     child: RoundedButtonFill(
-                                    //       title: 'Add Review'.tr,
+                                    //       title: 'Add Review'.tr(),
                                     //       onPress: () async {
                                     //         final result = await Get.to(() => RentalReviewScreen(), arguments: {'order': controller.order.value});
                                     //
@@ -421,7 +423,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Vehicle Type".tr,
+                                Text("Vehicle Type".tr(),
                                     style: AppThemeData.boldTextStyle(
                                         fontSize: 14,
                                         color: isDark
@@ -502,7 +504,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Rental Details".tr,
+                                  "Rental Details".tr(),
                                   style: AppThemeData.boldTextStyle(
                                     fontSize: 16,
                                     color: isDark
@@ -521,7 +523,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          'Rental Package'.tr,
+                                          'Rental Package'.tr(),
                                           textAlign: TextAlign.start,
                                           style: AppThemeData.mediumTextStyle(
                                             fontSize: 14,
@@ -535,7 +537,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                         controller.order.value
                                             .rentalPackageModel!.name
                                             .toString()
-                                            .tr,
+                                            .tr(),
                                         textAlign: TextAlign.start,
                                         style: AppThemeData.boldTextStyle(
                                           fontSize: 14,
@@ -554,7 +556,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          'Rental Package Price'.tr,
+                                          'Rental Package Price'.tr(),
                                           textAlign: TextAlign.start,
                                           style: AppThemeData.mediumTextStyle(
                                             fontSize: 14,
@@ -569,7 +571,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                           amount: controller.order.value
                                               .rentalPackageModel!.baseFare
                                               .toString(),
-                                        ).tr,
+                                        ).tr(),
                                         textAlign: TextAlign.start,
                                         style: AppThemeData.boldTextStyle(
                                           fontSize: 14,
@@ -588,7 +590,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          'Including ${Constant.distanceType.tr}',
+                                          'Including ${Constant.distanceType.tr()}',
                                           textAlign: TextAlign.start,
                                           style: AppThemeData.mediumTextStyle(
                                             fontSize: 14,
@@ -600,7 +602,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                       ),
                                       Text(
                                         "${controller.order.value.rentalPackageModel!.includedDistance.toString()} ${Constant.distanceType}"
-                                            .tr,
+                                            .tr(),
                                         textAlign: TextAlign.start,
                                         style: AppThemeData.boldTextStyle(
                                           fontSize: 14,
@@ -619,7 +621,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                     children: [
                                       Expanded(
                                         child: Text(
-                                          'Including Hours'.tr,
+                                          'Including Hours'.tr(),
                                           textAlign: TextAlign.start,
                                           style: AppThemeData.mediumTextStyle(
                                             fontSize: 14,
@@ -631,7 +633,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                       ),
                                       Text(
                                         "${controller.order.value.rentalPackageModel!.includedHours.toString()} Hr"
-                                            .tr,
+                                            .tr(),
                                         textAlign: TextAlign.start,
                                         style: AppThemeData.boldTextStyle(
                                           fontSize: 14,
@@ -702,7 +704,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                           children: [
                                             Expanded(
                                               child: Text(
-                                                'Extra Minutes'.tr,
+                                                'Extra Minutes'.tr(),
                                                 textAlign: TextAlign.start,
                                                 style: AppThemeData
                                                     .mediumTextStyle(
@@ -747,13 +749,13 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                "Order Summary".tr,
+                                "Order Summary".tr(),
                                 style: AppThemeData.boldTextStyle(
                                     fontSize: 14, color: AppThemeData.grey500),
                               ),
                               const SizedBox(height: 8),
                               _summaryTile(
-                                "Subtotal".tr,
+                                "Subtotal".tr(),
                                 Constant.amountShow(
                                     amount:
                                         controller.subTotal.value.toString()),
@@ -761,7 +763,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                                 null,
                               ),
                               _summaryTile(
-                                "Discount".tr,
+                                "Discount".tr(),
                                 Constant.amountShow(
                                     amount:
                                         controller.discount.value.toString()),
@@ -791,7 +793,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                               }),
                               const Divider(),
                               _summaryTile(
-                                "Order Total".tr,
+                                "Order Total".tr(),
                                 Constant.amountShow(
                                     amount: controller.totalAmount.value
                                         .toString()),
@@ -800,7 +802,7 @@ class RentalOrderDetailsScreen extends StatelessWidget {
                               ),
                               _summaryTile(
                                 "Admin Commission (${controller.order.value.adminCommission}${controller.order.value.adminCommissionType == "Percentage" || controller.order.value.adminCommissionType == "percentage" ? "%" : Constant.currencyModel!.symbol})"
-                                    .tr,
+                                    .tr(),
                                 Constant.amountShow(
                                     amount: controller.adminCommission.value
                                         .toString()),

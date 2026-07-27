@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
@@ -92,11 +94,11 @@ class ChatController extends GetxController {
 
     if (url != null) {
       if (url.mime.contains('image')) {
-        conversationModel.message = "sent a message".tr;
+        conversationModel.message = "sent a message".tr();
       } else if (url.mime.contains('video')) {
-        conversationModel.message = "Sent a video".tr;
+        conversationModel.message = "Sent a video".tr();
       } else if (url.mime.contains('audio')) {
-        conversationModel.message = "Sent a audio".tr;
+        conversationModel.message = "Sent a audio".tr();
       }
     }
 
@@ -119,7 +121,7 @@ class ChatController extends GetxController {
 //     sendMessage('', url, '', 'image');
 //     Get.back();
 //   } on PlatformException catch (e) {
-//     ShowToastDialog.showToast("${"failed_to_pick".tr} : \n $e");
+//     ShowToastDialog.showToast("${"failed_to_pick".tr()} : \n $e");
 //   }
 // }
 }

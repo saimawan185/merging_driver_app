@@ -1,4 +1,6 @@
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class DriverOrderListController extends GetxController {
   RxString driverId = "".obs;

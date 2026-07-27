@@ -10,7 +10,9 @@ import 'package:door_delights_driver/widget/my_separator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import '../../constant/global.dart';
@@ -57,12 +59,11 @@ class HomeScreenMultipleOrder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeController = Get.find<ThemeController>();
-    final isDark = themeController.isDark.value;
-
     return GetX(
         init: HomeScreenMultipleOrderController(),
         builder: (controller) {
+          final isDark = Get.find<ThemeController>().isDark.value;
+
           return Scaffold(
             body: controller.isLoading.value
                 ? Constant.loader()
@@ -92,7 +93,7 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              "document_verification_pending".tr,
+                              "document_verification_pending".tr(),
                               style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey100
@@ -103,7 +104,7 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                             ),
                             const SizedBox(height: 5),
                             Text(
-                              "document_review_notification".tr,
+                              "document_review_notification".tr(),
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: isDark
@@ -115,7 +116,7 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                             ),
                             const SizedBox(height: 20),
                             RoundedButtonFill(
-                              title: "view_status".tr,
+                              title: "view_status".tr(),
                               width: 55,
                               height: 5.5,
                               color: AppThemeData.primary300,
@@ -170,14 +171,14 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                                       labelStyle: const TextStyle(
                                           fontFamily: AppThemeData.semiBold),
                                       labelColor: isDark
-                                          ? AppThemeData.primary300
+                                          ? AppThemeData.carRent300
                                           : AppThemeData.primary300,
                                       unselectedLabelStyle: const TextStyle(
                                           fontFamily: AppThemeData.medium),
                                       unselectedLabelColor: isDark
-                                          ? AppThemeData.grey500
+                                          ? AppThemeData.greyDark900
                                           : AppThemeData.grey400,
-                                      indicatorColor: AppThemeData.primary300,
+                                      indicatorColor: AppThemeData.carRent300,
                                       isScrollable: false,
                                       dividerColor: Colors.transparent,
                                       tabs: [
@@ -185,10 +186,10 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                                                 .userModel?.vendorID?.isEmpty ==
                                             true)
                                           Tab(
-                                            text: "New".tr,
+                                            text: "New".tr(),
                                           ),
                                         Tab(
-                                          text: "Active".tr,
+                                          text: "Active".tr(),
                                         ),
                                       ],
                                     ),
@@ -206,7 +207,7 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                                                     ? Constant.showEmptyView(
                                                         message:
                                                             "New Order not found."
-                                                                .tr,
+                                                                .tr(),
                                                         isDark: isDark)
                                                     : ListView.builder(
                                                         shrinkWrap: true,
@@ -248,7 +249,7 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                                                     ? Constant.showEmptyView(
                                                         message:
                                                             "Active order not found."
-                                                                .tr,
+                                                                .tr(),
                                                         isDark: isDark)
                                                     : ListView.builder(
                                                         itemCount: controller
@@ -286,7 +287,7 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                                                     ? Constant.showEmptyView(
                                                         message:
                                                             "Active order not found."
-                                                                .tr,
+                                                                .tr(),
                                                         isDark: isDark)
                                                     : ListView.builder(
                                                         itemCount: controller
@@ -596,7 +597,7 @@ class _OrderCardState extends State<_OrderCard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Deliver to the".tr,
+                                  "Deliver to the".tr(),
                                   textAlign: TextAlign.start,
                                   style: TextStyle(
                                     fontFamily: AppThemeData.semiBold,
@@ -652,7 +653,7 @@ class _OrderCardState extends State<_OrderCard> {
                 children: [
                   Expanded(
                     child: Text(
-                      "Trip Distance".tr,
+                      "Trip Distance".tr(),
                       textAlign: TextAlign.start,
                       style: TextStyle(
                         fontFamily: AppThemeData.regular,
@@ -689,7 +690,7 @@ class _OrderCardState extends State<_OrderCard> {
                       children: [
                         Expanded(
                           child: Text(
-                            "Delivery Charge".tr,
+                            "Delivery Charge".tr(),
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               fontFamily: AppThemeData.regular,
@@ -726,7 +727,7 @@ class _OrderCardState extends State<_OrderCard> {
                   children: [
                     Expanded(
                       child: Text(
-                        "Tips".tr,
+                        "Tips".tr(),
                         textAlign: TextAlign.start,
                         style: TextStyle(
                           fontFamily: AppThemeData.regular,
@@ -757,7 +758,7 @@ class _OrderCardState extends State<_OrderCard> {
                   children: [
                     Expanded(
                       child: RoundedButtonFill(
-                        title: "Reject".tr,
+                        title: "Reject".tr(),
                         width: 24,
                         height: 5.5,
                         borderRadius: 10,
@@ -771,7 +772,7 @@ class _OrderCardState extends State<_OrderCard> {
                     const SizedBox(width: 10),
                     Expanded(
                       child: RoundedButtonFill(
-                        title: "Accept".tr,
+                        title: "Accept".tr(),
                         width: 24,
                         height: 5.5,
                         borderRadius: 10,

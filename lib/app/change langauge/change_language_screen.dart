@@ -7,8 +7,6 @@ import 'package:door_delights_driver/services/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:get/instance_manager.dart';
 import 'package:get/state_manager.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../models/language_model.dart';
 import '../../themes/theme_controller.dart';
 
@@ -42,14 +40,21 @@ class _LanguageChooceScreenState extends State<LanguageChooseScreen> {
       for (int i = 0; i < list.length; i++) {
         if (list[i]['isActive'] == true) {
           LanguageModel languageModel = LanguageModel.fromJson(list[i]);
-          languageList.add(languageModel);
+          final code =
+              LocalizationService.normalizeLang(languageModel.slug.toString());
+          // Only keep languages we ship translation files for.
+          if (LocalizationService.supportedCodes.contains(code)) {
+            languageModel.slug = code;
+            languageList.add(languageModel);
+          }
         }
       }
     });
-    SharedPreferences sp = await SharedPreferences.getInstance();
-    if (sp.containsKey("languageCode")) {
-      selectedLanguage = sp.getString("languageCode")!;
-    }
+
+    if (!mounted) return;
+    selectedLanguage = LocalizationService.normalizeLang(
+      context.locale.languageCode,
+    );
     setState(() {});
   }
 
@@ -68,7 +73,9 @@ class _LanguageChooceScreenState extends State<LanguageChooseScreen> {
               return InkWell(
                 onTap: () {
                   setState(() {
-                    selectedLanguage = languageList[index].slug.toString();
+                    selectedLanguage = LocalizationService.normalizeLang(
+                      languageList[index].slug.toString(),
+                    );
                   });
                 },
                 child: Padding(
@@ -130,24 +137,25 @@ class _LanguageChooceScreenState extends State<LanguageChooseScreen> {
               ),
             ),
             onPressed: () async {
-              SharedPreferences sp = await SharedPreferences.getInstance();
-              sp.setString("languageCode", selectedLanguage);
-              await context.setLocale(Locale(selectedLanguage));
-              LocalizationService().changeLocale(selectedLanguage);
-
-              SnackBar snack = SnackBar(
-                content: const Text(
-                  'Language change successfully',
-                  style: TextStyle(color: Colors.white),
-                ).tr(),
-                duration: const Duration(seconds: 2),
-                backgroundColor: Colors.black,
+              await LocalizationService().changeLocale(
+                context,
+                selectedLanguage,
               );
-              ScaffoldMessenger.of(context).showSnackBar(snack);
 
-              if (mounted) {
-                setState(() {});
-              }
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    'Language change successfully'.tr(),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  duration: const Duration(seconds: 2),
+                  backgroundColor: Colors.black,
+                ),
+              );
+
+              setState(() {});
             },
             child: Text(
               'Save'.tr(),

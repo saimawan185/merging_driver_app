@@ -16,7 +16,9 @@ import 'package:door_delights_driver/widget/place_picker/location_picker_screen.
 import 'package:door_delights_driver/widget/place_picker/selected_location_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as latlong;
 import 'package:timelines_plus/timelines_plus.dart';
 
@@ -43,7 +45,7 @@ class ParcelSearchScreen extends StatelessWidget {
                       isDark ? AppThemeData.greyDark900 : AppThemeData.grey900,
                   size: 20),
               title: Text(
-                "Search parcel".tr,
+                "Search parcel".tr(),
                 style: TextStyle(
                     color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
                     fontSize: 18,
@@ -112,7 +114,7 @@ class ParcelSearchScreen extends StatelessWidget {
                                     });
                                   }
                                 },
-                                hintText: 'Where you want to go?',
+                                hintText: 'Where you want to go?'.tr(),
                                 prefix: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16),
@@ -183,7 +185,7 @@ class ParcelSearchScreen extends StatelessWidget {
                                     );
                                   }
                                 },
-                                hintText: 'Where to?'.tr,
+                                hintText: 'Where to?'.tr(),
                                 prefix: Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16),
@@ -197,7 +199,7 @@ class ParcelSearchScreen extends StatelessWidget {
                         TextFieldWidget(
                           controller:
                               controller.dateTimeTextEditController.value,
-                          hintText: 'Select Date'.tr,
+                          hintText: 'Select Date'.tr(),
                           readOnly: true,
                           onClick: () async {
                             controller.pickDateTime();
@@ -209,7 +211,7 @@ class ParcelSearchScreen extends StatelessWidget {
                           ),
                         ),
                         RoundedButtonFill(
-                          title: "Search Parcel".tr,
+                          title: "Search Parcel".tr(),
                           height: 5.5,
                           color: AppThemeData.primary300,
                           textColor: AppThemeData.grey50,
@@ -221,7 +223,7 @@ class ParcelSearchScreen extends StatelessWidget {
                         Expanded(
                           child: controller.parcelList.isEmpty
                               ? Constant.showEmptyView(
-                                  message: "Parcel Booking not found".tr,
+                                  message: "Parcel Booking not found".tr(),
                                   isDark: isDark)
                               : ListView.builder(
                                   itemCount: controller.parcelList.length,
@@ -404,7 +406,7 @@ class ParcelSearchScreen extends StatelessWidget {
                                                                 amount: controller
                                                                     .calculateParcelTotalAmountBooking(
                                                                         parcelBookingData))
-                                                            .tr,
+                                                            .tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: AppThemeData
@@ -437,7 +439,7 @@ class ParcelSearchScreen extends StatelessWidget {
                                                       ),
                                                       Text(
                                                         '${Constant.timestampToDate(parcelBookingData.senderPickupDateTime!)}  '
-                                                            .tr,
+                                                            .tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: AppThemeData
@@ -470,7 +472,7 @@ class ParcelSearchScreen extends StatelessWidget {
                                                       ),
                                                       Text(
                                                         '${parcelBookingData.parcelWeight}'
-                                                            .tr,
+                                                            .tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: AppThemeData
@@ -496,7 +498,7 @@ class ParcelSearchScreen extends StatelessWidget {
                                                       .spaceBetween,
                                               children: [
                                                 Text(
-                                                  "Parcel Type:".tr,
+                                                  "Parcel Type:".tr(),
                                                   style: AppThemeData
                                                       .semiBoldTextStyle(
                                                     fontSize: 16,
@@ -570,7 +572,7 @@ class ParcelSearchScreen extends StatelessWidget {
                                             ),
                                             const SizedBox(height: 16),
                                             RoundedButtonFill(
-                                              title: "Accept".tr,
+                                              title: "Accept".tr(),
                                               height: 5.5,
                                               color: AppThemeData.primary300,
                                               textColor: AppThemeData.grey50,
@@ -599,11 +601,11 @@ class ParcelSearchScreen extends StatelessWidget {
                                                   } else {
                                                     ShowToastDialog.showToast(
                                                         "Your owner has to maintain minimum {amount} wallet balance to accept the parcel booking. Please contact your owner"
-                                                            .trParams({
+                                                            .tr(namedArgs: {
                                                       "amount": Constant.amountShow(
                                                           amount: Constant
                                                               .ownerMinimumDepositToRideAccept)
-                                                    }).tr);
+                                                    }));
                                                   }
                                                 } else {
                                                   final driverWallet =
@@ -622,12 +624,12 @@ class ParcelSearchScreen extends StatelessWidget {
                                                             parcelBookingData);
                                                   } else {
                                                     ShowToastDialog.showToast(
-                                                        "You must have at least ${Constant.amountShow(amount: Constant.minimumDepositToRideAccept.toString())} in your wallet to accept this order"
-                                                            .trParams({
+                                                        "You must have at least {amount} in your wallet to accept this order"
+                                                            .tr(namedArgs: {
                                                       "amount": Constant.amountShow(
                                                           amount: Constant
                                                               .minimumDepositToRideAccept)
-                                                    }).tr);
+                                                    }));
                                                   }
                                                 }
                                               },

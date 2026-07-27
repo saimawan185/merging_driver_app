@@ -2549,6 +2549,7 @@ class WalletScreenState extends State<WalletScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
         child: Card(
           elevation: 2,
+          color: isDark ? AppThemeData.grey900 : AppThemeData.greyDark900,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Padding(

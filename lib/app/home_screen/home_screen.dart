@@ -19,7 +19,9 @@
 // import 'package:flutter_map/flutter_map.dart' as flutterMap;
 // import 'package:flutter_svg/flutter_svg.dart';
 // import 'package:geolocator/geolocator.dart';
-// import 'package:get/get.dart';
+// import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
 // import 'package:timelines_plus/timelines_plus.dart';
 
@@ -46,7 +48,7 @@
 //                     iconTheme: const IconThemeData(
 //                         color: AppThemeData.grey900, size: 20),
 //                     title: Text(
-//                       "Order".tr,
+//                       "Order".tr(),
 //                       style: TextStyle(
 //                           color: isDark
 //                               ? AppThemeData.grey50
@@ -87,7 +89,7 @@
 //                               height: 12,
 //                             ),
 //                             Text(
-//                               "Document Verification in Pending".tr,
+//                               "Document Verification in Pending".tr(),
 //                               style: TextStyle(
 //                                   color: isDark
 //                                       ? AppThemeData.grey100
@@ -100,7 +102,7 @@
 //                             ),
 //                             Text(
 //                               "Your documents are being reviewed. We will notify you once the verification is complete."
-//                                   .tr,
+//                                   .tr(),
 //                               textAlign: TextAlign.center,
 //                               style: TextStyle(
 //                                   color: isDark
@@ -113,7 +115,7 @@
 //                               height: 20,
 //                             ),
 //                             RoundedButtonFill(
-//                               title: "View Status".tr,
+//                               title: "View Status".tr(),
 //                               width: 55,
 //                               height: 5.5,
 //                               color: AppThemeData.primary300,
@@ -148,7 +150,7 @@
 //                                         child: Padding(
 //                                           padding: const EdgeInsets.all(8.0),
 //                                           child: Text(
-//                                             "${'You have to minimum'.tr} ${Constant.amountShow(amount: Constant.minimumDepositToRideAccept.toString())} ${'wallet amount to receiving Order'.tr}",
+//                                             "${'You have to minimum'.tr()} ${Constant.amountShow(amount: Constant.minimumDepositToRideAccept.toString())} ${'wallet amount to receiving Order'.tr()}",
 //                                             style: TextStyle(
 //                                                 color: isDark
 //                                                     ? AppThemeData.grey50
@@ -167,7 +169,7 @@
 //                           //     ? Padding(
 //                           //         padding: const EdgeInsets.all(8.0),
 //                           //         child: Text(
-//                           //           "${'You have to minimum'.tr} ${Constant.amountShow(amount: Constant.minimumDepositToRideAccept.toString())} ${'wallet amount to receiving Order'.tr}",
+//                           //           "${'You have to minimum'.tr()} ${Constant.amountShow(amount: Constant.minimumDepositToRideAccept.toString())} ${'wallet amount to receiving Order'.tr()}",
 //                           //           style: TextStyle(color: isDark ? AppThemeData.grey50 : AppThemeData.grey900, fontSize: 14, fontFamily: AppThemeData.semiBold),
 //                           //         ),
 //                           //       )
@@ -329,7 +331,7 @@
 //                                           height: 10,
 //                                         ),
 //                                         Text(
-//                                           "${'Navigate with'.tr} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}",
+//                                           "${'Navigate with'.tr()} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}",
 //                                           style: TextStyle(
 //                                               color: isDark
 //                                                   ? AppThemeData.grey50
@@ -339,7 +341,7 @@
 //                                                   AppThemeData.semiBold),
 //                                         ),
 //                                         Text(
-//                                           "${'Easily find your destination with a single tap redirect to'.tr}  ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""} ${'for seamless navigation.'.tr}",
+//                                           "${'Easily find your destination with a single tap redirect to'.tr()}  ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""} ${'for seamless navigation.'.tr()}",
 //                                           textAlign: TextAlign.center,
 //                                           style: TextStyle(
 //                                               color: isDark
@@ -353,8 +355,8 @@
 //                                         ),
 //                                         RoundedButtonFill(
 //                                           title:
-//                                               "${'Redirect'.tr} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}"
-//                                                   .tr,
+//                                               "${'Redirect'.tr()} ${Constant.mapType == "google" ? "Google Map" : Constant.mapType == "googleGo" ? "Google Go" : Constant.mapType == "waze" ? "Waze Map" : Constant.mapType == "mapswithme" ? "MapsWithMe Map" : Constant.mapType == "yandexNavi" ? "VandexNavi Map" : Constant.mapType == "yandexMaps" ? "Vandex Map" : ""}"
+//                                                   .tr(),
 //                                           width: 55,
 //                                           height: 5.5,
 //                                           color: AppThemeData.primary300,
@@ -573,7 +575,7 @@
 //                               crossAxisAlignment: CrossAxisAlignment.start,
 //                               children: [
 //                                 Text(
-//                                   "Deliver to the".tr,
+//                                   "Deliver to the".tr(),
 //                                   textAlign: TextAlign.start,
 //                                   style: TextStyle(
 //                                     fontFamily: AppThemeData.semiBold,
@@ -625,7 +627,7 @@
 //                 children: [
 //                   Expanded(
 //                     child: Text(
-//                       "Trip Distance".tr,
+//                       "Trip Distance".tr(),
 //                       textAlign: TextAlign.start,
 //                       style: TextStyle(
 //                         fontFamily: AppThemeData.regular,
@@ -660,7 +662,7 @@
 //                     children: [
 //                       Expanded(
 //                         child: Text(
-//                           "Delivery Charge".tr,
+//                           "Delivery Charge".tr(),
 //                           textAlign: TextAlign.start,
 //                           style: TextStyle(
 //                             fontFamily: AppThemeData.regular,
@@ -702,7 +704,7 @@
 //                       children: [
 //                         Expanded(
 //                           child: Text(
-//                             "Tips".tr,
+//                             "Tips".tr(),
 //                             textAlign: TextAlign.start,
 //                             style: TextStyle(
 //                               fontFamily: AppThemeData.regular,
@@ -734,7 +736,7 @@
 //                 children: [
 //                   Expanded(
 //                     child: RoundedButtonFill(
-//                       title: "Reject".tr,
+//                       title: "Reject".tr(),
 //                       width: 24,
 //                       height: 5.5,
 //                       borderRadius: 10,
@@ -750,7 +752,7 @@
 //                   ),
 //                   Expanded(
 //                     child: RoundedButtonFill(
-//                       title: "Accept".tr,
+//                       title: "Accept".tr(),
 //                       width: 24,
 //                       height: 5.5,
 //                       borderRadius: 10,
@@ -1165,7 +1167,7 @@
 //                                                 CrossAxisAlignment.start,
 //                                             children: [
 //                                               Text(
-//                                                 "Deliver to the".tr,
+//                                                 "Deliver to the".tr(),
 //                                                 textAlign: TextAlign.start,
 //                                                 style: TextStyle(
 //                                                   fontFamily:
@@ -1248,7 +1250,7 @@
 //                                         InkWell(
 //                                           onTap: () async {
 //                                             ShowToastDialog.showLoader(
-//                                                 "Please wait".tr);
+//                                                 "Please wait".tr());
 
 //                                             UserModel? customer =
 //                                                 await FireStoreUtils
@@ -1328,7 +1330,7 @@
 //                   children: [
 //                     Expanded(
 //                       child: Text(
-//                         "Payment Type".tr,
+//                         "Payment Type".tr(),
 //                         textAlign: TextAlign.start,
 //                         style: TextStyle(
 //                           fontFamily: AppThemeData.regular,
@@ -1365,7 +1367,7 @@
 //                         children: [
 //                           Expanded(
 //                             child: Text(
-//                               "Collect Payment from customer".tr,
+//                               "Collect Payment from customer".tr(),
 //                               textAlign: TextAlign.start,
 //                               style: TextStyle(
 //                                 fontFamily: AppThemeData.regular,
@@ -1404,7 +1406,7 @@
 //                         children: [
 //                           Expanded(
 //                             child: Text(
-//                               "Tips".tr,
+//                               "Tips".tr(),
 //                               textAlign: TextAlign.start,
 //                               style: TextStyle(
 //                                 fontFamily: AppThemeData.regular,
@@ -1486,10 +1488,10 @@
 //                               Constant.orderShipped ||
 //                           controller.currentOrder.value.status ==
 //                               Constant.driverAccepted
-//                       ? "Reached store for Pickup".tr
+//                       ? "Reached store for Pickup".tr()
 //                       : controller.driverModel.value.vendorID?.isEmpty == true
-//                           ? "Reached the Customers Door Steps".tr
-//                           : "Order Delivered".tr,
+//                           ? "Reached the Customers Door Steps".tr()
+//                           : "Order Delivered".tr(),
 //                   textAlign: TextAlign.center,
 //                   style: TextStyle(
 //                     color: isDark ? AppThemeData.grey900 : AppThemeData.grey900,

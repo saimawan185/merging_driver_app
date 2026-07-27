@@ -1,6 +1,8 @@
 import 'package:door_delights_driver/themes/app_them_data.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class MaintenanceModeScreen extends StatelessWidget {
   const MaintenanceModeScreen({super.key});
@@ -22,7 +24,7 @@ class MaintenanceModeScreen extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Text(
-            "We'll be back soon!".tr,
+            "We'll be back soon!".tr(),
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -33,7 +35,7 @@ class MaintenanceModeScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Text(
               "Sorry for the inconvenience but we're performing some maintenance at the moment. We'll be back online shortly!"
-                  .tr,
+                  .tr(),
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 16,

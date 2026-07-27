@@ -1,7 +1,9 @@
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../constant/constant.dart';
 import '../../controllers/cab_order_details_controller.dart';
 import '../../theme/responsive.dart';
@@ -55,8 +57,8 @@ class CabOrderDetails extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(16),
                         child: Text(
-                          "${'Order Id:'.tr} ${Constant.orderId(orderId: controller.cabOrder.value.id.toString())}"
-                              .tr,
+                          "${'Order Id:'.tr()} ${Constant.orderId(orderId: controller.cabOrder.value.id.toString())}"
+                              .tr(),
                           textAlign: TextAlign.start,
                           style: TextStyle(
                             fontFamily: AppThemeData.semiBold,
@@ -87,8 +89,8 @@ class CabOrderDetails extends StatelessWidget {
                             if (controller.cabOrder.value.scheduleDateTime !=
                                 null)
                               Text(
-                                "${'Booking Date:'.tr}${controller.formatDate(controller.cabOrder.value.scheduleDateTime!)}"
-                                    .tr,
+                                "${'Booking Date:'.tr()}${controller.formatDate(controller.cabOrder.value.scheduleDateTime!)}"
+                                    .tr(),
                                 textAlign: TextAlign.start,
                                 style: TextStyle(
                                   fontFamily: AppThemeData.semiBold,
@@ -321,7 +323,7 @@ class CabOrderDetails extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        "About Customer".tr,
+                                        "About Customer".tr(),
                                         style: AppThemeData.boldTextStyle(
                                             fontSize: 14,
                                             color: isDark
@@ -422,19 +424,19 @@ class CabOrderDetails extends StatelessWidget {
                               controller.cabOrder.value.distance != null
                                   ? "${double.tryParse(controller.cabOrder.value.distance.toString())?.toStringAsFixed(2) ?? '--'} KM"
                                   : "-- KM",
-                              "Distance".tr,
+                              "Distance".tr(),
                               "assets/icons/ic_distance_parcel.svg",
                               isDark,
                             ),
                             _iconTile(
                                 controller.cabOrder.value.duration ?? '--',
-                                "Duration".tr,
+                                "Duration".tr(),
                                 "assets/icons/ic_duration.svg",
                                 isDark),
                             _iconTile(
                               Constant.amountShow(
                                   amount: controller.cabOrder.value.subTotal),
-                              "${controller.cabOrder.value.paymentMethod}".tr,
+                              "${controller.cabOrder.value.paymentMethod}".tr(),
                               "assets/icons/ic_rate_parcel.svg",
                               isDark,
                             ),
@@ -457,14 +459,14 @@ class CabOrderDetails extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("Order Summary".tr,
+                            Text("Order Summary".tr(),
                                 style: AppThemeData.boldTextStyle(
                                     fontSize: 14, color: AppThemeData.grey500)),
                             const SizedBox(height: 8),
 
                             // Subtotal
                             _summaryTile(
-                                "Subtotal".tr,
+                                "Subtotal".tr(),
                                 Constant.amountShow(
                                     amount:
                                         controller.subTotal.value.toString()),
@@ -473,7 +475,7 @@ class CabOrderDetails extends StatelessWidget {
 
                             // Discount
                             _summaryTile(
-                              "Discount".tr,
+                              "Discount".tr(),
                               Constant.amountShow(
                                   amount: controller.discount.value.toString()),
                               isDark,
@@ -481,7 +483,7 @@ class CabOrderDetails extends StatelessWidget {
                             ),
 
                             _summaryTile(
-                                "Tip".tr,
+                                "Tip".tr(),
                                 Constant.amountShow(
                                     amount:
                                         controller.tipValue.value.toString()),
@@ -516,7 +518,7 @@ class CabOrderDetails extends StatelessWidget {
 
                             // Total
                             _summaryTile(
-                                "Order Total".tr,
+                                "Order Total".tr(),
                                 Constant.amountShow(
                                     amount: controller.totalAmount.value
                                         .toString()),
@@ -524,7 +526,7 @@ class CabOrderDetails extends StatelessWidget {
                                 null),
                             _summaryTile(
                               "Admin Commission (${controller.cabOrder.value.adminCommission}${controller.cabOrder.value.adminCommissionType == "Percentage" || controller.cabOrder.value.adminCommissionType == "percentage" ? "%" : Constant.currencyModel!.symbol})"
-                                  .tr,
+                                  .tr(),
                               Constant.amountShow(
                                   amount: controller.adminCommission.value
                                       .toString()),

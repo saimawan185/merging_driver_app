@@ -4,7 +4,9 @@ import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../constant/constant.dart';
 import '../../constant/show_toast_dialog.dart';
@@ -37,7 +39,7 @@ class PhoneNumberScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Log In Using Your Mobile Number".tr,
+                    "Log In Using Your Mobile Number".tr(),
                     style: TextStyle(
                         color:
                             isDark ? AppThemeData.grey50 : AppThemeData.grey900,
@@ -46,7 +48,7 @@ class PhoneNumberScreen extends StatelessWidget {
                   ),
                   Text(
                     "Enter your mobile number to quickly access your account and start managing your deliveries."
-                        .tr,
+                        .tr(),
                     style: TextStyle(
                         color:
                             isDark ? AppThemeData.grey50 : AppThemeData.grey500,
@@ -59,7 +61,7 @@ class PhoneNumberScreen extends StatelessWidget {
                     TextSpan(
                       children: [
                         TextSpan(
-                            text: 'Didn’t Have an account?'.tr,
+                            text: 'Didn’t Have an account?'.tr(),
                             style: TextStyle(
                               color: isDark
                                   ? AppThemeData.grey50
@@ -76,7 +78,7 @@ class PhoneNumberScreen extends StatelessWidget {
                               ..onTap = () {
                                 Get.to(() => SignupScreen());
                               },
-                            text: 'Sign up'.tr,
+                            text: 'Sign up'.tr(),
                             style: TextStyle(
                                 color: AppThemeData.primary300,
                                 fontFamily: AppThemeData.medium,
@@ -90,9 +92,9 @@ class PhoneNumberScreen extends StatelessWidget {
                     height: 32,
                   ),
                   TextFieldWidget(
-                    title: 'Phone Number'.tr,
+                    title: 'Phone Number'.tr(),
                     controller: controller.phoneNUmberEditingController.value,
-                    hintText: 'Enter Phone Number'.tr,
+                    hintText: 'Enter Phone Number'.tr(),
                     textInputType: const TextInputType.numberWithOptions(
                         signed: true, decimal: true),
                     textInputAction: TextInputAction.done,
@@ -158,7 +160,7 @@ class PhoneNumberScreen extends StatelessWidget {
                         TextSpan(
                           children: [
                             TextSpan(
-                                text: 'Log in with'.tr,
+                                text: 'Log in with'.tr(),
                                 style: TextStyle(
                                   color: isDark
                                       ? AppThemeData.grey50
@@ -175,7 +177,7 @@ class PhoneNumberScreen extends StatelessWidget {
                                   ..onTap = () {
                                     Get.offAll(LoginScreen());
                                   },
-                                text: 'E-mail'.tr,
+                                text: 'E-mail'.tr(),
                                 style: TextStyle(
                                     color: AppThemeData.primary300,
                                     fontFamily: AppThemeData.medium,
@@ -193,7 +195,7 @@ class PhoneNumberScreen extends StatelessWidget {
                     if (controller
                         .phoneNUmberEditingController.value.text.isEmpty) {
                       ShowToastDialog.showToast(
-                          "Please enter mobile number".tr);
+                          "Please enter mobile number".tr());
                     } else {
                       controller.sendCode();
                     }
@@ -204,7 +206,7 @@ class PhoneNumberScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Text(
-                        "Send Code".tr,
+                        "Send Code".tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: isDark

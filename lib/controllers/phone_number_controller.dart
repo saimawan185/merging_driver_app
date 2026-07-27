@@ -2,7 +2,9 @@ import 'package:door_delights_driver/app/auth_screen/otp_screen.dart';
 import 'package:door_delights_driver/constant/show_toast_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../constant/constant.dart';
 
@@ -15,7 +17,7 @@ class PhoneNumberController extends GetxController {
       TextEditingController(text: Constant.defaultCountryCode).obs;
 
   Future<void> sendCode() async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     await FirebaseAuth.instance
         .verifyPhoneNumber(
             phoneNumber: countryCodeEditingController.value.text +
@@ -25,7 +27,7 @@ class PhoneNumberController extends GetxController {
               debugPrint("FirebaseAuthException--->${e.message}");
               ShowToastDialog.closeLoader();
               if (e.code == 'invalid-phone-number') {
-                ShowToastDialog.showToast("invalid_phone_number".tr);
+                ShowToastDialog.showToast("invalid_phone_number".tr());
               } else {
                 ShowToastDialog.showToast(e.message);
               }
@@ -43,7 +45,7 @@ class PhoneNumberController extends GetxController {
         .catchError((error) {
       debugPrint("catchError--->$error");
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast("multiple_time_request".tr);
+      ShowToastDialog.showToast("multiple_time_request".tr());
     });
   }
 }

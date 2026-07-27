@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../app/cab_screen/cab_dashboard_screen.dart';
@@ -24,6 +26,7 @@ import '../ui/login/LoginScreen.dart';
 import '../utils/fire_store_utils.dart';
 
 class SignupController extends GetxController {
+  // ── Text controllers ─────────────────────────────────────────────────
   Rx<TextEditingController> firstNameEditingController =
       TextEditingController().obs;
   Rx<TextEditingController> lastNameEditingController =
@@ -40,8 +43,6 @@ class SignupController extends GetxController {
       TextEditingController().obs;
   Rx<TextEditingController> conformPasswordEditingController =
       TextEditingController().obs;
-  Rx<TextEditingController> carPlatNumberEditingController =
-      TextEditingController().obs;
 
   RxBool passwordVisible = true.obs;
   RxBool conformPasswordVisible = true.obs;
@@ -49,48 +50,44 @@ class SignupController extends GetxController {
   RxString type = "".obs;
   Rx<UserModel> userModel = UserModel().obs;
 
+  // ── Zones ──────────────────────────────────────────────────────────
   RxList<ZoneModel> zoneList = <ZoneModel>[].obs;
   Rx<ZoneModel> selectedZone = ZoneModel().obs;
 
-  /// All active sections loaded from Firestore (no service filter)
+  // ── Sections ──────────────────────────────────────────────────────
   RxList<SectionModel> allSections = <SectionModel>[].obs;
+  final RxList<SectionModel> selectedSections = <SectionModel>[].obs;
 
-  /// ── Single selected section ──
-  final Rx<SectionModel?> selectedSection = Rx<SectionModel?>(null);
+  // ── Vehicle fields (single set, shared across sections) ──────────
+  RxList<String> vehicleTypeOptions = <String>[].obs;
+  RxMap<String, String> vehicleTypeNameToId = <String, String>{}.obs;
+  Rx<String?> selectedVehicleTypeName = Rx<String?>(null);
+  Rx<String?> selectedVehicleTypeId = Rx<String?>(null);
 
-  /// Vehicle types for the selected section (only if cab/rental)
-  RxMap<String, List<VehicleType>> vehicleTypesPerSection =
-      <String, List<VehicleType>>{}.obs;
-  RxMap<String, VehicleType> selectedVehiclePerSection =
-      <String, VehicleType>{}.obs;
-
-  /// Shared car makes list (loaded once from Firestore)
   RxList<CarMakes> carMakesList = <CarMakes>[].obs;
+  Rx<CarMakes?> selectedCarMakes = Rx<CarMakes?>(null);
+  RxList<CarModel> carModelList = <CarModel>[].obs;
+  Rx<CarModel?> selectedCarModel = Rx<CarModel?>(null);
+  Rx<TextEditingController> carPlateController = TextEditingController().obs;
 
-  /// Per-section car details (only for the selected section)
-  final Map<String, Rx<CarMakes>> selectedCarMakesPerSection = {};
-  final Map<String, RxList<CarModel>> carModelListPerSection = {};
-  final Map<String, Rx<CarModel>> selectedCarModelPerSection = {};
-  final Map<String, Rx<TextEditingController>> carPlatePerSection = {};
+  // ── Ride Type ──────────────────────────────────────────────────────
+  RxString selectedRideType = 'ride'.obs;
+  RxList<String> rideTypeOptions = <String>[].obs;
 
+  // ── Role ──────────────────────────────────────────────────────────
   RxString selectedValue = "Individual".obs;
 
-  // ── Helpers ────────────────────────────────────────────────────────────────
+  // ── Helpers ──────────────────────────────────────────────────────
 
   bool sectionNeedsVehicle(SectionModel section) =>
       section.serviceTypeFlag == 'cab-service' ||
       section.serviceTypeFlag == 'rental-service' ||
-      section.serviceTypeFlag == 'delivery-service';
-
-  bool get hasVehicleBasedSection =>
-      selectedSection.value != null &&
-      sectionNeedsVehicle(selectedSection.value!);
+      section.serviceTypeFlag == 'delivery-service' ||
+      section.serviceTypeFlag == 'parcel_delivery';
 
   bool isSectionSelected(SectionModel section) =>
-      selectedSection.value?.id == section.id;
+      selectedSections.any((s) => s.id == section.id);
 
-  /// Sections visible based on role selection.
-  /// Company/Owner cannot register for delivery-service — only cab, parcel, rental.
   List<SectionModel> get visibleSections {
     if (selectedValue.value == 'Company') {
       return allSections
@@ -100,31 +97,21 @@ class SignupController extends GetxController {
     return allSections;
   }
 
-  /// Called when switching between Individual / Company to deselect
-  /// any section that is no longer visible (delivery-service for Company).
   void onRoleChanged(String role) {
     selectedValue.value = role;
     if (role == 'Company') {
-      // If the currently selected section is delivery-service, clear it.
-      if (selectedSection.value != null &&
-          selectedSection.value!.serviceTypeFlag == 'delivery-service') {
-        selectedSection.value = null;
-        // Also clear any vehicle data
-        final sid = selectedSection.value?.id;
-        if (sid != null) {
-          vehicleTypesPerSection.remove(sid);
-          selectedVehiclePerSection.remove(sid);
-          selectedCarMakesPerSection.remove(sid);
-          carModelListPerSection.remove(sid);
-          selectedCarModelPerSection.remove(sid);
-          carPlatePerSection.remove(sid);
-        }
+      final toRemove = selectedSections
+          .where((s) => s.serviceTypeFlag == 'delivery-service')
+          .toList();
+      for (final section in toRemove) {
+        selectedSections.remove(section);
       }
+      _recomputeVehicleOptions();
+      _updateRideTypeOptions();
     }
     update();
   }
 
-  /// Returns a human-readable label for a section's serviceTypeFlag.
   String serviceFlagLabel(String? flag) {
     switch (flag) {
       case 'cab-service':
@@ -138,7 +125,7 @@ class SignupController extends GetxController {
     }
   }
 
-  // ── Lifecycle ──────────────────────────────────────────────────────────────
+  // ── Lifecycle ──────────────────────────────────────────────────────
 
   @override
   void onInit() {
@@ -174,79 +161,133 @@ class SignupController extends GetxController {
     ]);
   }
 
-  // ── Section toggle (single selection) ─────────────────────────────────────
+  // ── Section toggle ────────────────────────────────────────────────
 
   Future<void> toggleSection(SectionModel section) async {
     final sid = section.id;
     if (sid == null) return;
 
     if (isSectionSelected(section)) {
-      // Deselect the current section
-      selectedSection.value = null;
-      // Clear all vehicle data
-      vehicleTypesPerSection.remove(sid);
-      selectedVehiclePerSection.remove(sid);
-      selectedCarMakesPerSection.remove(sid);
-      carModelListPerSection.remove(sid);
-      selectedCarModelPerSection.remove(sid);
-      carPlatePerSection.remove(sid);
+      selectedSections.removeWhere((s) => s.id == sid);
     } else {
-      // Select the new section (deselect old one automatically)
-      selectedSection.value = section;
-      // Load vehicle types if needed
-      if (sectionNeedsVehicle(section)) {
-        await _loadVehicleTypesForSection(section);
-        // Init per-section car details
-        selectedCarMakesPerSection[sid] = Rx<CarMakes>(CarMakes());
-        carModelListPerSection[sid] = <CarModel>[].obs;
-        selectedCarModelPerSection[sid] = Rx<CarModel>(CarModel());
-        carPlatePerSection[sid] = Rx<TextEditingController>(
-          TextEditingController(),
-        );
-      } else {
-        // Clear any leftover vehicle data for this section
-        vehicleTypesPerSection.remove(sid);
-        selectedVehiclePerSection.remove(sid);
-        selectedCarMakesPerSection.remove(sid);
-        carModelListPerSection.remove(sid);
-        selectedCarModelPerSection.remove(sid);
-        carPlatePerSection.remove(sid);
+      selectedSections.add(section);
+    }
+    await _recomputeVehicleOptions();
+    await _updateRideTypeOptions();
+    update();
+  }
+
+  Future<void> _recomputeVehicleOptions() async {
+    final List<String> names = [];
+    final Map<String, String> nameToId = {};
+    final Set<String> seenNames = {};
+
+    final hasCabOrRental = selectedSections.any(
+      (s) =>
+          s.serviceTypeFlag == 'cab-service' ||
+          s.serviceTypeFlag == 'rental-service',
+    );
+
+    for (final section in selectedSections) {
+      if (!sectionNeedsVehicle(section)) continue;
+      if (section.serviceTypeFlag == 'delivery-service' ||
+          section.serviceTypeFlag == 'parcel_delivery') {
+        if (!hasCabOrRental) {
+          _addVehicleTypeIfNotExists(
+              names, nameToId, seenNames, 'Bike', 'bike');
+          _addVehicleTypeIfNotExists(
+              names, nameToId, seenNames, 'Carriage', 'carriage');
+        }
+      } else if (section.serviceTypeFlag == 'cab-service') {
+        final types = await FireStoreUtils.getCabVehicleType(section.id!);
+        for (final t in types) {
+          _addVehicleTypeIfNotExists(
+              names, nameToId, seenNames, t.name!, t.id!);
+        }
+      } else if (section.serviceTypeFlag == 'rental-service') {
+        final types = await FireStoreUtils.getRentalVehicleType(section.id!);
+        for (final t in types) {
+          _addVehicleTypeIfNotExists(
+              names, nameToId, seenNames, t.name!, t.id!);
+        }
       }
     }
-    update();
+
+    vehicleTypeOptions.value = names;
+    vehicleTypeNameToId.value = nameToId;
+
+    if (selectedVehicleTypeName.value != null &&
+        !vehicleTypeOptions.contains(selectedVehicleTypeName.value)) {
+      selectedVehicleTypeName.value =
+          vehicleTypeOptions.isNotEmpty ? vehicleTypeOptions.first : null;
+      selectedVehicleTypeId.value = selectedVehicleTypeName.value != null
+          ? vehicleTypeNameToId[selectedVehicleTypeName.value]
+          : null;
+    } else if (vehicleTypeOptions.isNotEmpty &&
+        selectedVehicleTypeName.value == null) {
+      selectedVehicleTypeName.value = vehicleTypeOptions.first;
+      selectedVehicleTypeId.value =
+          vehicleTypeNameToId[vehicleTypeOptions.first];
+    }
   }
 
-  Future<void> _loadVehicleTypesForSection(SectionModel section) async {
-    ShowToastDialog.showLoader("Please wait".tr);
-    List<VehicleType> types = [];
-    if (section.serviceTypeFlag == 'cab-service') {
-      types = await FireStoreUtils.getCabVehicleType(section.id.toString());
-    } else if (section.serviceTypeFlag == 'delivery-service') {
-      types.add(VehicleType(name: 'Bike'));
-      types.add(VehicleType(name: 'Carriage'));
+  void _addVehicleTypeIfNotExists(
+      List<String> names,
+      Map<String, String> nameToId,
+      Set<String> seenNames,
+      String name,
+      String id) {
+    if (!seenNames.contains(name)) {
+      seenNames.add(name);
+      names.add(name);
+      nameToId[name] = id;
+    }
+  }
+
+  Future<void> _updateRideTypeOptions() async {
+    final cabSections = selectedSections
+        .where((s) => s.serviceTypeFlag == 'cab-service')
+        .toList();
+
+    if (cabSections.isEmpty) {
+      rideTypeOptions.clear();
+      selectedRideType.value = 'ride';
+      return;
+    }
+
+    final firstCab = cabSections.first;
+    final allowed = firstCab.rideType ?? 'ride';
+
+    if (allowed == 'both') {
+      rideTypeOptions.value = ['ride', 'intercity', 'both'];
+    } else if (allowed == 'intercity') {
+      rideTypeOptions.value = ['intercity'];
     } else {
-      types = await FireStoreUtils.getRentalVehicleType(section.id.toString());
+      rideTypeOptions.value = ['ride'];
     }
-    vehicleTypesPerSection[section.id!] = types;
-    if (types.isNotEmpty) selectedVehiclePerSection[section.id!] = types.first;
-    ShowToastDialog.closeLoader();
-    update();
+
+    if (!rideTypeOptions.contains(selectedRideType.value)) {
+      selectedRideType.value =
+          rideTypeOptions.isNotEmpty ? rideTypeOptions.first : 'ride';
+    }
   }
 
-  Future<void> getCarModelForSection(String sectionId) async {
-    ShowToastDialog.showLoader("Please wait".tr);
-    final carMakes = selectedCarMakesPerSection[sectionId]?.value;
-    carModelListPerSection[sectionId]?.clear();
-    selectedCarModelPerSection[sectionId]?.value = CarModel();
-    if (carMakes?.name != null) {
-      await FireStoreUtils.getCarModel(carMakes!.name.toString()).then((v) {
-        carModelListPerSection[sectionId]?.value = v;
-      });
+  // ── Car model loading ──────────────────────────────────────────────
+
+  Future<void> getCarModels() async {
+    ShowToastDialog.showLoader("Please wait".tr());
+    carModelList.clear();
+    selectedCarModel.value = null;
+    if (selectedCarMakes.value?.name != null) {
+      final models = await FireStoreUtils.getCarModel(
+          selectedCarMakes.value!.name.toString());
+      carModelList.value = models;
     }
     ShowToastDialog.closeLoader();
   }
 
-  // ── Image files ──────────────────────────────────────────────
+  // ── Image pickers ──────────────────────────────────────────────────
+
   final Rx<File?> profileImage = Rx<File?>(null);
   final Rx<File?> carImage = Rx<File?>(null);
   final Rx<File?> vehicleLicenseImage = Rx<File?>(null);
@@ -284,7 +325,6 @@ class SignupController extends GetxController {
     final List<Future> uploadFutures = [];
     final List<File> filesToDelete = [];
 
-    // ── Profile image ──────────────────────────────────────────
     if (profileImage.value != null) {
       final file = profileImage.value!;
       filesToDelete.add(file);
@@ -296,7 +336,6 @@ class SignupController extends GetxController {
       );
     }
 
-    // ── Car image ──────────────────────────────────────────────
     if (carImage.value != null) {
       final file = carImage.value!;
       filesToDelete.add(file);
@@ -308,7 +347,6 @@ class SignupController extends GetxController {
       );
     }
 
-    // ── Vehicle license image ─────────────────────────────────
     if (vehicleLicenseImage.value != null) {
       final file = vehicleLicenseImage.value!;
       filesToDelete.add(file);
@@ -320,7 +358,6 @@ class SignupController extends GetxController {
       );
     }
 
-    // ── Driver license image ──────────────────────────────────
     if (driverLicenseImage.value != null) {
       final file = driverLicenseImage.value!;
       filesToDelete.add(file);
@@ -333,21 +370,15 @@ class SignupController extends GetxController {
     }
 
     try {
-      // ── Upload all images in parallel ──────────────────────────
       if (uploadFutures.isNotEmpty) {
         await Future.wait(uploadFutures);
       }
-
-      // ── Save all URLs to Firestore ─────────────────────────────
       await FireStoreUtils.updateUser(user);
     } finally {
-      // ── Clear memory references ────────────────────────────────
       profileImage.value = null;
       carImage.value = null;
       vehicleLicenseImage.value = null;
       driverLicenseImage.value = null;
-
-      // ── Delete temporary files from storage ────────────────────
       for (final file in filesToDelete) {
         try {
           if (await file.exists()) {
@@ -360,18 +391,18 @@ class SignupController extends GetxController {
     }
   }
 
-  // ── Sign up ────────────────────────────────────────────────────────────────
+  // ── Sign up ──────────────────────────────────────────────────────
 
   Future<void> signUpWithEmailAndPassword() async {
     await signUp();
   }
 
   Future<void> signUp() async {
-    if (selectedSection.value == null) {
-      ShowToastDialog.showToast("Please select a section.".tr);
+    if (selectedSections.isEmpty) {
+      ShowToastDialog.showToast("Please select at least one section.".tr());
       return;
     }
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
 
     if (type.value == "google" ||
         type.value == "apple" ||
@@ -394,13 +425,13 @@ class SignupController extends GetxController {
         }
       } on FirebaseAuthException catch (e) {
         if (e.code == 'weak-password') {
-          ShowToastDialog.showToast("The password provided is too weak.".tr);
+          ShowToastDialog.showToast("The password provided is too weak.".tr());
         } else if (e.code == 'email-already-in-use') {
           ShowToastDialog.showToast(
-            "The account already exists for that email.".tr,
+            "The account already exists for that email.".tr(),
           );
         } else if (e.code == 'invalid-email') {
-          ShowToastDialog.showToast("Enter email is Invalid".tr);
+          ShowToastDialog.showToast("Enter email is Invalid".tr());
         }
         print(e);
       } catch (e) {
@@ -413,7 +444,7 @@ class SignupController extends GetxController {
   }
 
   void _populateUserModel() {
-    final section = selectedSection.value!;
+    // Basic info
     userModel.value.firstName = firstNameEditingController.value.text;
     userModel.value.lastName = lastNameEditingController.value.text;
     userModel.value.email = emailEditingController.value.text.toLowerCase();
@@ -443,51 +474,64 @@ class SignupController extends GetxController {
             ? true
             : false;
 
-    // ── Single section ──────────────────────────────────────────────────────
-    userModel.value.sectionId = section.id;
+    // ── Multiple sections ──
+    final sectionIds = selectedSections.map((s) => s.id!).toList();
+    final serviceTypes = selectedSections
+        .map((s) => s.serviceTypeFlag ?? 'delivery-service')
+        .toList();
 
-    // ── Derive serviceTypes from single section ──────────────────────────
-    userModel.value.serviceType = section.serviceTypeFlag ?? 'delivery-service';
+    userModel.value.sectionIds = sectionIds;
+    userModel.value.serviceTypes = serviceTypes;
 
-    // ── sectionNames: {sectionId → sectionName} ──────────────────────────
+    if (sectionIds.isNotEmpty) {
+      userModel.value.sectionId = sectionIds.first;
+      userModel.value.serviceType = serviceTypes.first;
+    } else {
+      userModel.value.sectionId = null;
+      userModel.value.serviceType = null;
+    }
 
-    // ── vehicleDetails: only if the selected section needs a vehicle ─────
-    // Skip for Company users — they register their own drivers separately.
-    final Map<String, dynamic> vDetails = {};
-    final bool isCompany = selectedValue.value == "Company";
-    if (!isCompany && sectionNeedsVehicle(section)) {
-      final vehicle = selectedVehiclePerSection[section.id];
-      final carMakes = selectedCarMakesPerSection[section.id]?.value;
-      final carModel = selectedCarModelPerSection[section.id]?.value;
-      final carPlate = carPlatePerSection[section.id]?.value.text ?? '';
-      userModel.value.vehicleType = vehicle?.name;
-      userModel.value.vehicleId = vehicle?.id;
-      userModel.value.rideType = section.rideType ?? 'ride';
+    // ── Vehicle details ──
+    if (selectedValue.value != "Company" &&
+        selectedSections.any((s) => sectionNeedsVehicle(s))) {
+      final vehicleName = selectedVehicleTypeName.value;
+      final vehicleId = selectedVehicleTypeId.value;
+      final carMakes = selectedCarMakes.value;
+      final carModel = selectedCarModel.value;
+      final carPlate = carPlateController.value.text;
+      final rideType = selectedRideType.value;
 
-      vDetails[section.id!] = {
-        'vehicleId': vehicle?.id ?? '',
-        'vehicleType': vehicle?.name ?? '',
-        'carBrand': carMakes?.name ?? '',
-        'carModel': carModel?.name ?? '',
-        'carPlateNumber': carPlate,
-        if (section.serviceTypeFlag == 'cab-service')
-          'rideType': section.rideType ?? 'ride',
-      };
-
+      userModel.value.vehicleType = vehicleName;
+      userModel.value.vehicleId = vehicleId;
       userModel.value.carMakes = carMakes?.name ?? '';
       userModel.value.carName = carModel?.name ?? '';
       userModel.value.carNumber = carPlate;
-    }
-    if (vDetails.isNotEmpty) userModel.value.vehicleDetails = vDetails;
-  }
+      userModel.value.rideType = rideType;
 
-  // ── Navigation ─────────────────────────────────────────────────────────────
+      userModel.value.vehicleDetails = {
+        'vehicleId': vehicleId ?? '',
+        'vehicleType': vehicleName ?? '',
+        'carBrand': carMakes?.name ?? '',
+        'carModel': carModel?.name ?? '',
+        'carPlateNumber': carPlate,
+        'rideType': rideType,
+      };
+    } else {
+      userModel.value.vehicleType = null;
+      userModel.value.vehicleId = null;
+      userModel.value.carMakes = null;
+      userModel.value.carName = null;
+      userModel.value.carNumber = null;
+      userModel.value.rideType = null;
+      userModel.value.vehicleDetails = null;
+    }
+  }
 
   void _navigateAfterSignup(UserModel user) {
     if (!(Constant.autoApproveDriver ?? false)) {
       ShowToastDialog.showToast(
         "Thank you for sign up, your application is under approval so please wait till that approve."
-            .tr,
+            .tr(),
       );
       Get.offAll(LoginScreen());
       return;
@@ -498,11 +542,7 @@ class SignupController extends GetxController {
   static void navigateByUserModel(UserModel user) {
     if (user.isOwner == true) {
       Get.offAll(OwnerDashboardScreen());
-    }
-    //  else if ((user.serviceType?.length ?? 0) > 1) {
-    //   Get.offAll(const MultiServiceDashboardScreen());
-    // }
-    else {
+    } else {
       _navigateByServiceType(user.serviceType ?? 'delivery-service');
     }
   }

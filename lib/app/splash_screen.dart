@@ -1,6 +1,8 @@
 import 'package:door_delights_driver/controllers/splash_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../constants.dart';
 
@@ -29,7 +31,7 @@ class SplashScreen extends StatelessWidget {
                   height: 12,
                 ),
                 Text(
-                  'Welcome to DoorDelights Driver App'.tr,
+                  'Welcome to DoorDelights Driver App'.tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(
                       color: Color(COLOR_PRIMARY),
@@ -38,7 +40,7 @@ class SplashScreen extends StatelessWidget {
                 ),
                 Text(
                   "Your Favorite Ride, Parcel, Rental & Item Delivered Fast!"
-                      .tr,
+                      .tr(),
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 18),
                 ),

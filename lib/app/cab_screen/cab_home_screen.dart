@@ -339,7 +339,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                            "${"You have to minimum ".tr()}${amountShow(amount: minimumDepositToRideAccept.toString())} ${"wallet amount to receiving Order".tr()}",
+                            "${"Your wallet balance is ".tr()}${amountShow(amount: Constant.userModel!.walletAmount?.toString())} ${"you’ll temporarily receive card & wallet orders or rides until its’s restored".tr()}",
                             style: TextStyle(color: Colors.white),
                             textAlign: TextAlign.center),
                       ),
@@ -509,7 +509,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       _isFirstDriverUpdate = false;
       _markers['Driver'] = Marker(
         markerId: const MarkerId('Driver'),
-        infoWindow: const InfoWindow(title: "Driver"),
+        infoWindow: InfoWindow(title: "Driver".tr()),
         position: newPosition,
         icon: taxiIcon!,
         rotation: targetRotation,
@@ -582,7 +582,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
       _markers['Driver'] = Marker(
         markerId: const MarkerId('Driver'),
-        infoWindow: const InfoWindow(title: "Driver"),
+        infoWindow: InfoWindow(title: "Driver".tr()),
         position: animatedPosition,
         icon: taxiIcon!,
         rotation:
@@ -1246,7 +1246,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
               _driverModel!.location!.longitude!);
           _markers['Driver'] = Marker(
             markerId: const MarkerId('Driver'),
-            infoWindow: const InfoWindow(title: "Driver"),
+            infoWindow: InfoWindow(title: "Driver".tr()),
             position: driverLatLng,
             icon: taxiIcon!,
             rotation: _lastKnownDriverRotation != 0
@@ -1263,7 +1263,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
         if (currentOrder != null) {
           _markers['Departure'] = Marker(
             markerId: const MarkerId('Departure'),
-            infoWindow: const InfoWindow(title: "Departure"),
+            infoWindow: InfoWindow(title: "Departure".tr()),
             position: LatLng(currentOrder!.sourceLocation!.latitude,
                 currentOrder!.sourceLocation!.longitude),
             icon: departureIcon!,
@@ -1272,7 +1272,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
           // Add destination marker
           _markers['Destination'] = Marker(
             markerId: const MarkerId('Destination'),
-            infoWindow: const InfoWindow(title: "Destination"),
+            infoWindow: InfoWindow(title: "Destination".tr()),
             position: LatLng(currentOrder!.destinationLocation!.latitude,
                 currentOrder!.destinationLocation!.longitude),
             icon: destinationIcon!,
@@ -1298,7 +1298,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
           // New order request markers
           _markers['Departure'] = Marker(
             markerId: const MarkerId('Departure'),
-            infoWindow: const InfoWindow(title: "Departure"),
+            infoWindow: InfoWindow(title: "Departure".tr()),
             position: LatLng(
                 _driverModel!.orderCabRequestData!.sourceLocation!.latitude,
                 _driverModel!.orderCabRequestData!.sourceLocation!.longitude),
@@ -1307,7 +1307,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
           _markers['Destination'] = Marker(
             markerId: const MarkerId('Destination'),
-            infoWindow: const InfoWindow(title: "Destination"),
+            infoWindow: InfoWindow(title: "Destination".tr()),
             position: LatLng(
                 _driverModel!
                     .orderCabRequestData!.destinationLocation!.latitude,

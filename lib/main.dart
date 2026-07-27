@@ -111,21 +111,39 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (Preferences.getString(
-        Preferences.languageCodeKey,
-      ).toString().isNotEmpty) {
-        LanguageModel languageModel = Constant.getLanguage();
-        LocalizationService().changeLocale(languageModel.slug.toString());
-      } else {
-        LanguageModel languageModel = LanguageModel(
-          slug: "en",
-          isRtl: false,
-          title: "English",
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final prefsCode = Preferences.getString('languageCode', defaultValue: '');
+      String code;
+      if (prefsCode.isNotEmpty) {
+        code = LocalizationService.normalizeLang(prefsCode);
+      } else if (Preferences.getString(Preferences.languageCodeKey)
+          .toString()
+          .isNotEmpty) {
+        code = LocalizationService.normalizeLang(
+          Constant.getLanguage().slug.toString(),
         );
-        Preferences.setString(
+      } else {
+        code = LocalizationService.normalizeLang(context.locale.languageCode);
+      }
+
+      if (context.locale.languageCode != code) {
+        await LocalizationService().changeLocale(context, code);
+      } else {
+        // Keep Preferences.languageCodeKey in sync with the active locale.
+        await Preferences.setString(
           Preferences.languageCodeKey,
-          jsonEncode(languageModel.toJson()),
+          jsonEncode(
+            LanguageModel(
+              slug: code,
+              isRtl: false,
+              title: code == 'si'
+                  ? 'Sinhala'
+                  : code == 'ta'
+                      ? 'Tamil'
+                      : 'English',
+              isActive: true,
+            ).toJson(),
+          ),
         );
       }
     });
@@ -146,49 +164,53 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     Get.put(ThemeController());
     return Obx(
-      () => GetMaterialApp(
-        title: 'Driver'.tr(),
-        localizationsDelegates: context.localizationDelegates,
-        locale: context.locale,
-        supportedLocales: context.supportedLocales,
-        debugShowCheckedModeBanner: false,
-        themeMode: themeController.themeMode,
-        theme: ThemeData(
-          scaffoldBackgroundColor: AppThemeData.surface,
-          textTheme: TextTheme(
-            bodyLarge: TextStyle(color: AppThemeData.grey900),
+      () {
+        // Watch locale so translations refresh without remounting GetMaterialApp.
+        final _ = themeController.localeCode.value;
+        return GetMaterialApp(
+          title: 'Driver'.tr(),
+          localizationsDelegates: context.localizationDelegates,
+          locale: context.locale,
+          supportedLocales: context.supportedLocales,
+          debugShowCheckedModeBanner: false,
+          themeMode: themeController.themeMode,
+          theme: ThemeData(
+            scaffoldBackgroundColor: AppThemeData.surface,
+            textTheme: TextTheme(
+              bodyLarge: TextStyle(color: AppThemeData.grey900),
+            ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: AppThemeData.surface,
+              foregroundColor: AppThemeData.grey900,
+              iconTheme: IconThemeData(color: AppThemeData.grey900),
+            ),
           ),
-          appBarTheme: AppBarTheme(
-            backgroundColor: AppThemeData.surface,
-            foregroundColor: AppThemeData.grey900,
-            iconTheme: IconThemeData(color: AppThemeData.grey900),
+          darkTheme: ThemeData(
+            scaffoldBackgroundColor: AppThemeData.surfaceDark,
+            textTheme: TextTheme(
+              bodyLarge: TextStyle(color: AppThemeData.greyDark900),
+            ),
+            appBarTheme: AppBarTheme(
+              backgroundColor: AppThemeData.surfaceDark,
+              foregroundColor: AppThemeData.greyDark900,
+              iconTheme: IconThemeData(color: AppThemeData.greyDark900),
+            ),
           ),
-        ),
-        darkTheme: ThemeData(
-          scaffoldBackgroundColor: AppThemeData.surfaceDark,
-          textTheme: TextTheme(
-            bodyLarge: TextStyle(color: AppThemeData.greyDark900),
-          ),
-          appBarTheme: AppBarTheme(
-            backgroundColor: AppThemeData.surfaceDark,
-            foregroundColor: AppThemeData.greyDark900,
-            iconTheme: IconThemeData(color: AppThemeData.greyDark900),
-          ),
-        ),
-        builder: (context, child) {
-          return SafeArea(
-            bottom: true,
-            top: false,
-            child: EasyLoading.init()(context, child),
-          );
-        },
-        home: GetBuilder<GlobalSettingController>(
-          init: GlobalSettingController(),
-          builder: (context) {
-            return const SplashScreen();
+          builder: (context, child) {
+            return SafeArea(
+              bottom: true,
+              top: false,
+              child: EasyLoading.init()(context, child),
+            );
           },
-        ),
-      ),
+          home: GetBuilder<GlobalSettingController>(
+            init: GlobalSettingController(),
+            builder: (context) {
+              return const SplashScreen();
+            },
+          ),
+        );
+      },
     );
   }
 }

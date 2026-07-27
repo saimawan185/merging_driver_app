@@ -1,7 +1,9 @@
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import 'app_them_data.dart';
 
@@ -86,7 +88,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.title != null) ...[
-          Text(widget.title!.tr,
+          Text(widget.title!.tr(),
               style: AppThemeData.boldTextStyle(
                   fontSize: 14,
                   color: isDark
@@ -147,7 +149,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(color: borderColor, width: 1.2),
             ),
-            hintText: widget.hintText.tr,
+            hintText: widget.hintText.tr(),
             hintStyle:
                 AppThemeData.regularTextStyle(fontSize: 14, color: hintColor),
           ),

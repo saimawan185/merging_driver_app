@@ -1,6 +1,8 @@
 import 'package:door_delights_driver/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../constant/constant.dart';
 import '../../controllers/cab_order_list_controller.dart';
 import '../../models/cab_order_model.dart';
@@ -94,8 +96,8 @@ class CabOrderListScreen extends StatelessWidget {
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            "${'Booking Date:'.tr} ${controller.formatDate(order.scheduleDateTime!)}"
-                                                .tr,
+                                            "${'Booking Date:'.tr()} ${controller.formatDate(order.scheduleDateTime!)}"
+                                                .tr(),
                                             textAlign: TextAlign.start,
                                             style: TextStyle(
                                               fontFamily: AppThemeData.semiBold,
@@ -109,7 +111,7 @@ class CabOrderListScreen extends StatelessWidget {
                                           Row(
                                             children: [
                                               Text(
-                                                "${'Section:'.tr} ",
+                                                "${'Section:'.tr()} ",
                                                 style: TextStyle(
                                                   fontFamily:
                                                       AppThemeData.regular,

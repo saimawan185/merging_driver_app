@@ -6,7 +6,9 @@ import 'package:door_delights_driver/themes/round_button_fill.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ViewAllDriverScreen extends StatelessWidget {
   const ViewAllDriverScreen({super.key});
@@ -21,10 +23,10 @@ class ViewAllDriverScreen extends StatelessWidget {
       builder: (controller) {
         return Scaffold(
           appBar: AppBar(
-            title: Text("All Drivers".tr),
+            title: Text("All Drivers".tr()),
           ),
           body: controller.driverList.isEmpty
-              ? Center(child: Text("No drivers found".tr))
+              ? Center(child: Text("No drivers found".tr()))
               : ListView.builder(
                   padding: const EdgeInsets.all(10),
                   itemCount: controller.driverList.length,
@@ -81,8 +83,8 @@ class ViewAllDriverScreen extends StatelessWidget {
                             ),
                             RoundedButtonFill(
                               title: driver.isActive == false
-                                  ? "Offline"
-                                  : "Online".tr,
+                                  ? "Offline".tr()
+                                  : "Online".tr(),
                               height: 3.5,
                               width: 18,
                               borderRadius: 10,
@@ -115,7 +117,7 @@ class ViewAllDriverScreen extends StatelessWidget {
                                   <PopupMenuEntry<String>>[
                                 PopupMenuItem<String>(
                                   value: 'Edit Driver',
-                                  child: Text('Edit Driver'.tr,
+                                  child: Text('Edit Driver'.tr(),
                                       style: TextStyle(
                                           color: isDark
                                               ? AppThemeData.grey50
@@ -123,7 +125,7 @@ class ViewAllDriverScreen extends StatelessWidget {
                                 ),
                                 PopupMenuItem<String>(
                                   value: 'Delete Driver',
-                                  child: Text('Delete Driver'.tr,
+                                  child: Text('Delete Driver'.tr(),
                                       style: TextStyle(
                                           color: isDark
                                               ? AppThemeData.grey50
@@ -131,7 +133,7 @@ class ViewAllDriverScreen extends StatelessWidget {
                                 ),
                                 PopupMenuItem<String>(
                                   value: 'View All Order',
-                                  child: Text('View All Order'.tr,
+                                  child: Text('View All Order'.tr(),
                                       style: TextStyle(
                                           color: isDark
                                               ? AppThemeData.grey50

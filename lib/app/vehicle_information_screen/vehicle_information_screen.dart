@@ -1,13 +1,13 @@
 import 'package:door_delights_driver/models/car_makes.dart';
 import 'package:door_delights_driver/models/car_model.dart';
-import 'package:door_delights_driver/models/section_model.dart';
 import 'package:door_delights_driver/models/vehicle_type.dart';
 import 'package:door_delights_driver/themes/app_them_data.dart';
 import 'package:door_delights_driver/themes/responsive.dart';
 import 'package:door_delights_driver/themes/text_field_widget.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
 import '../../constant/constant.dart';
 import '../../controllers/vehicle_information_controller.dart';
 
@@ -41,70 +41,164 @@ class VehicleInformationScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // ── Service badge ──────────────────────────────────
+                        // ── Service badge ────────────────────────────────
                         Row(
                           children: [
                             Icon(Icons.directions_car_rounded,
                                 size: 16, color: AppThemeData.primary300),
                             const SizedBox(width: 6),
-                            Text(
-                              controller.selectedService.value,
-                              style: TextStyle(
-                                fontFamily: AppThemeData.semiBold,
-                                fontSize: 13,
-                                color: AppThemeData.primary300,
+                            Expanded(
+                              child: Obx(
+                                () => Text(
+                                  controller.allUserSections.isNotEmpty
+                                      ? controller.allUserSections
+                                          .map((s) => s.name ?? '')
+                                          .join(', ')
+                                      : controller
+                                          .getReadableServiceType(serviceType),
+                                  style: TextStyle(
+                                    fontFamily: AppThemeData.semiBold,
+                                    fontSize: 13,
+                                    color: AppThemeData.primary300,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
 
-                        // ── Section cards (with per-section car details) ──
-                        ...controller.driverSections.map((section) {
-                          final sid = section.id ?? '';
-                          final vehicleTypes =
-                              controller.vehicleTypesPerSection[sid] ??
-                                  <VehicleType>[].obs;
-                          final selectedVehicle =
-                              controller.selectedVehiclePerSection[sid] ??
-                                  VehicleType().obs;
+                        // ── Single Vehicle Details Card ──────────────────
+                        _Card(
+                          isDark: isDark,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Vehicle Details".tr(),
+                                style: TextStyle(
+                                  fontFamily: AppThemeData.semiBold,
+                                  fontSize: 16,
+                                  color: isDark
+                                      ? AppThemeData.greyDark900
+                                      : AppThemeData.grey800,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
 
-                          return _SectionCard(
-                            section: section,
-                            vehicleTypes: vehicleTypes,
-                            selectedVehicle: selectedVehicle,
-                            serviceType: serviceType,
-                            selectedRideType:
-                                controller.selectedRideTypePerSection[sid] ??
-                                    RxString('ride'),
-                            isOwnerDriver: isOwnerDriver,
-                            isDark: isDark,
-                            carMakesList: controller.carMakesList,
-                            selectedCarMakes:
-                                controller.selectedCarMakesPerSection[sid] ??
-                                    Rx<CarMakes>(CarMakes()),
-                            carModelList:
-                                controller.carModelListPerSection[sid] ??
-                                    <CarModel>[].obs,
-                            selectedCarModel:
-                                controller.selectedCarModelPerSection[sid] ??
-                                    Rx<CarModel>(CarModel()),
-                            carPlateController:
-                                controller.carPlatePerSection[sid]?.value ??
-                                    TextEditingController(),
-                            onCarMakesChanged: (v) {
-                              controller
-                                  .selectedCarMakesPerSection[sid]?.value = v!;
-                              controller.getCarModelForSection(sid);
-                              controller.update();
-                            },
-                            onCarModelChanged: (v) {
-                              controller
-                                  .selectedCarModelPerSection[sid]?.value = v!;
-                              controller.update();
-                            },
-                          );
-                        }),
+                              // Vehicle Type
+                              if (controller.vehicleTypeOptions.isNotEmpty)
+                                _DropdownField<VehicleType>(
+                                  label: "Vehicle Type".tr(),
+                                  value: controller.selectedVehicleType.value,
+                                  items: controller.vehicleTypeOptions,
+                                  isDark: isDark,
+                                  enabled: !isOwnerDriver,
+                                  onChanged: (v) =>
+                                      controller.selectedVehicleType.value = v,
+                                ),
+                              const SizedBox(height: 12),
+
+                              // Ride Type (cab only)
+                              if (controller.rideTypeOptions.isNotEmpty)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Ride Type".tr(),
+                                      style: TextStyle(
+                                        fontFamily: AppThemeData.semiBold,
+                                        fontSize: 13,
+                                        color: isDark
+                                            ? AppThemeData.greyDark900
+                                            : AppThemeData.grey700,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Obx(
+                                      () => Wrap(
+                                        spacing: 8,
+                                        children: controller.rideTypeOptions
+                                            .map((type) {
+                                          final isSelected = controller
+                                                  .selectedRideType.value ==
+                                              type;
+                                          return ChoiceChip(
+                                            label: Text(
+                                              type[0].toUpperCase() +
+                                                  type.substring(1),
+                                              style: TextStyle(
+                                                color: isSelected
+                                                    ? Colors.white
+                                                    : (isDark
+                                                        ? Colors.white70
+                                                        : Colors.grey.shade700),
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w600
+                                                    : FontWeight.w400,
+                                              ),
+                                            ),
+                                            selected: isSelected,
+                                            onSelected: (_) => controller
+                                                .selectedRideType.value = type,
+                                            backgroundColor: isDark
+                                                ? AppThemeData.greyDark100
+                                                : Colors.white,
+                                            selectedColor:
+                                                AppThemeData.primary300,
+                                            side: BorderSide(
+                                              color: isSelected
+                                                  ? AppThemeData.primary300
+                                                  : (isDark
+                                                      ? AppThemeData.greyDark400
+                                                      : Colors.grey.shade300),
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                  ],
+                                ),
+
+                              // Car Brand
+                              _DropdownField<CarMakes>(
+                                label: "Car Brand".tr(),
+                                value: controller.selectedCarMakes.value,
+                                items: controller.carMakesList,
+                                isDark: isDark,
+                                enabled: !isOwnerDriver,
+                                onChanged: (v) {
+                                  controller.selectedCarMakes.value = v;
+                                  controller.getCarModels();
+                                },
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Car Model
+                              _DropdownField<CarModel>(
+                                label: "Car Model".tr(),
+                                value: controller.selectedCarModel.value,
+                                items: controller.carModelList,
+                                isDark: isDark,
+                                enabled: !isOwnerDriver,
+                                onChanged: (v) =>
+                                    controller.selectedCarModel.value = v,
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Car Plate
+                              TextFieldWidget(
+                                title: 'Car Plate Number'.tr(),
+                                controller: controller.carPlateController.value,
+                                hintText: 'e.g. GJ05JH9405'.tr(),
+                                textInputAction: TextInputAction.done,
+                                enable: !isOwnerDriver,
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 80),
                       ],
                     ),
@@ -124,7 +218,7 @@ class VehicleInformationScreen extends StatelessWidget {
                           elevation: 0,
                         ),
                         child: Text(
-                          "Save".tr,
+                          "Save".tr(),
                           style: TextStyle(
                             color: AppThemeData.grey50,
                             fontSize: 16,
@@ -141,220 +235,7 @@ class VehicleInformationScreen extends StatelessWidget {
   }
 }
 
-// ── Section card widget ───────────────────────────────────────────────────────
-
-class _SectionCard extends StatelessWidget {
-  final SectionModel section;
-  final RxList<VehicleType> vehicleTypes;
-  final Rx<VehicleType> selectedVehicle;
-  final String serviceType;
-  final RxString selectedRideType;
-  final bool isOwnerDriver;
-  final bool isDark;
-  final RxList<CarMakes> carMakesList;
-  final Rx<CarMakes> selectedCarMakes;
-  final RxList<CarModel> carModelList;
-  final Rx<CarModel> selectedCarModel;
-  final TextEditingController carPlateController;
-  final ValueChanged<CarMakes?> onCarMakesChanged;
-  final ValueChanged<CarModel?> onCarModelChanged;
-
-  const _SectionCard({
-    required this.section,
-    required this.vehicleTypes,
-    required this.selectedVehicle,
-    required this.serviceType,
-    required this.selectedRideType,
-    required this.isOwnerDriver,
-    required this.isDark,
-    required this.carMakesList,
-    required this.selectedCarMakes,
-    required this.carModelList,
-    required this.selectedCarModel,
-    required this.carPlateController,
-    required this.onCarMakesChanged,
-    required this.onCarModelChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Obx(() => _Card(
-          isDark: isDark,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Section header
-              Row(
-                children: [
-                  Container(
-                    width: 4,
-                    height: 18,
-                    decoration: BoxDecoration(
-                      color: AppThemeData.primary300,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      section.name ?? '',
-                      style: TextStyle(
-                        fontFamily: AppThemeData.semiBold,
-                        fontSize: 15,
-                        color: isDark
-                            ? AppThemeData.greyDark900
-                            : AppThemeData.grey800,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-
-              // Vehicle type dropdown
-              if (vehicleTypes.isEmpty)
-                Text(
-                  "No vehicle types for this section".tr,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark
-                        ? AppThemeData.greyDark400
-                        : AppThemeData.grey500,
-                  ),
-                )
-              else
-                _DropdownField<VehicleType>(
-                  label: "Vehicle Type".tr,
-                  value: selectedVehicle.value,
-                  items: vehicleTypes,
-                  isDark: isDark,
-                  enabled: !isOwnerDriver,
-                  onChanged: (v) => selectedVehicle.value = v!,
-                ),
-
-              // Ride type (cab only)
-              if (serviceType == 'cab-service' &&
-                  (section.rideType == 'ride' ||
-                      section.rideType == 'intercity' ||
-                      section.rideType == 'both')) ...[
-                const SizedBox(height: 12),
-                Text(
-                  "Ride Type".tr,
-                  style: TextStyle(
-                    fontFamily: AppThemeData.semiBold,
-                    fontSize: 13,
-                    color: isDark
-                        ? AppThemeData.greyDark900
-                        : AppThemeData.grey700,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    if (section.rideType == 'ride' ||
-                        section.rideType == 'both')
-                      _RideTypeOption(
-                        label: 'Ride'.tr,
-                        value: 'ride',
-                        groupValue: selectedRideType.value,
-                        isDark: isDark,
-                        onChanged: (v) => selectedRideType.value = v!,
-                      ),
-                    if (section.rideType == 'intercity' ||
-                        section.rideType == 'both')
-                      _RideTypeOption(
-                        label: 'Intercity'.tr,
-                        value: 'intercity',
-                        groupValue: selectedRideType.value,
-                        isDark: isDark,
-                        onChanged: (v) => selectedRideType.value = v!,
-                      ),
-                    if (section.rideType == 'both')
-                      _RideTypeOption(
-                        label: 'Both'.tr,
-                        value: 'both',
-                        groupValue: selectedRideType.value,
-                        isDark: isDark,
-                        onChanged: (v) => selectedRideType.value = v!,
-                      ),
-                  ],
-                ),
-              ],
-
-              // ── Per-section Car Details ──────────────────────────────
-              const SizedBox(height: 16),
-              _SectionTitle(label: "Car Details".tr, isDark: isDark),
-              const SizedBox(height: 12),
-              _DropdownField<CarMakes>(
-                label: "Car Brand".tr,
-                value: selectedCarMakes.value,
-                items: carMakesList,
-                isDark: isDark,
-                enabled: !isOwnerDriver,
-                onChanged: onCarMakesChanged,
-              ),
-              const SizedBox(height: 12),
-              _DropdownField<CarModel>(
-                label: "Car Model".tr,
-                value: selectedCarModel.value,
-                items: carModelList,
-                isDark: isDark,
-                enabled: !isOwnerDriver,
-                onChanged: onCarModelChanged,
-              ),
-              const SizedBox(height: 12),
-              TextFieldWidget(
-                title: 'Car Plate Number'.tr,
-                controller: carPlateController,
-                hintText: 'e.g. GJ05JH9405'.tr,
-                textInputAction: TextInputAction.done,
-                enable: !isOwnerDriver,
-              ),
-            ],
-          ),
-        ));
-  }
-}
-
-class _RideTypeOption extends StatelessWidget {
-  final String label;
-  final String value;
-  final String groupValue;
-  final bool isDark;
-  final ValueChanged<String?> onChanged;
-
-  const _RideTypeOption({
-    required this.label,
-    required this.value,
-    required this.groupValue,
-    required this.isDark,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: RadioListTile<String>(
-        dense: true,
-        visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-        contentPadding: EdgeInsets.zero,
-        title: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13,
-            color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey800,
-          ),
-        ),
-        value: value,
-        groupValue: groupValue,
-        activeColor: AppThemeData.primary300,
-        onChanged: onChanged,
-      ),
-    );
-  }
-}
-
-// ── Shared card container ─────────────────────────────────────────────────────
+// ── Reusable card container ──────────────────────────────────────────
 
 class _Card extends StatelessWidget {
   final Widget child;
@@ -366,7 +247,6 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDark ? AppThemeData.greyDark50 : AppThemeData.surface,
@@ -384,45 +264,11 @@ class _Card extends StatelessWidget {
   }
 }
 
-// ── Section title ─────────────────────────────────────────────────────────────
-
-class _SectionTitle extends StatelessWidget {
-  final String label;
-  final bool isDark;
-
-  const _SectionTitle({required this.label, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 4,
-          height: 18,
-          decoration: BoxDecoration(
-            color: AppThemeData.primary300,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text(
-          label,
-          style: TextStyle(
-            fontFamily: AppThemeData.semiBold,
-            fontSize: 15,
-            color: isDark ? AppThemeData.greyDark900 : AppThemeData.grey800,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// ── Reusable dropdown ─────────────────────────────────────────────────────────
+// ── Reusable dropdown ──────────────────────────────────────────────
 
 class _DropdownField<T> extends StatelessWidget {
   final String label;
-  final T value;
+  final T? value;
   final List<T> items;
   final bool isDark;
   final bool enabled;
@@ -439,7 +285,6 @@ class _DropdownField<T> extends StatelessWidget {
 
   String _labelFor(T item) {
     if (item is String) return item;
-    if (item is SectionModel) return item.name ?? '';
     if (item is VehicleType) return item.name ?? '';
     if (item is CarMakes) return item.name ?? '';
     if (item is CarModel) return item.name ?? '';

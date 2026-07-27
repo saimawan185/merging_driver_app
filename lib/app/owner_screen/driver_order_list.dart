@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
 import '../../controllers/driver_order_controller.dart';
 import '../../themes/theme_controller.dart';
 import '../cab_screen/cab_order_list_screen.dart';
@@ -20,7 +21,7 @@ class DriverOrderList extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              "Driver Orders".tr,
+              "Driver Orders".tr(),
               style: TextStyle(
                 color: isDark ? Colors.white : Colors.black,
               ),
@@ -45,7 +46,7 @@ class DriverOrderList extends StatelessWidget {
       case "rental-service":
         return const RentalOrderListScreen();
       default:
-        return const Center(child: Text("Service type not supported"));
+        return Center(child: Text("Service type not supported".tr()));
     }
   }
 }

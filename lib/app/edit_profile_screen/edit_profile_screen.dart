@@ -10,7 +10,9 @@ import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 
 class EditProfileScreen extends StatelessWidget {
@@ -30,7 +32,7 @@ class EditProfileScreen extends StatelessWidget {
               centerTitle: false,
               titleSpacing: 0,
               title: Text(
-                "Edit Profile".tr,
+                "Edit Profile".tr(),
                 style: TextStyle(
                     color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
                     fontSize: 18,
@@ -108,10 +110,10 @@ class EditProfileScreen extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: TextFieldWidget(
-                                  title: 'First Name'.tr,
+                                  title: 'First Name'.tr(),
                                   controller:
                                       controller.firstNameController.value,
-                                  hintText: 'First Name'.tr,
+                                  hintText: 'First Name'.tr(),
                                 ),
                               ),
                               const SizedBox(
@@ -119,26 +121,26 @@ class EditProfileScreen extends StatelessWidget {
                               ),
                               Expanded(
                                 child: TextFieldWidget(
-                                  title: 'Last Name'.tr,
+                                  title: 'Last Name'.tr(),
                                   controller:
                                       controller.lastNameController.value,
-                                  hintText: 'Last Name'.tr,
+                                  hintText: 'Last Name'.tr(),
                                 ),
                               ),
                             ],
                           ),
                           TextFieldWidget(
-                            title: 'Email'.tr,
+                            title: 'Email'.tr(),
                             textInputType: TextInputType.emailAddress,
                             controller: controller.emailController.value,
-                            hintText: 'Email'.tr,
+                            hintText: 'Email'.tr(),
                             enable: false,
                           ),
                           TextFieldWidget(
-                            title: 'Phone Number'.tr,
+                            title: 'Phone Number'.tr(),
                             textInputType: TextInputType.emailAddress,
                             controller: controller.phoneNumberController.value,
-                            hintText: 'Phone Number'.tr,
+                            hintText: 'Phone Number'.tr(),
                             enable: false,
                           ),
                           controller.userModel.value.isOwner == true ||
@@ -151,7 +153,7 @@ class EditProfileScreen extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text("Zone".tr,
+                                    Text("Zone".tr(),
                                         style: TextStyle(
                                             fontFamily: AppThemeData.semiBold,
                                             fontSize: 14,
@@ -163,7 +165,7 @@ class EditProfileScreen extends StatelessWidget {
                                     ),
                                     DropdownButtonFormField<ZoneModel>(
                                         hint: Text(
-                                          'Select zone'.tr,
+                                          'Select zone'.tr(),
                                           style: TextStyle(
                                             fontSize: 14,
                                             color: isDark
@@ -296,7 +298,7 @@ class EditProfileScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(
-                    "Save".tr,
+                    "Save".tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,
@@ -326,7 +328,7 @@ class EditProfileScreen extends StatelessWidget {
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(top: 15),
-                    child: Text("please select".tr,
+                    child: Text("please select".tr(),
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -351,7 +353,7 @@ class EditProfileScreen extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(top: 3),
                               child: Text(
-                                "camera".tr,
+                                "camera".tr(),
                                 style: const TextStyle(),
                               ),
                             ),
@@ -375,7 +377,7 @@ class EditProfileScreen extends StatelessWidget {
                             Padding(
                               padding: const EdgeInsets.only(top: 3),
                               child: Text(
-                                "gallery".tr,
+                                "gallery".tr(),
                                 style: const TextStyle(),
                               ),
                             ),

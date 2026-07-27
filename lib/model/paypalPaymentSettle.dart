@@ -3,6 +3,7 @@
 //     final payPalClientSettleModel = payPalClientSettleModelFromJson(jsonString);
 
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 
 PayPalClientSettleModel payPalClientSettleModelFromJson(String str) => PayPalClientSettleModel.fromJson(json.decode(str));
 

@@ -6,7 +6,9 @@ import 'package:door_delights_driver/themes/text_field_widget.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   const ForgotPasswordScreen({super.key});
@@ -29,7 +31,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Forgot Password".tr,
+                    "Forgot Password".tr(),
                     style: TextStyle(
                         color:
                             isDark ? AppThemeData.grey50 : AppThemeData.grey900,
@@ -37,7 +39,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                         fontFamily: AppThemeData.semiBold),
                   ),
                   Text(
-                    "No worries!! We’ll send you reset instructions".tr,
+                    "No worries!! We’ll send you reset instructions".tr(),
                     style: TextStyle(
                         color: isDark
                             ? AppThemeData.grey400
@@ -49,9 +51,9 @@ class ForgotPasswordScreen extends StatelessWidget {
                     height: 32,
                   ),
                   TextFieldWidget(
-                    title: 'Email Address'.tr,
+                    title: 'Email Address'.tr(),
                     controller: controller.emailEditingController.value,
-                    hintText: 'Enter email address'.tr,
+                    hintText: 'Enter email address'.tr(),
                     prefix: Padding(
                       padding: const EdgeInsets.all(12),
                       child: SvgPicture.asset(
@@ -72,7 +74,7 @@ class ForgotPasswordScreen extends StatelessWidget {
             bottomNavigationBar: InkWell(
               onTap: () {
                 if (controller.emailEditingController.value.text.isEmpty) {
-                  ShowToastDialog.showToast("Please enter valid email".tr);
+                  ShowToastDialog.showToast("Please enter valid email".tr());
                 } else {
                   controller.forgotPassword();
                 }
@@ -83,7 +85,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   child: Text(
-                    "Forgot Password".tr,
+                    "Forgot Password".tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: isDark ? AppThemeData.grey50 : AppThemeData.grey50,

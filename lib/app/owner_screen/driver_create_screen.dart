@@ -12,7 +12,9 @@ import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../models/car_model.dart' show CarModel;
 import '../../themes/responsive.dart' show Responsive;
@@ -32,7 +34,7 @@ class DriverCreateScreen extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(isEdit ? 'Update Driver'.tr : 'Create Driver'.tr),
+            title: Text(isEdit ? 'Update Driver'.tr() : 'Create Driver'.tr()),
           ),
           body: controller.isLoading.value
               ? Constant.loader()
@@ -47,13 +49,13 @@ class DriverCreateScreen extends StatelessWidget {
                             const SizedBox(height: 12),
 
                             // ── Section selection (single, owner's sections) ──
-                            _Label("Select Section".tr, isDark),
+                            _Label("Select Section".tr(), isDark),
                             const SizedBox(height: 6),
                             controller.ownerSections.isEmpty
                                 ? Padding(
                                     padding: const EdgeInsets.all(12),
                                     child: Text(
-                                      "No sections available".tr,
+                                      "No sections available".tr(),
                                       style: TextStyle(
                                         color: isDark
                                             ? AppThemeData.grey400
@@ -128,10 +130,10 @@ class DriverCreateScreen extends StatelessWidget {
                               ),
 
                             // ── Zone ─────────────────────────────────────────
-                            _Label("Zone".tr, isDark),
+                            _Label("Zone".tr(), isDark),
                             const SizedBox(height: 6),
                             _Dropdown<ZoneModel>(
-                              hint: 'Select zone'.tr,
+                              hint: 'Select zone'.tr(),
                               value: controller.selectedZone.value.id == null
                                   ? null
                                   : controller.selectedZone.value,
@@ -150,10 +152,10 @@ class DriverCreateScreen extends StatelessWidget {
                               children: [
                                 Expanded(
                                   child: TextFieldWidget(
-                                    title: 'First Name'.tr,
+                                    title: 'First Name'.tr(),
                                     controller: controller
                                         .firstNameEditingController.value,
-                                    hintText: 'Enter First Name'.tr,
+                                    hintText: 'Enter First Name'.tr(),
                                     prefix: _svgIcon(
                                         "assets/icons/ic_user.svg", isDark),
                                   ),
@@ -161,10 +163,10 @@ class DriverCreateScreen extends StatelessWidget {
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: TextFieldWidget(
-                                    title: 'Last Name'.tr,
+                                    title: 'Last Name'.tr(),
                                     controller: controller
                                         .lastNameEditingController.value,
-                                    hintText: 'Enter Last Name'.tr,
+                                    hintText: 'Enter Last Name'.tr(),
                                     prefix: _svgIcon(
                                         "assets/icons/ic_user.svg", isDark),
                                   ),
@@ -174,11 +176,11 @@ class DriverCreateScreen extends StatelessWidget {
 
                             // ── Email ─────────────────────────────────────────
                             TextFieldWidget(
-                              title: 'Email Address'.tr,
+                              title: 'Email Address'.tr(),
                               textInputType: TextInputType.emailAddress,
                               controller:
                                   controller.emailEditingController.value,
-                              hintText: 'Enter Email Address'.tr,
+                              hintText: 'Enter Email Address'.tr(),
                               enable: !isEdit,
                               prefix:
                                   _svgIcon("assets/icons/ic_mail.svg", isDark),
@@ -186,10 +188,10 @@ class DriverCreateScreen extends StatelessWidget {
 
                             // ── Phone ─────────────────────────────────────────
                             TextFieldWidget(
-                              title: 'Phone Number'.tr,
+                              title: 'Phone Number'.tr(),
                               controller:
                                   controller.phoneNumberEditingController.value,
-                              hintText: 'Enter Phone Number'.tr,
+                              hintText: 'Enter Phone Number'.tr(),
                               textInputType:
                                   const TextInputType.numberWithOptions(
                                       signed: true, decimal: true),
@@ -256,10 +258,10 @@ class DriverCreateScreen extends StatelessWidget {
                             // ── Password (create only) ────────────────────────
                             if (!isEdit) ...[
                               TextFieldWidget(
-                                title: 'Password'.tr,
+                                title: 'Password'.tr(),
                                 controller:
                                     controller.passwordEditingController.value,
-                                hintText: 'Enter Password'.tr,
+                                hintText: 'Enter Password'.tr(),
                                 obscureText: controller.passwordVisible.value,
                                 prefix: _svgIcon(
                                     "assets/icons/ic_lock.svg", isDark),
@@ -271,10 +273,10 @@ class DriverCreateScreen extends StatelessWidget {
                                 ),
                               ),
                               TextFieldWidget(
-                                title: 'Confirm Password'.tr,
+                                title: 'Confirm Password'.tr(),
                                 controller: controller
                                     .confirmPasswordEditingController.value,
-                                hintText: 'Enter Confirm Password'.tr,
+                                hintText: 'Enter Confirm Password'.tr(),
                                 obscureText:
                                     controller.conformPasswordVisible.value,
                                 prefix: _svgIcon(
@@ -303,7 +305,7 @@ class DriverCreateScreen extends StatelessWidget {
                         width: Responsive.width(100, context),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         child: Text(
-                          'Save'.tr,
+                          'Save'.tr(),
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: AppThemeData.grey50,
@@ -362,47 +364,47 @@ class DriverCreateScreen extends StatelessWidget {
   void _onSave(DriverCreateController controller, bool isEdit) {
     // Single section validation
     if (controller.selectedSection.value == null) {
-      ShowToastDialog.showToast("Please select a section".tr);
+      ShowToastDialog.showToast("Please select a section".tr());
       return;
     }
 
     // Basic form validation
     if (controller.firstNameEditingController.value.text.isEmpty) {
-      ShowToastDialog.showToast("Please enter first name".tr);
+      ShowToastDialog.showToast("Please enter first name".tr());
       return;
     } else if (controller.lastNameEditingController.value.text.isEmpty) {
-      ShowToastDialog.showToast("Please enter last name".tr);
+      ShowToastDialog.showToast("Please enter last name".tr());
       return;
     } else if (controller.emailEditingController.value.text.isEmpty) {
-      ShowToastDialog.showToast("Please enter email address".tr);
+      ShowToastDialog.showToast("Please enter email address".tr());
       return;
     } else if (!GetUtils.isEmail(
         controller.emailEditingController.value.text)) {
-      ShowToastDialog.showToast("Please enter valid email address".tr);
+      ShowToastDialog.showToast("Please enter valid email address".tr());
       return;
     } else if (controller.phoneNumberEditingController.value.text.isEmpty) {
-      ShowToastDialog.showToast("Please enter phone number".tr);
+      ShowToastDialog.showToast("Please enter phone number".tr());
       return;
     } else if (controller.selectedZone.value.id == null) {
-      ShowToastDialog.showToast("Please select zone".tr);
+      ShowToastDialog.showToast("Please select zone".tr());
       return;
     }
 
     if (!isEdit) {
       if (controller.passwordEditingController.value.text.isEmpty) {
-        ShowToastDialog.showToast("Please enter password".tr);
+        ShowToastDialog.showToast("Please enter password".tr());
         return;
       } else if (controller.passwordEditingController.value.text.length < 6) {
-        ShowToastDialog.showToast("Password must be at least 6 characters".tr);
+        ShowToastDialog.showToast("Password must be at least 6 characters".tr());
         return;
       } else if (controller
           .confirmPasswordEditingController.value.text.isEmpty) {
-        ShowToastDialog.showToast("Please enter confirm password".tr);
+        ShowToastDialog.showToast("Please enter confirm password".tr());
         return;
       } else if (controller.passwordEditingController.value.text !=
           controller.confirmPasswordEditingController.value.text) {
         ShowToastDialog.showToast(
-            "Password and confirm password do not match".tr);
+            "Password and confirm password do not match".tr());
         return;
       }
     }
@@ -413,20 +415,20 @@ class DriverCreateScreen extends StatelessWidget {
       final sid = section.id ?? '';
       final name = section.name ?? '';
       if (controller.selectedVehiclePerSection[sid]?.value.id == null) {
-        ShowToastDialog.showToast("Please select vehicle type for $name".tr);
+        ShowToastDialog.showToast("Please select vehicle type for $name".tr());
         return;
       }
       if (controller.selectedCarMakesPerSection[sid]?.value.id == null) {
-        ShowToastDialog.showToast("Please select car brand for $name".tr);
+        ShowToastDialog.showToast("Please select car brand for $name".tr());
         return;
       }
       if (controller.selectedCarModelPerSection[sid]?.value.id == null) {
-        ShowToastDialog.showToast("Please select car model for $name".tr);
+        ShowToastDialog.showToast("Please select car model for $name".tr());
         return;
       }
       final plate = controller.carPlatePerSection[sid]?.value.text.trim() ?? '';
       if (plate.isEmpty) {
-        ShowToastDialog.showToast("Please enter car plate number for $name".tr);
+        ShowToastDialog.showToast("Please enter car plate number for $name".tr());
         return;
       }
     }
@@ -545,7 +547,7 @@ class _SectionVehicleCard extends StatelessWidget {
               // Vehicle type dropdown
               if (vehicleTypes.isEmpty)
                 Text(
-                  "No vehicle types for this section".tr,
+                  "No vehicle types for this section".tr(),
                   style: TextStyle(
                     fontSize: 13,
                     color: isDark
@@ -555,7 +557,7 @@ class _SectionVehicleCard extends StatelessWidget {
                 )
               else
                 _Dropdown<VehicleType>(
-                  hint: 'Vehicle Type'.tr,
+                  hint: 'Vehicle Type'.tr(),
                   value: vehicleTypes.contains(selectedVehicle.value)
                       ? selectedVehicle.value
                       : null,
@@ -572,7 +574,7 @@ class _SectionVehicleCard extends StatelessWidget {
                       section.rideType == 'both')) ...[
                 const SizedBox(height: 10),
                 Text(
-                  "Ride Type".tr,
+                  "Ride Type".tr(),
                   style: TextStyle(
                     fontFamily: AppThemeData.semiBold,
                     fontSize: 13,
@@ -587,7 +589,7 @@ class _SectionVehicleCard extends StatelessWidget {
                     if (section.rideType == 'ride' ||
                         section.rideType == 'both')
                       _RideOption(
-                        label: 'Ride'.tr,
+                        label: 'Ride'.tr(),
                         value: 'ride',
                         groupValue: selectedRideType.value,
                         isDark: isDark,
@@ -596,7 +598,7 @@ class _SectionVehicleCard extends StatelessWidget {
                     if (section.rideType == 'intercity' ||
                         section.rideType == 'both')
                       _RideOption(
-                        label: 'Intercity'.tr,
+                        label: 'Intercity'.tr(),
                         value: 'intercity',
                         groupValue: selectedRideType.value,
                         isDark: isDark,
@@ -604,7 +606,7 @@ class _SectionVehicleCard extends StatelessWidget {
                       ),
                     if (section.rideType == 'both')
                       _RideOption(
-                        label: 'Both'.tr,
+                        label: 'Both'.tr(),
                         value: 'both',
                         groupValue: selectedRideType.value,
                         isDark: isDark,
@@ -617,7 +619,7 @@ class _SectionVehicleCard extends StatelessWidget {
               // Car brand
               const SizedBox(height: 10),
               _Dropdown<CarMakes>(
-                hint: 'Car Brand'.tr,
+                hint: 'Car Brand'.tr(),
                 value: selectedCarMakes.value.id == null
                     ? null
                     : selectedCarMakes.value,
@@ -637,7 +639,7 @@ class _SectionVehicleCard extends StatelessWidget {
               _Dropdown<CarModel>(
                 key: ValueKey(
                     'carModel_${selectedCarMakes.value.id}_${carModels.length}'),
-                hint: 'Car Model'.tr,
+                hint: 'Car Model'.tr(),
                 value: selectedCarModel.value.id == null
                     ? null
                     : selectedCarModel.value,
@@ -652,9 +654,9 @@ class _SectionVehicleCard extends StatelessWidget {
               // Car plate number
               const SizedBox(height: 10),
               TextFieldWidget(
-                title: 'Car Plate Number'.tr,
+                title: 'Car Plate Number'.tr(),
                 controller: carPlate.value,
-                hintText: 'Enter Car Plate Number'.tr,
+                hintText: 'Enter Car Plate Number'.tr(),
                 textInputAction: TextInputAction.next,
               ),
             ],

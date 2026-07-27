@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../constant/constant.dart';
 import '../constant/send_notification.dart';
@@ -35,7 +37,7 @@ class DeliverOrderController extends GetxController {
   }
 
   Future<void> completedOrder() async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     await AudioPlayerService.playSound(false);
     orderModel.value.status = Constant.orderCompleted;
     await FireStoreUtils.updateWallateAmount(orderModel.value);

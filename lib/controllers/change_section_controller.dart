@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:get/get.dart';
-
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
 import '../constant/collection_name.dart';
 import '../constant/constant.dart';
 import '../constant/show_toast_dialog.dart';
@@ -13,7 +13,8 @@ class ChangeSectionController extends GetxController {
   var isLoading = false.obs;
 
   RxList<SectionModel> allSections = <SectionModel>[].obs;
-  final Rx<SectionModel?> selectedSection = Rx<SectionModel?>(null);
+  final RxList<SectionModel> selectedSections =
+      <SectionModel>[].obs; // multiple
 
   @override
   void onInit() {
@@ -27,12 +28,25 @@ class ChangeSectionController extends GetxController {
     allSections.value = await FireStoreUtils.getAllActiveSections();
 
     final user = Constant.userModel;
-    if (user != null && user.sectionId != null) {
+    if (user != null &&
+        user.sectionIds != null &&
+        user.sectionIds!.isNotEmpty) {
+      // Pre-select sections that are in user.sectionIds
       for (final section in allSections) {
-        if (section.id == user.sectionId) {
-          selectedSection.value = section;
-          break;
+        if (user.sectionIds!.contains(section.id)) {
+          selectedSections.add(section);
         }
+      }
+    } else if (user != null &&
+        user.sectionId != null &&
+        user.sectionId!.isNotEmpty) {
+      // Fallback: if single sectionId is set, select it
+      final singleSection = allSections.firstWhere(
+        (s) => s.id == user.sectionId,
+        orElse: () => SectionModel(),
+      );
+      if (singleSection.id != null) {
+        selectedSections.add(singleSection);
       }
     }
 
@@ -41,14 +55,14 @@ class ChangeSectionController extends GetxController {
 
   // Check if a section is currently selected
   bool isSectionSelected(SectionModel section) =>
-      selectedSection.value?.id == section.id;
+      selectedSections.any((s) => s.id == section.id);
 
-  // Select a single section; if already selected, deselect it
+  // Toggle selection
   void toggleSection(SectionModel section) {
     if (isSectionSelected(section)) {
-      selectedSection.value = null;
+      selectedSections.removeWhere((s) => s.id == section.id);
     } else {
-      selectedSection.value = section;
+      selectedSections.add(section);
     }
   }
 
@@ -66,65 +80,79 @@ class ChangeSectionController extends GetxController {
   }
 
   Future<void> saveChanges() async {
-    if (selectedSection.value == null) {
-      ShowToastDialog.showToast("Please select a section.".tr);
+    if (selectedSections.isEmpty) {
+      ShowToastDialog.showToast("Please select at least one section.".tr());
       return;
     }
 
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
 
     final UserModel user = Constant.userModel!;
-    final section = selectedSection.value!;
-    final sectionId = section.id!;
 
-    // Update user fields – single section
-    user.sectionId = sectionId;
-    user.serviceType = section.serviceTypeFlag;
+    // Get selected section IDs and service types
+    final List<String> sectionIds = selectedSections.map((s) => s.id!).toList();
+    final List<String> serviceTypes =
+        selectedSections.map((s) => s.serviceTypeFlag!).toList();
 
-    // Remove vehicle details if section is not cab/rental
-    Map<String, dynamic>? newVehicleDetails;
-    if (section.serviceTypeFlag == 'cab-service' ||
-        section.serviceTypeFlag == 'rental-service') {
-      // Keep existing vehicle details for this section if any
-      if (user.vehicleDetails != null &&
-          user.vehicleDetails!.containsKey(sectionId)) {
-        newVehicleDetails = {sectionId: user.vehicleDetails![sectionId]};
-      } else {
-        newVehicleDetails = null; // or empty map, but we can keep null
-      }
-    } else {
-      newVehicleDetails = null;
-    }
-    user.vehicleDetails = newVehicleDetails;
+    // Update user fields
+    user.sectionIds = sectionIds;
+    user.serviceTypes = serviceTypes;
+
+    // Set sectionId and serviceType from the first selected section
+    final firstSection = selectedSections.first;
+    user.sectionId = firstSection.id;
+    user.serviceType = firstSection.serviceTypeFlag;
+
+    // Handle vehicleDetails: keep only for relevant sections
+    // Map<String, dynamic>? newVehicleDetails = {};
+    // for (final section in selectedSections) {
+    //   if (section.serviceTypeFlag == 'cab-service' ||
+    //       section.serviceTypeFlag == 'rental-service') {
+    //     if (user.vehicleDetails != null &&
+    //         user.vehicleDetails!.containsKey(section.id)) {
+    //       newVehicleDetails![section.id!] = user.vehicleDetails![section.id];
+    //     } else {
+    //       // You might want to initialize with default or null; we'll keep empty for now
+    //       newVehicleDetails![section.id!] = null;
+    //     }
+    //   }
+    // }
+    // // If no cab/rental sections, set to null
+    // if (newVehicleDetails!.isEmpty) {
+    //   newVehicleDetails = null;
+    // }
+    // user.vehicleDetails = newVehicleDetails;
 
     // Save all user fields via updateUser (merges)
     await FireStoreUtils.updateUser(user);
 
-    // Overwrite nested fields cleanly (optional but safe)
-    final docRef = FirebaseFirestore.instance
-        .collection(CollectionName.users)
-        .doc(user.id);
+    // final docRef = FirebaseFirestore.instance
+    //     .collection(CollectionName.users)
+    //     .doc(user.id);
 
-    await docRef.set(
-        {
-          'vehicleDetails': newVehicleDetails ?? FieldValue.delete(),
-          'carMakes': user.carMakes ?? FieldValue.delete(),
-          'carNumber': user.carNumber ?? FieldValue.delete(),
-          'carName': user.carName ?? FieldValue.delete(),
-        },
-        SetOptions(mergeFields: [
-          'vehicleDetails',
-          'carMakes',
-          'carNumber',
-          'carName'
-        ]));
+    // await docRef.set(
+    //     {
+    //       'vehicleDetails': newVehicleDetails ?? FieldValue.delete(),
+    //       'carMakes': user.carMakes ?? FieldValue.delete(),
+    //       'carNumber': user.carNumber ?? FieldValue.delete(),
+    //       'carName': user.carName ?? FieldValue.delete(),
+    //     },
+    //     SetOptions(mergeFields: [
+    //       'vehicleDetails',
+    //       'carMakes',
+    //       'carNumber',
+    //       'carName'
+    //     ]));
 
     // Update local cache
     Constant.userModel = user;
-    Constant.sectionModels[sectionId] = section;
+    // Update section models cache if needed
+    for (final section in selectedSections) {
+      Constant.sectionModels[section.id!] = section;
+    }
 
     ShowToastDialog.closeLoader();
-    ShowToastDialog.showToast("Section updated successfully".tr);
+    ShowToastDialog.showToast("Sections updated successfully".tr());
 
     SignupController.navigateByUserModel(user);
   }

@@ -5,7 +5,9 @@ import 'dart:developer';
 import 'package:door_delights_driver/models/payment_model/pay_fast_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PayFastScreen extends StatefulWidget {
@@ -94,14 +96,14 @@ class _PayFastScreenState extends State<PayFastScreen> {
       barrierDismissible: true, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Cancel Payment'.tr),
+          title: Text('Cancel Payment'.tr()),
           content: const SingleChildScrollView(
             child: Text("cancelPayment?"),
           ),
           actions: <Widget>[
             TextButton(
               child: Text(
-                'Exit'.tr,
+                'Exit'.tr(),
                 style: TextStyle(color: Colors.red),
               ),
               onPressed: () {
@@ -111,7 +113,7 @@ class _PayFastScreenState extends State<PayFastScreen> {
             ),
             TextButton(
               child: Text(
-                'Continue Payment'.tr,
+                'Continue Payment'.tr(),
                 style: TextStyle(color: Colors.green),
               ),
               onPressed: () {

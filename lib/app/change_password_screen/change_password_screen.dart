@@ -6,7 +6,9 @@ import 'package:door_delights_driver/themes/text_field_widget.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ChangePasswordScreen extends StatelessWidget {
   const ChangePasswordScreen({super.key});
@@ -27,7 +29,7 @@ class ChangePasswordScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Change Password".tr,
+                            "Change Password".tr(),
                             style: TextStyle(
                               fontSize: 24,
                               color: isDark
@@ -39,7 +41,7 @@ class ChangePasswordScreen extends StatelessWidget {
                           ),
                           Text(
                             "Update your password to keep your account secure."
-                                .tr,
+                                .tr(),
                             style: TextStyle(
                               fontSize: 16,
                               color: isDark
@@ -54,7 +56,7 @@ class ChangePasswordScreen extends StatelessWidget {
                           ),
                           Text(
                             "Enter your registered email address and we’ll send you a secure link to reset your password. Open the link in your inbox and follow the steps to create a new password."
-                                .tr,
+                                .tr(),
                             style: TextStyle(
                               fontSize: 14,
                               color: isDark
@@ -68,10 +70,10 @@ class ChangePasswordScreen extends StatelessWidget {
                             height: 20,
                           ),
                           TextFieldWidget(
-                            title: 'Email Address'.tr,
+                            title: 'Email Address'.tr(),
                             textInputType: TextInputType.emailAddress,
                             controller: controller.emailEditingController.value,
-                            hintText: 'Enter Email Address'.tr,
+                            hintText: 'Enter Email Address'.tr(),
                             prefix: Padding(
                               padding: const EdgeInsets.all(12),
                               child: SvgPicture.asset(
@@ -89,7 +91,7 @@ class ChangePasswordScreen extends StatelessWidget {
                             height: 20,
                           ),
                           RoundedButtonFill(
-                            title: "Change Password".tr,
+                            title: "Change Password".tr(),
                             color: AppThemeData.primary300,
                             textColor: AppThemeData.grey50,
                             onPress: () async {

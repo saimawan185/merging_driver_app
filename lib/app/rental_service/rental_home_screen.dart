@@ -20,7 +20,9 @@ import 'package:door_delights_driver/widget/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 
@@ -70,7 +72,7 @@ class RentalHomeScreen extends StatelessWidget {
                                 height: 12,
                               ),
                               Text(
-                                "Document Verification in Pending".tr,
+                                "Document Verification in Pending".tr(),
                                 style: TextStyle(
                                     color: isDark
                                         ? AppThemeData.grey100
@@ -83,7 +85,7 @@ class RentalHomeScreen extends StatelessWidget {
                               ),
                               Text(
                                 "Your documents are being reviewed. We will notify you once the verification is complete."
-                                    .tr,
+                                    .tr(),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: isDark
@@ -96,7 +98,7 @@ class RentalHomeScreen extends StatelessWidget {
                                 height: 20,
                               ),
                               RoundedButtonFill(
-                                title: "View Status".tr,
+                                title: "View Status".tr(),
                                 width: 55,
                                 height: 5.5,
                                 color: AppThemeData.primary300,
@@ -125,7 +127,7 @@ class RentalHomeScreen extends StatelessWidget {
                                     height: 20,
                                   ),
                                   Text(
-                                    'You’re Currently Offline'.tr,
+                                    'You’re Currently Offline'.tr(),
                                     textAlign: TextAlign.center,
                                     style: AppThemeData.mediumTextStyle(
                                       fontSize: 18,
@@ -139,7 +141,7 @@ class RentalHomeScreen extends StatelessWidget {
                                   ),
                                   Text(
                                     'Switch to online mode to accept and deliver rental orders.'
-                                        .tr,
+                                        .tr(),
                                     textAlign: TextAlign.center,
                                     style: AppThemeData.mediumTextStyle(
                                       fontSize: 14,
@@ -194,7 +196,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                 padding:
                                                     const EdgeInsets.all(8.0),
                                                 child: Text(
-                                                  "${'You must have at least'.tr} ${Constant.amountShow(amount: Constant.minimumDepositToRideAccept.toString())} ${'in your wallet to receive orders'.tr}",
+                                                  "${'You must have at least'.tr()} ${Constant.amountShow(amount: Constant.minimumDepositToRideAccept.toString())} ${'in your wallet to receive orders'.tr()}",
                                                   style: TextStyle(
                                                     color: AppThemeData.grey900,
                                                     fontSize: 14,
@@ -225,7 +227,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                     const EdgeInsets.all(8.0),
                                                 child: Text(
                                                   "Your owner doesn't have the minimum wallet amount to receive orders. Please contact your owner."
-                                                      .tr,
+                                                      .tr(),
                                                   style: TextStyle(
                                                     color: AppThemeData.grey900,
                                                     fontSize: 14,
@@ -254,7 +256,7 @@ class RentalHomeScreen extends StatelessWidget {
                                             ),
                                             Text(
                                               'No rental requests available in your selected zone.'
-                                                  .tr,
+                                                  .tr(),
                                               textAlign: TextAlign.center,
                                               style:
                                                   AppThemeData.mediumTextStyle(
@@ -268,7 +270,7 @@ class RentalHomeScreen extends StatelessWidget {
                                               height: 20,
                                             ),
                                             RoundedButtonFill(
-                                              title: "Search Rental Booking".tr,
+                                              title: "Search Rental Booking".tr(),
                                               height: 5.5,
                                               color: AppThemeData.primary300,
                                               textColor: AppThemeData.grey50,
@@ -293,7 +295,7 @@ class RentalHomeScreen extends StatelessWidget {
                                           Get.to(RentalBookingSearchScreen());
                                         },
                                         child: TextFieldWidget(
-                                          hintText: 'Search new ride'.tr,
+                                          hintText: 'Search new ride'.tr(),
                                           enable: false,
                                           controller: null,
                                         ),
@@ -386,7 +388,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                             Expanded(
                                                               child: Text(
                                                                 '${rentalBookingData.author?.firstName ?? ''} ${rentalBookingData.author?.lastName ?? ''}'
-                                                                    .tr,
+                                                                    .tr(),
                                                                 textAlign:
                                                                     TextAlign
                                                                         .start,
@@ -436,7 +438,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                         () async {
                                                                       ShowToastDialog.showLoader(
                                                                           "Please wait"
-                                                                              .tr);
+                                                                              .tr());
 
                                                                       UserModel?
                                                                           customer =
@@ -614,7 +616,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                       child:
                                                                           Text(
                                                                         "Package Details:"
-                                                                            .tr,
+                                                                            .tr(),
                                                                         textAlign:
                                                                             TextAlign.start,
                                                                         style: AppThemeData.mediumTextStyle(
@@ -627,7 +629,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                     ),
                                                                     Text(
                                                                       "${rentalBookingData.rentalPackageModel!.name}"
-                                                                          .tr,
+                                                                          .tr(),
                                                                       textAlign:
                                                                           TextAlign
                                                                               .start,
@@ -649,7 +651,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                       child:
                                                                           Text(
                                                                         "Including Distance:"
-                                                                            .tr,
+                                                                            .tr(),
                                                                         textAlign:
                                                                             TextAlign.start,
                                                                         style: AppThemeData.mediumTextStyle(
@@ -662,7 +664,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                     ),
                                                                     Text(
                                                                       "${rentalBookingData.rentalPackageModel!.includedDistance} ${Constant.distanceType}"
-                                                                          .tr,
+                                                                          .tr(),
                                                                       textAlign:
                                                                           TextAlign
                                                                               .start,
@@ -684,7 +686,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                       child:
                                                                           Text(
                                                                         "Including Duration:"
-                                                                            .tr,
+                                                                            .tr(),
                                                                         textAlign:
                                                                             TextAlign.start,
                                                                         style: AppThemeData.mediumTextStyle(
@@ -697,7 +699,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                     ),
                                                                     Text(
                                                                       "${rentalBookingData.rentalPackageModel!.includedHours} Hr"
-                                                                          .tr,
+                                                                          .tr(),
                                                                       textAlign:
                                                                           TextAlign
                                                                               .start,
@@ -731,7 +733,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                     Constant.amountShow(
                                                                             amount:
                                                                                 rentalBookingData.subTotal)
-                                                                        .tr,
+                                                                        .tr(),
                                                                     textAlign:
                                                                         TextAlign
                                                                             .start,
@@ -756,7 +758,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                   Text(
                                                                     Constant.timestampToDateTime(
                                                                             rentalBookingData.bookingDateTime!)
-                                                                        .tr,
+                                                                        .tr(),
                                                                     textAlign:
                                                                         TextAlign
                                                                             .start,
@@ -781,7 +783,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                             ? RoundedButtonFill(
                                                                 title:
                                                                     "Reached Location"
-                                                                        .tr,
+                                                                        .tr(),
                                                                 height: 5.5,
                                                                 color: isDark
                                                                     ? AppThemeData
@@ -809,11 +811,11 @@ class RentalHomeScreen extends StatelessWidget {
                                                                                 context) {
                                                                           return CustomDialogBox(
                                                                             title:
-                                                                                "Alert".tr,
+                                                                                "Alert".tr(),
                                                                             descriptions:
-                                                                                "${'The customer is not renting the car at the moment and has scheduled the car rental for'.tr} ${Constant.formatTimestamp(rentalBookingData.bookingDateTime!)}.".tr,
+                                                                                "${'The customer is not renting the car at the moment and has scheduled the car rental for'.tr()} ${Constant.formatTimestamp(rentalBookingData.bookingDateTime!)}.".tr(),
                                                                             positiveString:
-                                                                                "Okay".tr,
+                                                                                "Okay".tr(),
                                                                             positiveClick:
                                                                                 () async {
                                                                               Get.back();
@@ -842,7 +844,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                 ? RoundedButtonFill(
                                                                     title:
                                                                         "Set Final kilometers"
-                                                                            .tr,
+                                                                            .tr(),
                                                                     height: 5.5,
                                                                     color: isDark
                                                                         ? AppThemeData
@@ -868,7 +870,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                         true
                                                                     ? RoundedButtonFill(
                                                                         title: "Complete Booking"
-                                                                            .tr,
+                                                                            .tr(),
                                                                         height:
                                                                             5.5,
                                                                         color: isDark
@@ -886,8 +888,8 @@ class RentalHomeScreen extends StatelessWidget {
                                                                     : RoundedButtonFill(
                                                                         title: rentalBookingData.paymentMethod ==
                                                                                 PaymentGateway.cod.name
-                                                                            ? "Confirm cash payment".tr
-                                                                            : "Payment Pending".tr,
+                                                                            ? "Confirm cash payment".tr()
+                                                                            : "Payment Pending".tr(),
                                                                         height:
                                                                             5.5,
                                                                         color: rentalBookingData.paymentMethod ==
@@ -909,7 +911,7 @@ class RentalHomeScreen extends StatelessWidget {
                                                                                 controller,
                                                                                 rentalBookingData);
                                                                           } else {
-                                                                            ShowToastDialog.showToast("Please collect the payment from the customer through the app.");
+                                                                            ShowToastDialog.showToast("Please collect the payment from the customer through the app".tr());
                                                                           }
                                                                         },
                                                                       )
@@ -957,7 +959,7 @@ class RentalHomeScreen extends StatelessWidget {
                       child: Text(
                         Constant.enableOTPTripStartForRental == false
                             ? "Trip Start"
-                            : "Verify Passenger".tr,
+                            : "Verify Passenger".tr(),
                         style: AppThemeData.boldTextStyle(
                           fontSize: 22,
                           color: isDark
@@ -981,7 +983,7 @@ class RentalHomeScreen extends StatelessWidget {
                     ? const SizedBox()
                     : Text(
                         "Enter the OTP shared by the customer to begin the trip"
-                            .tr,
+                            .tr(),
                         textAlign: TextAlign.start,
                         style: AppThemeData.mediumTextStyle(
                           color: isDark
@@ -993,8 +995,8 @@ class RentalHomeScreen extends StatelessWidget {
                 SizedBox(height: 20),
                 TextFieldWidget(
                   controller: controller.currentKilometerController.value,
-                  hintText: 'Enter Current Kilometer reading'.tr,
-                  title: 'Current Kilometer reading'.tr,
+                  hintText: 'Enter Current Kilometer reading'.tr(),
+                  title: 'Current Kilometer reading'.tr(),
                   enable: true,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
@@ -1045,7 +1047,7 @@ class RentalHomeScreen extends StatelessWidget {
                       ),
                 SizedBox(height: 10),
                 RoundedButtonFill(
-                  title: "Start Ride".tr,
+                  title: "Start Ride".tr(),
                   height: 5.5,
                   color: AppThemeData.primary300,
                   textColor: AppThemeData.grey50,
@@ -1056,19 +1058,19 @@ class RentalHomeScreen extends StatelessWidget {
                                 .currentKilometerController.value.text) <
                             10) {
                       ShowToastDialog.showToast(
-                          "Please enter current kilometer reading".tr);
+                          "Please enter current kilometer reading".tr());
                       return;
                     }
                     if (Constant.enableOTPTripStartForRental == true &&
                         otpController.value.text.isEmpty &&
                         otpController.value.text.length < 6) {
-                      ShowToastDialog.showToast("Please enter valid OTP".tr);
+                      ShowToastDialog.showToast("Please enter valid OTP".tr());
                       return;
                     }
                     if (Constant.enableOTPTripStartForRental == true &&
                         rentalBookingData.otpCode !=
                             otpController.value.text.trim()) {
-                      ShowToastDialog.showToast("Invalid OTP".tr);
+                      ShowToastDialog.showToast("Invalid OTP".tr());
                       return;
                     }
 
@@ -1077,11 +1079,11 @@ class RentalHomeScreen extends StatelessWidget {
                     rentalBookingData.startTime = Timestamp.now();
                     rentalBookingData.status = Constant.orderInTransit;
 
-                    ShowToastDialog.showLoader("Updating...".tr);
+                    ShowToastDialog.showLoader("Updating...".tr());
                     await FireStoreUtils.rentalOrderPlace(rentalBookingData)
                         .then((value) {
                       ShowToastDialog.closeLoader();
-                      ShowToastDialog.showToast("Ride started successfully".tr);
+                      ShowToastDialog.showToast("Ride started successfully".tr());
                       controller.currentKilometerController.value.clear();
                       otpController.value.clear();
                       Get.back();
@@ -1115,7 +1117,7 @@ class RentalHomeScreen extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                        child: Text("Enter Kilometer Reading",
+                        child: Text("Enter Kilometer Reading".tr(),
                             style: AppThemeData.boldTextStyle(
                                 fontSize: 22,
                                 color: isDark
@@ -1132,15 +1134,15 @@ class RentalHomeScreen extends StatelessWidget {
                 SizedBox(height: 8),
                 TextFieldWidget(
                   controller: controller.completeKilometerController.value,
-                  hintText: 'Enter Current Kilometer reading',
-                  title: ' Current Kilometer reading',
+                  hintText: 'Enter Current Kilometer reading'.tr(),
+                  title: 'Current Kilometer reading'.tr(),
                   inputFormatters: <TextInputFormatter>[
                     FilteringTextInputFormatter.digitsOnly
                   ],
                 ),
                 SizedBox(height: 20),
                 RoundedButtonFill(
-                  title: "Save".tr,
+                  title: "Save".tr(),
                   height: 5.5,
                   color: AppThemeData.primary300,
                   textColor: AppThemeData.grey50,
@@ -1148,7 +1150,7 @@ class RentalHomeScreen extends StatelessWidget {
                     if (controller
                         .completeKilometerController.value.text.isEmpty) {
                       ShowToastDialog.showToast(
-                          "Please enter current kilometer reading".tr);
+                          "Please enter current kilometer reading".tr());
                       return;
                     } else if (double.parse(controller
                             .completeKilometerController.value.text
@@ -1158,7 +1160,7 @@ class RentalHomeScreen extends StatelessWidget {
                             .toString())) {
                       ShowToastDialog.showToast(
                           "Final kilometer reading cannot be less than starting kilometer reading"
-                              .tr);
+                              .tr());
                       return;
                     } else {
                       rentalBookingData.endKitoMetersReading = controller
@@ -1166,12 +1168,12 @@ class RentalHomeScreen extends StatelessWidget {
                           .toString()
                           .trim();
                       rentalBookingData.endTime = Timestamp.now();
-                      ShowToastDialog.showLoader("Updating...".tr);
+                      ShowToastDialog.showLoader("Updating...".tr());
                       await FireStoreUtils.rentalOrderPlace(rentalBookingData)
                           .then((value) {
                         ShowToastDialog.closeLoader();
                         ShowToastDialog.showToast(
-                            "Kilometer updated successfully".tr);
+                            "Kilometer updated successfully".tr());
                         controller.completeKilometerController.value.clear();
                         Get.back();
                       });
@@ -1205,7 +1207,7 @@ class RentalHomeScreen extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                        child: Text("Confirm Cash Collection",
+                        child: Text("Confirm Cash Collection".tr(),
                             style: AppThemeData.boldTextStyle(
                                 fontSize: 20,
                                 color: isDark
@@ -1236,12 +1238,12 @@ class RentalHomeScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 25),
                 RoundedButtonFill(
-                  title: "Ride Completed".tr,
+                  title: "Ride Completed".tr(),
                   height: 5.5,
                   color: AppThemeData.primary300,
                   textColor: AppThemeData.grey50,
                   onPress: () async {
-                    ShowToastDialog.showLoader("Updating...".tr);
+                    ShowToastDialog.showLoader("Updating...".tr());
                     rentalBookingData.status = Constant.orderCompleted;
                     rentalBookingData.paymentStatus = true;
                     await controller.updateCabWalletAmount(rentalBookingData);
@@ -1257,7 +1259,7 @@ class RentalHomeScreen extends StatelessWidget {
                           payLoad);
                       ShowToastDialog.closeLoader();
                       ShowToastDialog.showToast(
-                          "Ride completed successfully".tr);
+                          "Ride completed successfully".tr());
                       Get.back();
                     });
                   },

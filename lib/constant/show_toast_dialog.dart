@@ -1,9 +1,9 @@
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:get/get_utils/src/extensions/internacionalization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ShowToastDialog {
   static void showToast(String? message, {EasyLoadingToastPosition position = EasyLoadingToastPosition.top}) {
-    EasyLoading.showToast(message!.tr, toastPosition: position);
+    EasyLoading.showToast(message!.tr(), toastPosition: position);
   }
 
   static void showLoader(String message) {

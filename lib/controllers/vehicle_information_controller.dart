@@ -7,48 +7,36 @@ import 'package:door_delights_driver/models/user_model.dart';
 import 'package:door_delights_driver/models/vehicle_type.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 
 class VehicleInformationController extends GetxController {
-  /// The service type context this screen was opened from.
-  /// e.g. 'cab-service', 'rental-service', 'delivery-service', 'parcel_delivery'
   final String initialServiceType;
 
   VehicleInformationController({required this.initialServiceType});
 
-  Rx<TextEditingController> carPlatNumberEditingController =
-      TextEditingController().obs;
+  // ── User and sections ──────────────────────────────────────────────
   Rx<UserModel> userModel = UserModel().obs;
-
-  RxString selectedService = ''.obs;
-
-  /// Per-section ride type (cab only)
-  final Map<String, RxString> selectedRideTypePerSection = {};
-
-  /// All sections available for this service from Firestore
-  RxList<SectionModel> allSectionsForService = <SectionModel>[].obs;
-
-  /// Only the sections this driver is registered in (for current service)
   RxList<SectionModel> driverSections = <SectionModel>[].obs;
 
-  /// Vehicle types per sectionId
-  final Map<String, RxList<VehicleType>> vehicleTypesPerSection = {};
+  // ── All sections the user is registered in (across all services) ──
+  RxList<SectionModel> allUserSections = <SectionModel>[].obs;
 
-  /// Selected vehicle type per sectionId
-  final Map<String, Rx<VehicleType>> selectedVehiclePerSection = {};
+  // ── Single set of vehicle details ─────────────────────────────────
+  RxList<VehicleType> vehicleTypeOptions = <VehicleType>[].obs;
+  Rx<VehicleType?> selectedVehicleType = Rx<VehicleType?>(null);
 
-  /// Shared car makes list (loaded once)
   RxList<CarMakes> carMakesList = <CarMakes>[].obs;
+  Rx<CarMakes?> selectedCarMakes = Rx<CarMakes?>(null);
+  RxList<CarModel> carModelList = <CarModel>[].obs;
+  Rx<CarModel?> selectedCarModel = Rx<CarModel?>(null);
+  Rx<TextEditingController> carPlateController = TextEditingController().obs;
 
-  /// Per-section car details
-  final Map<String, Rx<CarMakes>> selectedCarMakesPerSection = {};
-  final Map<String, RxList<CarModel>> carModelListPerSection = {};
-  final Map<String, Rx<CarModel>> selectedCarModelPerSection = {};
-  final Map<String, Rx<TextEditingController>> carPlatePerSection = {};
+  // ── Ride Type ──────────────────────────────────────────────────────
+  RxString selectedRideType = 'ride'.obs;
+  RxList<String> rideTypeOptions = <String>[].obs;
 
   RxBool isLoading = false.obs;
 
-  /// True if driver has cab-service or rental-service section
   bool get hasVehicleBasedSection =>
       initialServiceType == 'cab-service' ||
       initialServiceType == 'rental-service';
@@ -56,7 +44,6 @@ class VehicleInformationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    selectedService.value = getReadableServiceType(initialServiceType);
     loadUserData();
   }
 
@@ -70,83 +57,37 @@ class VehicleInformationController extends GetxController {
 
       userModel.value = model;
 
-      // Load all sections for this service from Firestore
+      // ── Load all sections for this service type (for vehicle details) ──
       final sections = await FireStoreUtils.getSections(initialServiceType);
-      allSectionsForService.value = sections;
-
-      // Filter to only sections this driver is registered in
-      final driverSectionIds = [model.sectionId];
-      driverSections.value =
-          sections.where((s) => driverSectionIds.contains(s.id)).toList();
-
-      // If driver has no sections yet for this service, show all (edit mode)
-      if (driverSections.isEmpty) driverSections.value = sections;
-
-      // Load vehicle types for each driver section
-      for (final section in driverSections) {
-        final sid = section.id ?? '';
-        final types = await _fetchVehicleTypes(sid);
-        vehicleTypesPerSection[sid] = RxList<VehicleType>(types);
-
-        // Pre-select saved vehicle for this section
-        final savedId = model.vehicleDetails?[sid]?['vehicleId']?.toString();
-        VehicleType selected = types.isNotEmpty ? types.first : VehicleType();
-        if (savedId != null && savedId.isNotEmpty && types.isNotEmpty) {
-          selected = types.firstWhere((e) => e.id == savedId,
-              orElse: () => types.first);
-        }
-        selectedVehiclePerSection[sid] = Rx<VehicleType>(selected);
-
-        // Per-section ride type (default from vehicleDetails, else 'ride')
-        final savedRideType =
-            model.vehicleDetails?[sid]?['rideType']?.toString() ?? 'ride';
-        selectedRideTypePerSection[sid] = RxString(savedRideType);
+      final driverSectionIds = model.sectionIds;
+      if (driverSectionIds != null && driverSectionIds.isNotEmpty) {
+        driverSections.value =
+            sections.where((s) => driverSectionIds.contains(s.id)).toList();
+      } else {
+        driverSections.value = sections;
       }
 
-      // Load car makes list (shared)
-      await getCarMakes();
-
-      // Load per-section car details from vehicleDetails
-      for (final section in driverSections) {
-        final sid = section.id ?? '';
-        final sectionData = model.vehicleDetails?[sid];
-
-        // Car plate number
-        final savedPlate = sectionData?['carPlateNumber']?.toString() ?? '';
-        carPlatePerSection[sid] =
-            Rx<TextEditingController>(TextEditingController(text: savedPlate));
-
-        // Car brand
-        final savedBrand = sectionData?['carBrand']?.toString();
-        if (savedBrand != null &&
-            savedBrand.isNotEmpty &&
-            carMakesList.isNotEmpty) {
-          selectedCarMakesPerSection[sid] = Rx<CarMakes>(
-            carMakesList.firstWhere((e) => e.name == savedBrand,
-                orElse: () => CarMakes()),
-          );
-          // Load car models for this section
-          final models = await FireStoreUtils.getCarModel(savedBrand);
-          carModelListPerSection[sid] = RxList<CarModel>(models);
-
-          // Car model
-          final savedModel = sectionData?['carModel']?.toString();
-          if (savedModel != null &&
-              savedModel.isNotEmpty &&
-              models.isNotEmpty) {
-            selectedCarModelPerSection[sid] = Rx<CarModel>(
-              models.firstWhere((e) => e.name == savedModel,
-                  orElse: () => models.first),
-            );
-          } else {
-            selectedCarModelPerSection[sid] = Rx<CarModel>(CarModel());
-          }
-        } else {
-          selectedCarMakesPerSection[sid] = Rx<CarMakes>(CarMakes());
-          carModelListPerSection[sid] = <CarModel>[].obs;
-          selectedCarModelPerSection[sid] = Rx<CarModel>(CarModel());
-        }
+      // ── Load ALL user sections (across all services) ──────────────────
+      // For ride type, we need to know if cab is selected anywhere.
+      final allSections = await FireStoreUtils.getAllActiveSections();
+      if (driverSectionIds != null && driverSectionIds.isNotEmpty) {
+        allUserSections.value =
+            allSections.where((s) => driverSectionIds.contains(s.id)).toList();
+      } else {
+        allUserSections.value = [];
       }
+
+      // Load vehicle types
+      await _loadVehicleTypes();
+
+      // Load car makes list
+      await _loadCarMakes();
+
+      // Load saved vehicle details (flat map)
+      _loadSavedVehicleDetails(model);
+
+      // Load ride type options if cab is selected in any section
+      _updateRideTypeOptions();
     } catch (e) {
       log("loadUserData error: $e");
     } finally {
@@ -155,12 +96,160 @@ class VehicleInformationController extends GetxController {
     }
   }
 
-  Future<List<VehicleType>> _fetchVehicleTypes(String sectionId) async {
-    if (sectionId.isEmpty) return [];
-    if (initialServiceType == 'rental-service') {
-      return FireStoreUtils.getRentalVehicleType(sectionId);
+  Future<void> _loadVehicleTypes() async {
+    final Set<String> typeNames = {};
+    final List<VehicleType> types = [];
+
+    for (final section in driverSections) {
+      if (section.serviceTypeFlag == 'delivery-service' ||
+          section.serviceTypeFlag == 'parcel_delivery') {
+        _addTypeIfNotExists(types, typeNames, 'Bike', 'bike');
+        _addTypeIfNotExists(types, typeNames, 'Carriage', 'carriage');
+      } else if (section.serviceTypeFlag == 'cab-service') {
+        final cabTypes = await FireStoreUtils.getCabVehicleType(section.id!);
+        for (final t in cabTypes) {
+          _addTypeIfNotExists(types, typeNames, t.name!, t.id!);
+        }
+      } else if (section.serviceTypeFlag == 'rental-service') {
+        final rentalTypes =
+            await FireStoreUtils.getRentalVehicleType(section.id!);
+        for (final t in rentalTypes) {
+          _addTypeIfNotExists(types, typeNames, t.name!, t.id!);
+        }
+      }
     }
-    return FireStoreUtils.getCabVehicleType(sectionId);
+    vehicleTypeOptions.value = types;
+    if (types.isNotEmpty && selectedVehicleType.value == null) {
+      selectedVehicleType.value = types.first;
+    }
+  }
+
+  void _addTypeIfNotExists(
+      List<VehicleType> list, Set<String> seen, String name, String id) {
+    if (!seen.contains(name)) {
+      seen.add(name);
+      list.add(VehicleType(id: id, name: name));
+    }
+  }
+
+  Future<void> _loadCarMakes() async {
+    try {
+      carMakesList.value = await FireStoreUtils.getCarMakes();
+    } catch (e) {
+      log("Error loading car makes: $e");
+    }
+  }
+
+  void _loadSavedVehicleDetails(UserModel user) {
+    final Map<String, dynamic>? details = user.vehicleDetails;
+
+    final vehicleTypeName =
+        details?['vehicleType']?.toString() ?? user.vehicleType;
+    final carBrand = details?['carBrand']?.toString() ?? user.carMakes;
+    final carModelName = details?['carModel']?.toString() ?? user.carName;
+    final carPlate = details?['carPlateNumber']?.toString() ?? user.carNumber;
+    final rideType =
+        details?['rideType']?.toString() ?? user.rideType ?? 'ride';
+
+    // Set vehicle type
+    if (vehicleTypeName != null && vehicleTypeOptions.isNotEmpty) {
+      final found = vehicleTypeOptions.firstWhere(
+          (t) => t.name == vehicleTypeName,
+          orElse: () => VehicleType());
+      if (found.id != null) selectedVehicleType.value = found;
+    }
+
+    // Set car brand and load its models
+    if (carBrand != null && carBrand.isNotEmpty) {
+      final found = carMakesList.firstWhere((c) => c.name == carBrand,
+          orElse: () => CarMakes());
+      if (found.id != null) {
+        selectedCarMakes.value = found;
+        // Load car models for this brand
+        getCarModels();
+      }
+    }
+
+    // Set car model
+    if (carModelName != null &&
+        carModelName.isNotEmpty &&
+        carModelList.isNotEmpty) {
+      final found = carModelList.firstWhere((m) => m.name == carModelName,
+          orElse: () => CarModel());
+      if (found.id != null) selectedCarModel.value = found;
+    }
+
+    // Set car plate
+    if (carPlate != null) {
+      carPlateController.value.text = carPlate;
+    }
+
+    // Set ride type
+    selectedRideType.value = rideType;
+  }
+
+  void _updateRideTypeOptions() {
+    // Check if user has any cab section (across all sections)
+    final hasCab = allUserSections
+        .any((section) => section.serviceTypeFlag == 'cab-service');
+
+    if (!hasCab) {
+      rideTypeOptions.clear();
+      selectedRideType.value = 'ride';
+      return;
+    }
+
+    // Get the first cab section to determine allowed ride types
+    final firstCab = allUserSections.firstWhere(
+      (s) => s.serviceTypeFlag == 'cab-service',
+      orElse: () => SectionModel(),
+    );
+    final allowed = firstCab.rideType ?? 'ride';
+
+    if (allowed == 'both') {
+      rideTypeOptions.value = ['ride', 'intercity', 'both'];
+    } else if (allowed == 'intercity') {
+      rideTypeOptions.value = ['intercity'];
+    } else {
+      rideTypeOptions.value = ['ride'];
+    }
+
+    if (!rideTypeOptions.contains(selectedRideType.value)) {
+      selectedRideType.value =
+          rideTypeOptions.isNotEmpty ? rideTypeOptions.first : 'ride';
+    }
+  }
+
+  Future<void> getCarModels() async {
+    final brand = selectedCarMakes.value?.name;
+    if (brand == null || brand.isEmpty) {
+      carModelList.clear();
+      selectedCarModel.value = null;
+      update();
+      return;
+    }
+    try {
+      final models = await FireStoreUtils.getCarModel(brand);
+      carModelList.value = models;
+      if (models.isNotEmpty) {
+        final savedModelName =
+            userModel.value.vehicleDetails?['carModel']?.toString();
+        if (savedModelName != null && savedModelName.isNotEmpty) {
+          final found = models.firstWhere((m) => m.name == savedModelName,
+              orElse: () => models.first);
+          selectedCarModel.value = found;
+        } else {
+          selectedCarModel.value = models.first;
+        }
+      } else {
+        selectedCarModel.value = null;
+      }
+    } catch (e) {
+      log("Error loading car models: $e");
+      carModelList.clear();
+      selectedCarModel.value = null;
+    }
+    update();
   }
 
   Future<void> saveVehicleInformation() async {
@@ -168,74 +257,52 @@ class VehicleInformationController extends GetxController {
       ShowToastDialog.showToast("Update not allowed for Owner type users.");
       return;
     }
-    // Validate at least one section has a vehicle selected
-    for (final section in driverSections) {
-      final sid = section.id ?? '';
-      if (selectedVehiclePerSection[sid]?.value.id == null) {
-        ShowToastDialog.showToast(
-            "Please select a vehicle type for ${section.name}");
-        return;
-      }
+
+    if (selectedVehicleType.value == null) {
+      ShowToastDialog.showToast("Please select a vehicle type.");
+      return;
     }
-    // Per-section car details validation
-    for (final section in driverSections) {
-      final sid = section.id ?? '';
-      final plate = carPlatePerSection[sid]?.value.text.trim() ?? '';
-      final carMakes = selectedCarMakesPerSection[sid]?.value;
-      final carModel = selectedCarModelPerSection[sid]?.value;
-      if (plate.isEmpty) {
-        ShowToastDialog.showToast(
-            "Please enter car plate number for ${section.name}");
-        return;
-      }
-      if (carMakes?.id == null) {
-        ShowToastDialog.showToast(
-            "Please select a car brand for ${section.name}");
-        return;
-      }
-      if (carModel?.id == null) {
-        ShowToastDialog.showToast(
-            "Please select a car model for ${section.name}");
-        return;
-      }
+    if (selectedCarMakes.value == null) {
+      ShowToastDialog.showToast("Please select a car brand.");
+      return;
+    }
+    if (selectedCarModel.value == null) {
+      ShowToastDialog.showToast("Please select a car model.");
+      return;
+    }
+    if (carPlateController.value.text.trim().isEmpty) {
+      ShowToastDialog.showToast("Please enter car plate number.");
+      return;
     }
 
     ShowToastDialog.showLoader("Updating vehicle information...");
     try {
-      // Merge vehicleDetails: only update sections for this service, keep others intact
-      final existing =
-          Map<String, dynamic>.from(userModel.value.vehicleDetails ?? {});
-      for (final section in driverSections) {
-        final sid = section.id ?? '';
-        final vehicle = selectedVehiclePerSection[sid]?.value;
-        final carMakes = selectedCarMakesPerSection[sid]?.value;
-        final carModel = selectedCarModelPerSection[sid]?.value;
-        final carPlate = carPlatePerSection[sid]?.value.text.trim() ?? '';
-        if (vehicle?.id != null) {
-          existing[sid] = {
-            'vehicleId': vehicle!.id ?? '',
-            'vehicleType': vehicle.name ?? '',
-            'carBrand': carMakes?.name ?? '',
-            'carModel': carModel?.name ?? '',
-            'carPlateNumber': carPlate,
-            if (initialServiceType == 'cab-service')
-              'rideType': selectedRideTypePerSection[sid]?.value ?? 'ride',
-          };
-          userModel.value.vehicleId = vehicle.id ?? '';
-          userModel.value.vehicleType = vehicle.name ?? '';
-          userModel.value.carMakes = carMakes?.name ?? '';
-          userModel.value.carName = carModel?.name ?? '';
-          userModel.value.carNumber = carPlate;
+      final vehicle = selectedVehicleType.value!;
+      final carMakes = selectedCarMakes.value!;
+      final carModel = selectedCarModel.value!;
+      final carPlate = carPlateController.value.text.trim();
+      final rideType = selectedRideType.value;
 
-          if (initialServiceType == 'cab-service') {
-            userModel.value.rideType =
-                selectedRideTypePerSection[sid]?.value ?? 'ride';
-          }
-        }
+      final Map<String, dynamic> details = {
+        'vehicleId': vehicle.id ?? '',
+        'vehicleType': vehicle.name ?? '',
+        'carBrand': carMakes.name ?? '',
+        'carModel': carModel.name ?? '',
+        'carPlateNumber': carPlate,
+        if (initialServiceType == 'cab-service') 'rideType': rideType,
+      };
+
+      userModel.value.vehicleType = vehicle.name;
+      userModel.value.vehicleId = vehicle.id;
+      userModel.value.carMakes = carMakes.name;
+      userModel.value.carName = carModel.name;
+      userModel.value.carNumber = carPlate;
+      if (initialServiceType == 'cab-service') {
+        userModel.value.rideType = rideType;
       }
-      userModel.value.vehicleDetails = existing;
+      userModel.value.vehicleDetails = details;
 
-      bool success = await FireStoreUtils.updateUser(userModel.value);
+      final success = await FireStoreUtils.updateUser(userModel.value);
       ShowToastDialog.closeLoader();
       ShowToastDialog.showToast(success
           ? "Vehicle information updated successfully."
@@ -244,35 +311,6 @@ class VehicleInformationController extends GetxController {
       ShowToastDialog.closeLoader();
       ShowToastDialog.showToast("Error updating vehicle info: $e");
       log("Error: $e");
-    }
-  }
-
-  Future<void> getCarMakes() async {
-    try {
-      carMakesList.value = await FireStoreUtils.getCarMakes();
-    } catch (e) {
-      log("Error loading car makes: $e");
-    }
-  }
-
-  Future<void> getCarModelForSection(String sectionId) async {
-    try {
-      final carMakes = selectedCarMakesPerSection[sectionId]?.value;
-      if (carMakes?.name == null || carMakes!.name!.isEmpty) {
-        carModelListPerSection[sectionId]?.clear();
-        selectedCarModelPerSection[sectionId]?.value = CarModel();
-        return;
-      }
-      final models = await FireStoreUtils.getCarModel(carMakes.name!);
-      carModelListPerSection[sectionId]?.value = models;
-      if (models.isNotEmpty) {
-        selectedCarModelPerSection[sectionId]?.value = models.first;
-      } else {
-        selectedCarModelPerSection[sectionId]?.value = CarModel();
-      }
-      update();
-    } catch (e) {
-      log("Error loading car models: $e");
     }
   }
 
@@ -286,19 +324,6 @@ class VehicleInformationController extends GetxController {
         return 'Rental Service';
       default:
         return 'Delivery Service';
-    }
-  }
-
-  String getServiceTypeKey(String name) {
-    switch (name) {
-      case 'Cab Service':
-        return 'cab-service';
-      case 'Parcel Service':
-        return 'parcel_delivery';
-      case 'Rental Service':
-        return 'rental-service';
-      default:
-        return 'delivery-service';
     }
   }
 }

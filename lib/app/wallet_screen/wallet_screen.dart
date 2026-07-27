@@ -21,7 +21,9 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart';
 // import 'package:flutter_svg/flutter_svg.dart';
-// import 'package:get/get.dart';
+// import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 // import '../../constant/collection_name.dart';
 // import '../cab_screen/cab_order_details.dart';
@@ -54,7 +56,7 @@
 //                               : AppThemeData.grey900,
 //                           size: 20),
 //                       title: Text(
-//                         "Wallet".tr,
+//                         "Wallet".tr(),
 //                         style: TextStyle(
 //                             color: isDark
 //                                 ? AppThemeData.grey50
@@ -87,7 +89,7 @@
 //                               child: Column(
 //                                 children: [
 //                                   Text(
-//                                     "My Wallet".tr,
+//                                     "My Wallet".tr(),
 //                                     maxLines: 1,
 //                                     style: TextStyle(
 //                                       color: isDark
@@ -123,7 +125,7 @@
 //                                       children: [
 //                                         Expanded(
 //                                           child: RoundedButtonFill(
-//                                             title: "Withdraw".tr,
+//                                             title: "Withdraw".tr(),
 //                                             width: 24,
 //                                             height: 5.5,
 //                                             color: AppThemeData.grey50,
@@ -146,7 +148,7 @@
 //                                               } else {
 //                                                 ShowToastDialog.showToast(
 //                                                     "Please enter payment method"
-//                                                         .tr);
+//                                                         .tr());
 //                                               }
 //                                             },
 //                                           ),
@@ -156,7 +158,7 @@
 //                                         ),
 //                                         Expanded(
 //                                           child: RoundedButtonFill(
-//                                             title: "Top up".tr,
+//                                             title: "Top up".tr(),
 //                                             width: 24,
 //                                             height: 5.5,
 //                                             borderRadius: 200,
@@ -202,10 +204,10 @@
 //                                   dividerColor: Colors.transparent,
 //                                   tabs: [
 //                                     Tab(
-//                                       text: "Wallet History".tr,
+//                                       text: "Wallet History".tr(),
 //                                     ),
 //                                     Tab(
-//                                       text: "Withdrawal History".tr,
+//                                       text: "Withdrawal History".tr(),
 //                                     ),
 //                                   ],
 //                                 ),
@@ -222,7 +224,7 @@
 //                                       //         child: DropdownButtonFormField<String>(
 //                                       //             borderRadius: const BorderRadius.all(Radius.circular(0)),
 //                                       //             hint: Text(
-//                                       //               'Select zone'.tr,
+//                                       //               'Select zone'.tr(),
 //                                       //               style: TextStyle(
 //                                       //                 fontSize: 14,
 //                                       //                 color: isDark ? AppThemeData.grey700 : AppThemeData.grey700,
@@ -335,7 +337,7 @@
 //                                           ? Constant.showEmptyView(
 //                                               message:
 //                                                   "Transaction history not found"
-//                                                       .tr,
+//                                                       .tr(),
 //                                               isDark: isDark)
 //                                           : Padding(
 //                                               padding:
@@ -398,7 +400,7 @@
 //                                           ? Constant.showEmptyView(
 //                                               message:
 //                                                   "Withdrawal history not found"
-//                                                       .tr,
+//                                                       .tr(),
 //                                               isDark: isDark)
 //                                           : Padding(
 //                                               padding:
@@ -503,7 +505,7 @@
 //                                 children: [
 //                                   Expanded(
 //                                     child: Text(
-//                                       "Withdrawal".tr,
+//                                       "Withdrawal".tr(),
 //                                       style: TextStyle(
 //                                           color: isDark
 //                                               ? AppThemeData.grey100
@@ -521,10 +523,10 @@
 //                               ),
 //                             ),
 //                             TextFieldWidget(
-//                               title: 'Withdrawal amount'.tr,
+//                               title: 'Withdrawal amount'.tr(),
 //                               controller:
 //                                   controller.amountTextFieldController.value,
-//                               hintText: 'Enter withdrawal amount'.tr,
+//                               hintText: 'Enter withdrawal amount'.tr(),
 //                               textInputType:
 //                                   const TextInputType.numberWithOptions(
 //                                       signed: true, decimal: true),
@@ -537,7 +539,7 @@
 //                                 padding: const EdgeInsets.symmetric(
 //                                     horizontal: 16, vertical: 14),
 //                                 child: Text(
-//                                   "${Constant.currencyModel!.symbol}".tr,
+//                                   "${Constant.currencyModel!.symbol}".tr(),
 //                                   style: TextStyle(
 //                                       color: isDark
 //                                           ? AppThemeData.grey50
@@ -548,15 +550,15 @@
 //                               ),
 //                             ),
 //                             TextFieldWidget(
-//                               title: 'Notes'.tr,
+//                               title: 'Notes'.tr(),
 //                               controller:
 //                                   controller.noteTextFieldController.value,
-//                               hintText: 'Add Notes'.tr,
+//                               hintText: 'Add Notes'.tr(),
 //                             ),
 //                             Padding(
 //                               padding: const EdgeInsets.symmetric(vertical: 10),
 //                               child: Text(
-//                                 "Select Withdraw Method".tr,
+//                                 "Select Withdraw Method".tr(),
 //                                 style: TextStyle(
 //                                     color: isDark
 //                                         ? AppThemeData.grey100
@@ -620,7 +622,7 @@
 //                                                 ),
 //                                                 Expanded(
 //                                                   child: Text(
-//                                                     "Bank Transfer".tr,
+//                                                     "Bank Transfer".tr(),
 //                                                     style: TextStyle(
 //                                                         color: isDark
 //                                                             ? AppThemeData
@@ -694,7 +696,7 @@
 //                                                 ),
 //                                                 Expanded(
 //                                                   child: Text(
-//                                                     "Flutter wave".tr,
+//                                                     "Flutter wave".tr(),
 //                                                     style: TextStyle(
 //                                                         color: isDark
 //                                                             ? AppThemeData
@@ -768,7 +770,7 @@
 //                                                 ),
 //                                                 Expanded(
 //                                                   child: Text(
-//                                                     "PayPal".tr,
+//                                                     "PayPal".tr(),
 //                                                     style: TextStyle(
 //                                                         color: isDark
 //                                                             ? AppThemeData
@@ -842,7 +844,7 @@
 //                                                 ),
 //                                                 Expanded(
 //                                                   child: Text(
-//                                                     "RazorPay".tr,
+//                                                     "RazorPay".tr(),
 //                                                     style: TextStyle(
 //                                                         color: isDark
 //                                                             ? AppThemeData
@@ -916,7 +918,7 @@
 //                                                 ),
 //                                                 Expanded(
 //                                                   child: Text(
-//                                                     "Stripe".tr,
+//                                                     "Stripe".tr(),
 //                                                     style: TextStyle(
 //                                                         color: isDark
 //                                                             ? AppThemeData
@@ -958,7 +960,7 @@
 //                       child: Padding(
 //                         padding: const EdgeInsets.only(bottom: 20),
 //                         child: RoundedButtonFill(
-//                           title: "Withdraw".tr,
+//                           title: "Withdraw".tr(),
 //                           height: 5.5,
 //                           color: AppThemeData.primary300,
 //                           textColor: AppThemeData.grey50,
@@ -967,13 +969,13 @@
 //                             if (controller
 //                                 .amountTextFieldController.value.text.isEmpty) {
 //                               ShowToastDialog.showToast(
-//                                   "Please enter amount".tr);
+//                                   "Please enter amount".tr());
 //                             } else if (double.parse(
 //                                     Constant.minimumAmountToWithdrawal) >
 //                                 double.parse(controller
 //                                     .amountTextFieldController.value.text)) {
 //                               ShowToastDialog.showToast(
-//                                   "${'Withdraw amount must be greater or equal to'.tr} ${Constant.amountShow(amount: Constant.minimumAmountToWithdrawal)}");
+//                                   "${'Withdraw amount must be greater or equal to'.tr()} ${Constant.amountShow(amount: Constant.minimumAmountToWithdrawal)}");
 //                             } else {
 //                               WithdrawalModel withdrawHistory = WithdrawalModel(
 //                                 amount: controller
@@ -1143,7 +1145,7 @@
 //   Widget transactionCardForOrder(isDark, List<OrderModel> list) {
 //     return list.isEmpty
 //         ? Constant.showEmptyView(
-//             message: "Transaction history not found".tr, isDark: isDark)
+//             message: "Transaction history not found".tr(), isDark: isDark)
 //         : ListView.separated(
 //             padding: EdgeInsets.zero,
 //             shrinkWrap: true,
@@ -1197,7 +1199,7 @@
 //                             children: [
 //                               Expanded(
 //                                 child: Text(
-//                                   "Completed Delivery".tr,
+//                                   "Completed Delivery".tr(),
 //                                   style: TextStyle(
 //                                     fontSize: 16,
 //                                     fontFamily: AppThemeData.semiBold,
@@ -1253,7 +1255,7 @@
 //   Widget parcelTransactionCardForOrder(isDark, List<ParcelOrderModel> list) {
 //     return list.isEmpty
 //         ? Constant.showEmptyView(
-//             message: "Transaction history not found".tr, isDark: isDark)
+//             message: "Transaction history not found".tr(), isDark: isDark)
 //         : ListView.separated(
 //             padding: EdgeInsets.zero,
 //             shrinkWrap: true,
@@ -1310,7 +1312,7 @@
 //                             children: [
 //                               Expanded(
 //                                 child: Text(
-//                                   "Parcel Amount credited".tr,
+//                                   "Parcel Amount credited".tr(),
 //                                   style: TextStyle(
 //                                     fontSize: 16,
 //                                     fontFamily: AppThemeData.semiBold,
@@ -1366,7 +1368,7 @@
 //   Widget rentalTransactionCardForOrder(isDark, List<RentalOrderModel> list) {
 //     return list.isEmpty
 //         ? Constant.showEmptyView(
-//             message: "Transaction history not found".tr, isDark: isDark)
+//             message: "Transaction history not found".tr(), isDark: isDark)
 //         : ListView.separated(
 //             padding: EdgeInsets.zero,
 //             shrinkWrap: true,
@@ -1481,7 +1483,7 @@
 //                             children: [
 //                               Expanded(
 //                                 child: Text(
-//                                   "Completed Delivery".tr,
+//                                   "Completed Delivery".tr(),
 //                                   style: TextStyle(
 //                                     fontSize: 16,
 //                                     fontFamily: AppThemeData.semiBold,
@@ -1537,7 +1539,7 @@
 //   Widget cabTransactionCardForOrder(isDark, List<CabOrderModel> list) {
 //     return list.isEmpty
 //         ? Constant.showEmptyView(
-//             message: "Transaction history not found".tr, isDark: isDark)
+//             message: "Transaction history not found".tr(), isDark: isDark)
 //         : ListView.separated(
 //             padding: EdgeInsets.zero,
 //             shrinkWrap: true,
@@ -1594,7 +1596,7 @@
 //                             children: [
 //                               Expanded(
 //                                 child: Text(
-//                                   "Completed Delivery".tr,
+//                                   "Completed Delivery".tr(),
 //                                   style: TextStyle(
 //                                     fontSize: 16,
 //                                     fontFamily: AppThemeData.semiBold,

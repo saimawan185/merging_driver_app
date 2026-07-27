@@ -1,7 +1,9 @@
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/themes/responsive.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../controllers/on_boarding_controller.dart';
 import '../../themes/app_them_data.dart';
 import '../../utils/network_image_widget.dart';
@@ -104,7 +106,7 @@ class OnboardingScreen extends StatelessWidget {
                             controller.currentPage.value ==
                                     controller.onboardingList.length - 1
                                 ? RoundedButtonFill(
-                                    title: "Let’s Get Started".tr,
+                                    title: "Let’s Get Started".tr(),
                                     onPress: () {
                                       _finish();
                                     },
@@ -114,7 +116,7 @@ class OnboardingScreen extends StatelessWidget {
                                     children: [
                                       Expanded(
                                         child: RoundedButtonFill(
-                                          title: "Skip".tr,
+                                          title: "Skip".tr(),
                                           onPress: () => _finish(),
                                           color: AppThemeData.grey50,
                                           textColor: AppThemeData.grey900,
@@ -123,7 +125,7 @@ class OnboardingScreen extends StatelessWidget {
                                       const SizedBox(width: 20),
                                       Expanded(
                                         child: RoundedButtonFill(
-                                          title: "Next".tr,
+                                          title: "Next".tr(),
                                           onPress: () {
                                             controller.nextPage();
                                           },

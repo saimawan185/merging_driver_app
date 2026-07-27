@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart' as flutterMap;
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:latlong2/latlong.dart' as location;
 import '../../controllers/parcel_tracking_controller.dart';
@@ -20,7 +22,7 @@ class ParcelTrackingScreen extends StatelessWidget {
           appBar: AppBar(
             elevation: 2,
             backgroundColor: AppThemeData.primary300,
-            title: Text("Map view".tr),
+            title: Text("Map view".tr()),
             leading: InkWell(
                 onTap: () {
                   Get.back();

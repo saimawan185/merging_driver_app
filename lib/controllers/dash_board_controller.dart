@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +12,7 @@ import '../constant/collection_name.dart';
 import '../constant/constant.dart' show Constant;
 import '../constant/show_toast_dialog.dart';
 import '../models/order_model.dart';
+import '../models/section_model.dart';
 import '../models/user_model.dart';
 import '../themes/theme_controller.dart';
 import '../utils/fire_store_utils.dart';
@@ -17,13 +20,42 @@ import '../utils/preferences.dart';
 
 class DashBoardController extends GetxController {
   RxInt drawerIndex = 0.obs;
+  final RxInt sectionIndex = 0.obs;
+  final RxList<SectionModel> userSections = <SectionModel>[].obs;
 
   @override
   void onInit() {
     getUser();
     updateDriverOrder();
     getTheme();
+    loadUserSections();
     super.onInit();
+  }
+
+  Future<void> loadUserSections() async {
+    final user = Constant.userModel;
+    if (user == null || user.sectionIds == null || user.sectionIds!.isEmpty) {
+      userSections.clear();
+      return;
+    }
+
+    try {
+      final allSections = await FireStoreUtils.getAllActiveSections();
+
+      final filtered = allSections
+          .where((section) => user.sectionIds!.contains(section.id))
+          .toList();
+
+      // Store in the cache for later use
+      for (final section in filtered) {
+        Constant.sectionModels[section.id!] = section;
+      }
+
+      userSections.value = filtered;
+    } catch (e) {
+      print('Error loading user sections: $e');
+      userSections.clear();
+    }
   }
 
   Rx<UserModel> userModel = UserModel().obs;

@@ -4,7 +4,9 @@ import 'package:door_delights_driver/utils/notification_service.dart'
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import '../../constant/constant.dart';
 import '../../constant/show_toast_dialog.dart';
@@ -48,7 +50,7 @@ class OtpScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "Verify Your Mobile Number".tr,
+                            "Verify Your Mobile Number".tr(),
                             style: TextStyle(
                                 color: isDark
                                     ? AppThemeData.grey50
@@ -58,7 +60,7 @@ class OtpScreen extends StatelessWidget {
                           ),
                           Text(
                             "Enter the OTP sent to your mobile number to verify and secure your account."
-                                .tr,
+                                .tr(),
                             textAlign: TextAlign.start,
                             style: TextStyle(
                               color: isDark
@@ -115,7 +117,7 @@ class OtpScreen extends StatelessWidget {
                             child: Text.rich(
                               textAlign: TextAlign.center,
                               TextSpan(
-                                text: "${'Did’t receive any code? '.tr} ",
+                                text: "${'Did’t receive any code? '.tr()} ",
                                 style: TextStyle(
                                   fontWeight: FontWeight.w500,
                                   fontSize: 14,
@@ -131,7 +133,7 @@ class OtpScreen extends StatelessWidget {
                                         controller.otpController.value.clear();
                                         controller.sendOTP();
                                       },
-                                    text: 'Send Again'.tr,
+                                    text: 'Send Again'.tr(),
                                     style: TextStyle(
                                         color: isDark
                                             ? AppThemeData.primary300
@@ -164,7 +166,7 @@ class OtpScreen extends StatelessWidget {
                         TextSpan(
                           children: [
                             TextSpan(
-                                text: 'Already Have an account?'.tr,
+                                text: 'Already Have an account?'.tr(),
                                 style: TextStyle(
                                   color: isDark
                                       ? AppThemeData.grey50
@@ -181,7 +183,7 @@ class OtpScreen extends StatelessWidget {
                                   ..onTap = () {
                                     Get.offAll(LoginScreen());
                                   },
-                                text: 'Log in'.tr,
+                                text: 'Log in'.tr(),
                                 style: TextStyle(
                                     color: AppThemeData.primary300,
                                     fontFamily: AppThemeData.medium,
@@ -197,7 +199,7 @@ class OtpScreen extends StatelessWidget {
                 InkWell(
                   onTap: () async {
                     if (controller.otpController.value.text.length == 6) {
-                      ShowToastDialog.showLoader("Verify otp".tr);
+                      ShowToastDialog.showLoader("Verify otp".tr());
 
                       PhoneAuthCredential credential =
                           PhoneAuthProvider.credential(
@@ -261,7 +263,7 @@ class OtpScreen extends StatelessWidget {
                                 } else {
                                   ShowToastDialog.showToast(
                                       "This user is disable please contact to administrator"
-                                          .tr);
+                                          .tr());
                                   await FirebaseAuth.instance.signOut();
                                   Get.offAll(LoginScreen());
                                 }
@@ -270,7 +272,7 @@ class OtpScreen extends StatelessWidget {
                                 Get.offAll(LoginScreen());
                                 ShowToastDialog.showToast(
                                     "Account already created in other application. You are not able login this application."
-                                        .tr);
+                                        .tr());
                               }
                             } else {
                               UserModel userModel = UserModel();
@@ -293,10 +295,10 @@ class OtpScreen extends StatelessWidget {
                         }
                       }).catchError((error) {
                         ShowToastDialog.closeLoader();
-                        ShowToastDialog.showToast("Invalid Code".tr);
+                        ShowToastDialog.showToast("Invalid Code".tr());
                       });
                     } else {
-                      ShowToastDialog.showToast("Enter Valid otp".tr);
+                      ShowToastDialog.showToast("Enter Valid otp".tr());
                     }
                   },
                   child: Container(
@@ -305,7 +307,7 @@ class OtpScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Text(
-                        "Verify Code".tr,
+                        "Verify Code".tr(),
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: isDark

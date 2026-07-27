@@ -3,17 +3,16 @@ import 'package:door_delights_driver/controllers/change_section_controller.dart'
 import 'package:door_delights_driver/themes/app_them_data.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-
-import '../../models/section_model.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
 
 class ChangeSectionScreen extends StatelessWidget {
   const ChangeSectionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final themeController = Get.find<ThemeController>();
-    final isDark = themeController.isDark.value;
+    final isDark = Get.find<ThemeController>().isDark.value;
+
     return GetX(
       init: ChangeSectionController(),
       builder: (controller) {
@@ -24,7 +23,7 @@ class ChangeSectionScreen extends StatelessWidget {
             centerTitle: false,
             titleSpacing: 0,
             title: Text(
-              "Change Section".tr,
+              "Change Section".tr(),
               style: TextStyle(
                 color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
                 fontSize: 18,
@@ -42,8 +41,8 @@ class ChangeSectionScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          "Select the section you want to serve. You can change it anytime."
-                              .tr,
+                          "Select the sections you want to serve. You can change them anytime."
+                              .tr(),
                           style: TextStyle(
                             color: isDark
                                 ? AppThemeData.grey400
@@ -54,7 +53,7 @@ class ChangeSectionScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          "Available Sections".tr,
+                          "Available Sections".tr(),
                           style: TextStyle(
                             fontFamily: AppThemeData.semiBold,
                             fontSize: 14,
@@ -69,7 +68,7 @@ class ChangeSectionScreen extends StatelessWidget {
                                 child: Padding(
                                   padding: const EdgeInsets.all(16),
                                   child: Text(
-                                    "No sections available".tr,
+                                    "No sections available".tr(),
                                     style: TextStyle(
                                       color: isDark
                                           ? AppThemeData.grey400
@@ -93,7 +92,7 @@ class ChangeSectionScreen extends StatelessWidget {
                                 child: Column(
                                   children:
                                       controller.allSections.map((section) {
-                                    return RadioListTile<SectionModel>(
+                                    return CheckboxListTile(
                                       dense: true,
                                       title: Text(
                                         section.name ?? '',
@@ -116,19 +115,19 @@ class ChangeSectionScreen extends StatelessWidget {
                                           fontFamily: AppThemeData.regular,
                                         ),
                                       ),
-                                      value: section,
-                                      groupValue:
-                                          controller.selectedSection.value,
+                                      value:
+                                          controller.isSectionSelected(section),
+                                      onChanged: (_) =>
+                                          controller.toggleSection(section),
                                       activeColor: AppThemeData.primary300,
-                                      onChanged: (value) {
-                                        if (value != null) {
-                                          controller.selectedSection.value =
-                                              value;
-                                        } else {
-                                          controller.selectedSection.value =
-                                              null;
-                                        }
-                                      },
+                                      controlAffinity:
+                                          ListTileControlAffinity.leading,
+                                      secondary: Icon(
+                                        Icons.drag_handle,
+                                        color: isDark
+                                            ? AppThemeData.grey600
+                                            : AppThemeData.grey400,
+                                      ),
                                     );
                                   }).toList(),
                                 ),
@@ -150,7 +149,7 @@ class ChangeSectionScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   child: Text(
-                    "Save Changes".tr,
+                    "Save Changes".tr(),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: AppThemeData.grey50,

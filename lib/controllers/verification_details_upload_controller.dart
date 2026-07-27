@@ -5,7 +5,9 @@ import 'package:door_delights_driver/models/document_model.dart';
 import 'package:door_delights_driver/models/driver_document_model.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 
 class DetailsUploadController extends GetxController {
@@ -102,7 +104,7 @@ class DetailsUploadController extends GetxController {
     await FireStoreUtils.uploadDriverDocument(documents.value).then((value) {
       if (value) {
         ShowToastDialog.closeLoader();
-        ShowToastDialog.showToast("Document upload successfully".tr);
+        ShowToastDialog.showToast("Document upload successfully".tr());
 
         Get.back(result: true);
       }

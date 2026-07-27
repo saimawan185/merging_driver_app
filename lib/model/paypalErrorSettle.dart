@@ -3,6 +3,7 @@
 //     final payPalErrorSettelModel = payPalErrorSettelModelFromJson(jsonString);
 
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 
 PayPalErrorSettleModel payPalErrorSettelModelFromJson(String str) => PayPalErrorSettleModel.fromJson(json.decode(str));
 

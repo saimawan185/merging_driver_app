@@ -11,7 +11,9 @@ import 'package:door_delights_driver/utils/network_image_widget.dart';
 import 'package:door_delights_driver/widget/dotted_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 
 class RentalBookingSearchScreen extends StatelessWidget {
@@ -97,7 +99,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                   children: [
                                                     Text(
                                                       '${rentalBookingData.author!.firstName} ${rentalBookingData.author!.lastName}'
-                                                          .tr,
+                                                          .tr(),
                                                       textAlign:
                                                           TextAlign.start,
                                                       style: AppThemeData
@@ -201,7 +203,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                     children: [
                                                       Expanded(
                                                         child: Text(
-                                                          "Package Details:".tr,
+                                                          "Package Details:".tr(),
                                                           textAlign:
                                                               TextAlign.start,
                                                           style: AppThemeData.mediumTextStyle(
@@ -215,7 +217,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                       ),
                                                       Text(
                                                         "${rentalBookingData.rentalPackageModel!.name}"
-                                                            .tr,
+                                                            .tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: AppThemeData
@@ -237,7 +239,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                       Expanded(
                                                         child: Text(
                                                           "Including Distance:"
-                                                              .tr,
+                                                              .tr(),
                                                           textAlign:
                                                               TextAlign.start,
                                                           style: AppThemeData.mediumTextStyle(
@@ -251,7 +253,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                       ),
                                                       Text(
                                                         "${rentalBookingData.rentalPackageModel!.includedDistance} ${Constant.distanceType}"
-                                                            .tr,
+                                                            .tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: AppThemeData
@@ -273,7 +275,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                       Expanded(
                                                         child: Text(
                                                           "Including Duration:"
-                                                              .tr,
+                                                              .tr(),
                                                           textAlign:
                                                               TextAlign.start,
                                                           style: AppThemeData.mediumTextStyle(
@@ -287,7 +289,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                       ),
                                                       Text(
                                                         "${rentalBookingData.rentalPackageModel!.includedHours} Hr"
-                                                            .tr,
+                                                            .tr(),
                                                         textAlign:
                                                             TextAlign.start,
                                                         style: AppThemeData
@@ -323,7 +325,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                               amount:
                                                                   rentalBookingData
                                                                       .subTotal)
-                                                          .tr,
+                                                          .tr(),
                                                       textAlign:
                                                           TextAlign.start,
                                                       style: AppThemeData
@@ -350,7 +352,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                       Constant.timestampToDateTime(
                                                               rentalBookingData
                                                                   .bookingDateTime!)
-                                                          .tr,
+                                                          .tr(),
                                                       textAlign:
                                                           TextAlign.start,
                                                       style: AppThemeData
@@ -372,7 +374,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                             children: [
                                               Expanded(
                                                 child: RoundedButtonFill(
-                                                  title: "Reject".tr,
+                                                  title: "Reject".tr(),
                                                   height: 5.5,
                                                   color: isDark
                                                       ? AppThemeData.greyDark300
@@ -383,7 +385,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                   onPress: () async {
                                                     ShowToastDialog.showLoader(
                                                         "Rejecting booking..."
-                                                            .tr);
+                                                            .tr());
                                                     rentalBookingData
                                                         .rejectedByDrivers!
                                                         .add(FireStoreUtils
@@ -394,7 +396,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                     Get.back(result: true);
                                                     ShowToastDialog.showToast(
                                                         "Booking rejected successfully"
-                                                            .tr);
+                                                            .tr());
                                                     controller
                                                         .getRentalSearchBooking();
                                                   },
@@ -405,7 +407,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                               ),
                                               Expanded(
                                                 child: RoundedButtonFill(
-                                                  title: "Accept".tr,
+                                                  title: "Accept".tr(),
                                                   height: 5.5,
                                                   color:
                                                       AppThemeData.primary300,
@@ -435,7 +437,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                                   .minimumDepositToRideAccept)) {
                                                         ShowToastDialog.showLoader(
                                                             "Accepting booking..."
-                                                                .tr);
+                                                                .tr());
                                                         // Update section model for this order's section (multi-section support)
                                                         final sid =
                                                             rentalBookingData
@@ -468,11 +470,11 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                         Get.back(result: true);
                                                         ShowToastDialog.showToast(
                                                             "Booking accepted successfully"
-                                                                .tr);
+                                                                .tr());
                                                       } else {
                                                         ShowToastDialog.showToast(
                                                             "Your owner has to maintain minimum ${Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept)} wallet balance to accept the rental booking. Please contact your owner"
-                                                                .tr);
+                                                                .tr());
                                                       }
                                                     } else {
                                                       if (controller
@@ -483,7 +485,7 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                               .minimumDepositToRideAccept)) {
                                                         ShowToastDialog.showLoader(
                                                             "Accepting booking..."
-                                                                .tr);
+                                                                .tr());
                                                         // Update section model for this order's section (multi-section support)
                                                         final sid =
                                                             rentalBookingData
@@ -516,11 +518,11 @@ class RentalBookingSearchScreen extends StatelessWidget {
                                                         Get.back(result: true);
                                                         ShowToastDialog.showToast(
                                                             "Booking accepted successfully"
-                                                                .tr);
+                                                                .tr());
                                                       } else {
                                                         ShowToastDialog.showToast(
-                                                            "Your owner has to maintain minimum @amount wallet balance to accept the rental booking. Please contact your owner"
-                                                                .trParams({
+                                                            "Your owner has to maintain minimum {amount} wallet balance to accept the rental booking. Please contact your owner"
+                                                                .tr(namedArgs: {
                                                           "amount": Constant
                                                               .amountShow(
                                                                   amount: Constant

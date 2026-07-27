@@ -1,5 +1,7 @@
 import 'package:door_delights_driver/models/order_model.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class PickupOrderController extends GetxController {
   RxBool isLoading = true.obs;

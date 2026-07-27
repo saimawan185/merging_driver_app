@@ -4,6 +4,7 @@ import 'package:door_delights_driver/models/user_model.dart';
 import 'cashbackModel.dart';
 import 'tax_model.dart';
 import 'vendor_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class OrderModel {
   ShippingAddress? address;

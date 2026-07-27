@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:door_delights_driver/payment/paystack/paystack_url_genrater.dart';
 import 'package:door_delights_driver/themes/app_them_data.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class PayStackScreen extends StatefulWidget {

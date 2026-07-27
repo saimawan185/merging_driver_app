@@ -27,6 +27,7 @@ import 'package:mailer/smtp_server.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
+import 'package:easy_localization/easy_localization.dart';
 
 class Constant {
   static String userRoleDriver = 'driver';

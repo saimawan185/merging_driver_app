@@ -9,7 +9,9 @@ import 'package:door_delights_driver/themes/text_field_widget.dart';
 import 'package:door_delights_driver/themes/theme_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class PaymentListScreen extends StatelessWidget {
   const PaymentListScreen({super.key});
@@ -28,7 +30,7 @@ class PaymentListScreen extends StatelessWidget {
               centerTitle: false,
               titleSpacing: 0,
               title: Text(
-                "Top up Wallet".tr,
+                "Top up Wallet".tr(),
                 style: TextStyle(
                   fontSize: 16,
                   color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
@@ -43,8 +45,8 @@ class PaymentListScreen extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: TextFieldWidget(
-                      title: 'Amount'.tr,
-                      hintText: 'Enter Amount'.tr,
+                      title: 'Amount'.tr(),
+                      hintText: 'Enter Amount'.tr(),
                       controller: controller.topUpAmountController.value,
                       textInputType: const TextInputType.numberWithOptions(
                           decimal: true, signed: true),
@@ -179,7 +181,7 @@ class PaymentListScreen extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 20),
                 child: RoundedButtonFill(
-                  title: "Top-up".tr,
+                  title: "Top-up".tr(),
                   height: 5.5,
                   color: AppThemeData.primary300,
                   textColor: AppThemeData.grey50,
@@ -188,14 +190,14 @@ class PaymentListScreen extends StatelessWidget {
                     if (controller.topUpAmountController.value.text
                         .trim()
                         .isEmpty) {
-                      ShowToastDialog.showToast("Please enter amount".tr);
+                      ShowToastDialog.showToast("Please enter amount".tr());
                     } else if ((double.tryParse(controller
                                 .topUpAmountController.value.text
                                 .trim()) ??
                             0) <=
                         0) {
                       ShowToastDialog.showToast(
-                          "Please enter amount greater than 0".tr);
+                          "Please enter amount greater than 0".tr());
                     } else if ((double.tryParse(controller
                                 .topUpAmountController.value.text
                                 .trim()) ??
@@ -203,8 +205,8 @@ class PaymentListScreen extends StatelessWidget {
                         double.parse(
                             Constant.minimumAmountToDeposit.toString())) {
                       ShowToastDialog.showToast(
-                        "${'Please enter minimum amount of'.tr} ${Constant.amountShow(amount: Constant.minimumAmountToDeposit)}"
-                            .tr,
+                        "${'Please enter minimum amount of'.tr()} ${Constant.amountShow(amount: Constant.minimumAmountToDeposit)}"
+                            .tr(),
                       );
                     } else {
                       if (double.parse(
@@ -271,7 +273,7 @@ class PaymentListScreen extends StatelessWidget {
                               Get.back();
                               ShowToastDialog.showToast(
                                   "Something went wrong, please contact admin."
-                                      .tr);
+                                      .tr());
                             } else {
                               // CreateRazorPayOrderModel result = value;
                               // controller.openCheckout(
@@ -282,12 +284,12 @@ class PaymentListScreen extends StatelessWidget {
                           });
                         } else {
                           ShowToastDialog.showToast(
-                              "Please select payment method".tr);
+                              "Please select payment method".tr());
                         }
                       } else {
                         ShowToastDialog.showToast(
-                            "${'Please Enter minimum amount of'.tr} ${Constant.amountShow(amount: Constant.minimumAmountToDeposit)}"
-                                .tr);
+                            "${'Please Enter minimum amount of'.tr()} ${Constant.amountShow(amount: Constant.minimumAmountToDeposit)}"
+                                .tr());
                       }
                     }
                   },

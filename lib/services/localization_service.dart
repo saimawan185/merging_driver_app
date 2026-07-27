@@ -1,48 +1,52 @@
-import 'package:door_delights_driver/lang/app_ar.dart';
-import 'package:door_delights_driver/lang/app_de.dart';
-import 'package:door_delights_driver/lang/app_en.dart';
-import 'package:door_delights_driver/lang/app_fr.dart';
-import 'package:door_delights_driver/lang/app_hi.dart';
-import 'package:door_delights_driver/lang/app_ja.dart';
-import 'package:door_delights_driver/lang/app_pt.dart';
-import 'package:door_delights_driver/lang/app_ru.dart';
-import 'package:door_delights_driver/lang/app_zh.dart';
+import 'dart:convert';
+
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
 
-class LocalizationService extends Translations {
-  // Default locale
-  static const locale = Locale('en', 'US');
+import '../models/language_model.dart';
+import '../themes/theme_controller.dart';
+import '../utils/preferences.dart';
 
-  static final locales = [
-    const Locale('en'),
-    const Locale('fr'),
-    const Locale('zh'),
-    const Locale('ja'),
-    const Locale('hi'),
-    const Locale('de'),
-    const Locale('pt'),
-    const Locale('ru'),
-    const Locale('ar'),
-  ];
+/// Bridges language changes with easy_localization + GetX.
+class LocalizationService {
+  static const supportedCodes = {'en', 'si', 'ta'};
 
-  // Keys and their translations
-  // Translations are separated maps in `lang` file
-  @override
-  Map<String, Map<String, String>> get keys => {
-        'en': enUS,
-        'fr': trFR,
-        'zh': zhCH,
-        'ja': jaJP,
-        'hi': hiIN,
-        'de': deGR,
-        'pt': ptPO,
-        'ru': ruRU,
-        'ar': lnAr,
-      };
+  /// Normalize Firestore / prefs slugs to asset language codes.
+  static String normalizeLang(String? lang) {
+    final code = (lang ?? 'en').trim().toLowerCase();
+    if (supportedCodes.contains(code)) return code;
+    if (code.startsWith('si') || code.contains('sinhala')) return 'si';
+    if (code.startsWith('ta') || code.contains('tamil')) return 'ta';
+    if (code.startsWith('en') || code.contains('english')) return 'en';
+    return 'en';
+  }
 
-  // Gets locale from language, and updates the locale
-  void changeLocale(String lang) {
-    Get.updateLocale(Locale(lang));
+  Future<void> changeLocale(BuildContext context, String lang) async {
+    final code = normalizeLang(lang);
+    final locale = Locale(code);
+
+    await context.setLocale(locale);
+    Get.updateLocale(locale);
+
+    if (Get.isRegistered<ThemeController>()) {
+      Get.find<ThemeController>().setLocaleCode(code);
+    }
+
+    final model = LanguageModel(
+      slug: code,
+      isRtl: false,
+      title: code == 'si'
+          ? 'Sinhala'
+          : code == 'ta'
+              ? 'Tamil'
+              : 'English',
+      isActive: true,
+    );
+    await Preferences.setString(
+      Preferences.languageCodeKey,
+      jsonEncode(model.toJson()),
+    );
+    await Preferences.setString('languageCode', code);
   }
 }

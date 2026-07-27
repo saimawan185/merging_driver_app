@@ -64,6 +64,7 @@ import '../constants.dart';
 import '../model/CurrencyModel.dart';
 import '../models/parcel_category.dart';
 import '../models/rating_model.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 enum FirebaseEnv { defaultDb, staging }
 

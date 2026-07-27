@@ -1,6 +1,8 @@
 import 'package:door_delights_driver/themes/responsive.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'app_them_data.dart';
 
 class RoundedButtonBorder extends StatelessWidget {
@@ -41,7 +43,7 @@ class RoundedButtonBorder extends StatelessWidget {
       children: isRight
           ? [
               Text(
-                title.tr,
+                title.tr(),
                 textAlign: TextAlign.center,
                 style: AppThemeData.semiBoldTextStyle(
                     fontSize: fontSizes ?? 14,
@@ -58,7 +60,7 @@ class RoundedButtonBorder extends StatelessWidget {
                 SizedBox(width: iconSpacing),
               ],
               Text(
-                title.tr,
+                title.tr(),
                 textAlign: TextAlign.center,
                 style: AppThemeData.semiBoldTextStyle(
                     fontSize: fontSizes ?? 14,

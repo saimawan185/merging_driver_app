@@ -17,7 +17,9 @@ import 'package:door_delights_driver/widget/firebase_pagination/src/models/view_
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
@@ -54,7 +56,7 @@ class ChatScreen extends StatelessWidget {
                       child: Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "${"Order".tr} ${Constant.orderId(orderId: controller.orderId.value.toString())}",
+                          "${"Order".tr()} ${Constant.orderId(orderId: controller.orderId.value.toString())}",
                           style: TextStyle(
                             fontFamily: AppThemeData.medium,
                             fontSize: 14,
@@ -88,7 +90,7 @@ class ChatScreen extends StatelessWidget {
                             chatmodel);
                       },
                       onEmpty: Constant.showEmptyView(
-                          message: "No Conversion found".tr, isDark: isDark),
+                          message: "No Conversion found".tr(), isDark: isDark),
                       query: FireStoreUtils.fireStore
                           .collection(CollectionName.chat)
                           .doc(controller.orderId.value)
@@ -130,7 +132,7 @@ class ChatScreen extends StatelessWidget {
                                       const EdgeInsets.only(top: 3, left: 10),
                                   focusedBorder: InputBorder.none,
                                   enabledBorder: InputBorder.none,
-                                  hintText: 'Type message here....'.tr,
+                                  hintText: 'Type message here....'.tr(),
                                 ),
                                 onSubmitted: (value) async {
                                   if (controller.messageController.value.text
@@ -364,7 +366,7 @@ class ChatScreen extends StatelessWidget {
   void onCameraClick(BuildContext context, ChatController controller) {
     final action = CupertinoActionSheet(
       message: Text(
-        'Send Media'.tr,
+        'Send Media'.tr(),
         style: const TextStyle(fontSize: 15.0),
       ),
       actions: <Widget>[
@@ -386,7 +388,7 @@ class ChatScreen extends StatelessWidget {
                   "Storage permission is not enabled. Please allow it.");
             }
           },
-          child: Text("Choose image from gallery".tr),
+          child: Text("Choose image from gallery".tr()),
         ),
         CupertinoActionSheetAction(
           isDefaultAction: false,
@@ -407,7 +409,7 @@ class ChatScreen extends StatelessWidget {
               }
             }
           },
-          child: Text("Choose video from gallery".tr),
+          child: Text("Choose video from gallery".tr()),
         ),
         CupertinoActionSheetAction(
           isDestructiveAction: false,
@@ -427,7 +429,7 @@ class ChatScreen extends StatelessWidget {
                   "Camera access is not enabled. Please allow camera permission.");
             }
           },
-          child: Text("Take a picture".tr),
+          child: Text("Take a picture".tr()),
         ),
         // CupertinoActionSheetAction(
         //   isDestructiveAction: false,
@@ -439,12 +441,12 @@ class ChatScreen extends StatelessWidget {
         //       controller.sendMessage('', videoContainer.videoUrl, videoContainer.thumbnailUrl, 'video');
         //     }
         //   },
-        //   child: Text("Record video".tr),
+        //   child: Text("Record video".tr()),
         // )
       ],
       cancelButton: CupertinoActionSheetAction(
         child: Text(
-          'Cancel'.tr,
+          'Cancel'.tr(),
         ),
         onPressed: () {
           Get.back();

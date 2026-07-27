@@ -4,7 +4,9 @@ import 'package:door_delights_driver/models/parcel_order_model.dart';
 import 'package:door_delights_driver/models/rental_order_model.dart';
 import 'package:door_delights_driver/models/user_model.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../constant/constant.dart';
 import '../constant/show_toast_dialog.dart';
@@ -189,7 +191,7 @@ class OwnerHomeController extends GetxController {
       0.0, (total, driver) => total + (driverEarnings[driver.id] ?? 0));
 
   Future<void> deleteDriver(String driverId) async {
-    ShowToastDialog.showLoader("Deleting driver...".tr);
+    ShowToastDialog.showLoader("Deleting driver...".tr());
 
     await FireStoreUtils.deleteDriverId(driverId).then((isDeleted) async {
       ShowToastDialog.closeLoader();
@@ -199,16 +201,16 @@ class OwnerHomeController extends GetxController {
             .collection(CollectionName.users)
             .doc(driverId)
             .delete();
-        ShowToastDialog.showToast("Driver account deleted successfully".tr);
+        ShowToastDialog.showToast("Driver account deleted successfully".tr());
         getDriverList();
       } else {
         ShowToastDialog.showToast(
-            "Failed to delete driver. Please contact administrator.".tr);
+            "Failed to delete driver. Please contact administrator.".tr());
       }
     }).catchError((error) {
       ShowToastDialog.closeLoader();
       ShowToastDialog.showToast(
-          "An error occurred while deleting driver: $error".tr);
+          "An error occurred while deleting driver: $error".tr());
     });
   }
 }

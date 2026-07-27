@@ -14,7 +14,9 @@ import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/notification_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:get/get.dart';
+import 'package:get/get.dart' hide Trans;
+import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_localization/easy_localization.dart';
 // import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginController extends GetxController {
@@ -31,7 +33,7 @@ class LoginController extends GetxController {
   }
 
   Future<void> loginWithEmailAndPassword() async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     try {
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailEditingController.value.text.toLowerCase().trim(),
@@ -50,22 +52,22 @@ class LoginController extends GetxController {
         } else {
           await FirebaseAuth.instance.signOut();
           ShowToastDialog.showToast(
-              "This user is disable please contact to administrator".tr);
+              "This user is disable please contact to administrator".tr());
         }
       } else {
         await FirebaseAuth.instance.signOut();
         ShowToastDialog.showToast(
-            "This user is not created in driver application.".tr);
+            "This user is not created in driver application.".tr());
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
-        ShowToastDialog.showToast("No user found for that email.".tr);
+        ShowToastDialog.showToast("No user found for that email.".tr());
       } else if (e.code == 'wrong-password') {
-        ShowToastDialog.showToast("Wrong password provided for that user.".tr);
+        ShowToastDialog.showToast("Wrong password provided for that user.".tr());
       } else if (e.code == 'invalid-email') {
-        ShowToastDialog.showToast("Invalid Email.".tr);
+        ShowToastDialog.showToast("Invalid Email.".tr());
       } else {
-        ShowToastDialog.showToast(e.message.toString().tr);
+        ShowToastDialog.showToast(e.message.toString().tr());
       }
     } on Exception catch (e) {
       log("Catch exception: $e");
@@ -75,7 +77,7 @@ class LoginController extends GetxController {
   }
 
   Future<void> loginWithGoogle() async {
-    ShowToastDialog.showLoader("Please wait".tr);
+    ShowToastDialog.showLoader("Please wait".tr());
     await signInWithGoogle().then((value) async {
       ShowToastDialog.closeLoader();
       if (value != null) {
@@ -109,7 +111,7 @@ class LoginController extends GetxController {
                   await FirebaseAuth.instance.signOut();
                   ShowToastDialog.showToast(
                       "This user is disable please contact to administrator"
-                          .tr);
+                          .tr());
                 }
               } else {
                 await FirebaseAuth.instance.signOut();
