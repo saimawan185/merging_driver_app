@@ -25,7 +25,6 @@ import '../../constant/global.dart';
 import '../../models/cab_order_model.dart';
 import '../../models/vehicle_type.dart';
 import '../../services/audio_player_service.dart';
-import '../home_screen/home_screen_multiple_order.dart';
 import 'verify_otp_screen.dart';
 
 class CabHomeScreen extends StatefulWidget {
@@ -68,6 +67,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   bool _isFirstDriverUpdate = true;
   bool _followDriverWithCamera = true;
   bool _isAutoCameraMove = false;
+
+  // ─── Stream subscription ──────────────────────
+  StreamSubscription<UserModel>? _driverSubscription;
 
   // Modern, clean "silver" style map used in light mode so the map feels
   // premium instead of the plain default Google style.
@@ -283,16 +285,31 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     _animationController!.repeat(reverse: true);
   }
 
-  Future<void> dispose() async {
-    _mapController!.dispose();
-    // await FireStoreUtils().driverStreamController.close();
-    // FireStoreUtils().driverStreamSub?.cancel();
-    _markerAnimationController?.dispose();
+  @override
+  void dispose() {
+    // Cancel driver stream subscription
+    _driverSubscription?.cancel();
+    _driverSubscription = null;
+
+    // Cancel other streams
     FireStoreUtils().cabOrdersStreamController?.close();
     FireStoreUtils().cabOrdersStreamSub?.cancel();
-    if (_timer != null) {
-      _timer!.cancel();
-    }
+
+    // Dispose animation controllers
+    _markerAnimationController?.stop();
+    _markerAnimationController?.dispose();
+    _markerAnimationController = null;
+
+    _animationController?.dispose();
+    _animationController = null;
+
+    // Dispose map controller
+    _mapController?.dispose();
+
+    // Cancel timer
+    _timer?.cancel();
+
+    // Stop sound
     playSound(false);
 
     super.dispose();
@@ -331,7 +348,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                       ((double.tryParse(
                                   _driverModel!.walletAmount.toString()) ??
                               0) <
-                          double.parse(minimumDepositToRideAccept)),
+                          0
+                      // double.parse(minimumDepositToRideAccept)
+                      ),
                   child: Align(
                     alignment: Alignment.topCenter,
                     child: Container(
@@ -339,7 +358,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                            "${"Your wallet balance is ".tr()}${amountShow(amount: Constant.userModel!.walletAmount?.toString())} ${"you’ll temporarily receive card & wallet orders or rides until its’s restored".tr()}",
+                            "${"Your wallet balance is ".tr()}${amountShow(amount: _driverModel?.walletAmount?.toString() ?? '0')} ${"you’ll temporarily receive card & wallet orders or rides until its’s restored".tr()}",
                             style: TextStyle(color: Colors.white),
                             textAlign: TextAlign.center),
                       ),
@@ -369,9 +388,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                     polylines: Set<Polyline>.of(polyLines.values),
                     markers: _markers.values.toSet(),
                     onCameraMoveStarted: () {
-                      // This also fires for our own animateCamera() calls,
-                      // so only treat it as a manual drag when we didn't
-                      // just trigger a programmatic move ourselves.
                       if (!_isAutoCameraMove) {
                         _followDriverWithCamera = false;
                       }
@@ -551,7 +567,11 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     required double fromRotation,
     required double toRotation,
   }) {
+    // Dispose previous controller safely
+    _markerAnimationController?.stop();
     _markerAnimationController?.dispose();
+    _markerAnimationController = null;
+
     _markerAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -1438,25 +1458,27 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   }
 
   getDriver() async {
-    driverStream = FireStoreUtils().getDriver(Constant.userModel!.id!);
-    driverStream.listen((event) {
-      log.log("New order");
+    final stream = FireStoreUtils().getDriver(Constant.userModel!.id!);
+    _driverSubscription = stream.listen((event) {
+      if (!mounted) return; // <-- skip if widget is gone
+
       playSound(false);
       _driverModel = event;
-      FireStoreUtils.getVehicle(_driverModel!.vehicleId).then((value) {
+      if (_driverModel != null) {
+        FireStoreUtils.getVehicle(_driverModel!.vehicleId).then((value) {
+          if (mounted) {
+            setState(() {
+              vehicleModel = value;
+            });
+          }
+        });
+
         if (mounted) {
           setState(() {
-            vehicleModel = value;
+            Constant.userModel = _driverModel;
           });
         }
-      });
-      if (mounted) {
-        setState(() {
-          Constant.userModel = _driverModel;
-        });
       }
-
-      log.log("Get current driver data");
 
       // Reset first load flag when driver data changes
       _isFirstOrderLoad = true;

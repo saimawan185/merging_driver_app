@@ -105,22 +105,28 @@ class _ContainerScreen extends State<ContainerScreen> {
             symbol: "\$",
             symbolatright: false);
       }
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     });
-    await FireStoreUtils().getRazorPayDemo();
-    await FireStoreUtils.getOnePaySettingData();
-    await FireStoreUtils.getPaypalSettingData();
-    // await FireStoreUtils.getStripeSettingData();
-    await FireStoreUtils.getPayStackSettingData();
-    await FireStoreUtils.getFlutterWaveSettingData();
-    await FireStoreUtils.getPaytmSettingData();
-    await FireStoreUtils.getWalletSettingData();
-    await FireStoreUtils.getPayFastSettingData();
-    await FireStoreUtils.getMercadoPagoSettingData();
-    await FireStoreUtils.getDriverOrderSetting();
-    setState(() {
-      isLoading = false;
-    });
+    await Future.wait([
+      FireStoreUtils.getRazorPayDemo(),
+      FireStoreUtils.getOnePaySettingData(),
+      FireStoreUtils.getPaypalSettingData(),
+      // FireStoreUtils.getStripeSettingData(),
+      FireStoreUtils.getPayStackSettingData(),
+      FireStoreUtils.getFlutterWaveSettingData(),
+      FireStoreUtils.getPaytmSettingData(),
+      FireStoreUtils.getWalletSettingData(),
+      FireStoreUtils.getPayFastSettingData(),
+      FireStoreUtils.getMercadoPagoSettingData(),
+      FireStoreUtils.getDriverOrderSetting(),
+    ]);
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Location location = Location();

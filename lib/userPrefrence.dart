@@ -97,12 +97,10 @@ class UserPreference {
   static setOnePayData(OnePaySettingData onePayModel) async {
     final jsonData = jsonEncode(onePayModel);
     await _preferences.setString(onePayKey, jsonData);
-    log("Set onePaySettings :: :: " + jsonData.toString());
   }
 
   static getOnePayData() async {
     final String? jsonData = _preferences.getString(onePayKey);
-    print("getOnePayData :: " + jsonData.toString());
     if (jsonData != null)
       return OnePaySettingData.fromJson(jsonDecode(jsonData));
   }

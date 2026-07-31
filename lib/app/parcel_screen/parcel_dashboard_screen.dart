@@ -31,6 +31,7 @@ import '../../ui/home/HomeScreen.dart';
 import '../../ui/wallet/walletScreen.dart';
 import '../cab_screen/cab_home_screen.dart';
 import '../home_screen/home_screen_multiple_order.dart';
+import '../order_list_screen/all_orders_list.dart';
 import '../rental_service/rental_home_screen.dart';
 import '../vehicle_information_screen/vehicle_information_screen.dart';
 
@@ -279,7 +280,7 @@ class ParcelDashboardScreen extends StatelessWidget {
                 : controller.drawerIndex.value == 0
                     ? _buildHomeWithBottomNav(controller, context)
                     : controller.drawerIndex.value == 1
-                        ? ParcelOrderListScreen()
+                        ? AllOrdersScreen()
                         : controller.drawerIndex.value == 2
                             ? const WalletScreen()
                             : controller.drawerIndex.value == 3

@@ -16,6 +16,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import '../../constant/global.dart';
+import '../../constants.dart';
 import '../../models/user_model.dart';
 import '../../ui/home/HomeScreen.dart';
 
@@ -136,12 +137,11 @@ class HomeScreenMultipleOrder extends StatelessWidget {
                                   double.parse(controller
                                           .driverModel.value.walletAmount
                                           .toString()) <
-                                      double.parse(
-                                          Constant.minimumDepositToRideAccept)
+                                      0
                               ? Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
-                                    "You must have a minimum ${Constant.amountShow(amount: Constant.minimumDepositToRideAccept.toString())} in your wallet to receive orders",
+                                    "${"Your wallet balance is ".tr()}${amountShow(amount: controller.driverModel.value.walletAmount?.toString())} ${"you’ll temporarily receive card & wallet orders or rides until its’s restored".tr()}",
                                     style: TextStyle(
                                         color: isDark
                                             ? AppThemeData.grey50

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:door_delights_driver/app/auth_screen/login_screen.dart';
 import 'package:door_delights_driver/app/change%20langauge/change_language_screen.dart';
 import 'package:door_delights_driver/app/change_password_screen/change_password_screen.dart';
@@ -32,6 +34,7 @@ import '../../services/FirebaseHelper.dart';
 import '../../ui/home/HomeScreen.dart';
 import '../../ui/wallet/walletScreen.dart';
 import '../cab_screen/cab_home_screen.dart';
+import '../order_list_screen/all_orders_list.dart';
 import '../parcel_screen/parcel_home_screen.dart';
 import '../rental_service/rental_home_screen.dart';
 import '../vehicle_information_screen/vehicle_information_screen.dart';
@@ -59,30 +62,39 @@ class DashBoardScreen extends StatelessWidget {
             symbolatright: false);
       }
     });
-    await FireStoreUtils().getRazorPayDemo();
-    await FireStoreUtils.getOnePaySettingData();
-    await FireStoreUtils.getPaypalSettingData();
-    // await FireStoreUtils.getStripeSettingData();
-    await FireStoreUtils.getPayStackSettingData();
-    await FireStoreUtils.getFlutterWaveSettingData();
-    await FireStoreUtils.getPaytmSettingData();
-    await FireStoreUtils.getWalletSettingData();
-    await FireStoreUtils.getPayFastSettingData();
-    await FireStoreUtils.getMercadoPagoSettingData();
-    await FireStoreUtils.getDriverOrderSetting();
+    await Future.wait([
+      FireStoreUtils.getRazorPayDemo(),
+      FireStoreUtils.getOnePaySettingData(),
+      FireStoreUtils.getPaypalSettingData(),
+      // FireStoreUtils.getStripeSettingData(),
+      FireStoreUtils.getPayStackSettingData(),
+      FireStoreUtils.getFlutterWaveSettingData(),
+      FireStoreUtils.getPaytmSettingData(),
+      FireStoreUtils.getWalletSettingData(),
+      FireStoreUtils.getPayFastSettingData(),
+      FireStoreUtils.getMercadoPagoSettingData(),
+      FireStoreUtils.getDriverOrderSetting(),
+    ]);
   }
 
   Widget _buildHomeWithBottomNav(
       DashBoardController controller, BuildContext context) {
     final sections = controller.userSections;
+
+    // No sections – fallback to default delivery home
     if (sections.isEmpty) {
-      // Fallback: show delivery home
       return Constant.singleOrderReceive
           ? const HomeScreen(isAppBarShow: false)
           : const HomeScreenMultipleOrder();
     }
 
-    // Build bottom nav items
+    // Only one section – show it directly, no bottom nav
+    if (sections.length == 1) {
+      final flag = sections.first.serviceTypeFlag ?? 'delivery-service';
+      return _buildSectionWidget(flag);
+    }
+
+    // Two or more sections – build bottom nav + IndexedStack
     final items = sections.map((section) {
       final flag = section.serviceTypeFlag ?? 'delivery-service';
       return BottomNavigationBarItem(
@@ -91,30 +103,33 @@ class DashBoardScreen extends StatelessWidget {
       );
     }).toList();
 
-    // Build widgets for each section
     final widgets = sections.map((section) {
       final flag = section.serviceTypeFlag ?? 'delivery-service';
       return _buildSectionWidget(flag);
     }).toList();
 
-    return Scaffold(
-      // No app bar here – the parent scaffold already has one
-      body: IndexedStack(
-        index: controller.sectionIndex.value,
-        children: widgets,
-      ),
-      bottomNavigationBar: Obx(
-        () => BottomNavigationBar(
-          currentIndex: controller.sectionIndex.value,
-          onTap: (index) => controller.sectionIndex.value = index,
-          items: items,
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          selectedItemColor: AppThemeData.parcelService400,
-          unselectedItemColor: Colors.grey,
-          elevation: 8,
+    // Return a Column so we can place the bottom nav inside the parent Scaffold
+    return Column(
+      children: [
+        Expanded(
+          child: IndexedStack(
+            index: controller.sectionIndex.value,
+            children: widgets,
+          ),
         ),
-      ),
+        Obx(
+          () => BottomNavigationBar(
+            currentIndex: controller.sectionIndex.value,
+            onTap: (index) => controller.sectionIndex.value = index,
+            items: items,
+            type: BottomNavigationBarType.fixed,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            selectedItemColor: AppThemeData.parcelService400,
+            unselectedItemColor: Colors.grey,
+            elevation: 8,
+          ),
+        ),
+      ],
     );
   }
 
@@ -162,6 +177,8 @@ class DashBoardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final themeController = Get.find<ThemeController>();
+    Get.put(DashBoardController());
+
     setCurrency();
     return Obx(() {
       final isDark = themeController.isDark.value;
@@ -309,7 +326,7 @@ class DashBoardScreen extends StatelessWidget {
             body: controller.drawerIndex.value == 0
                 ? _buildHomeWithBottomNav(controller, context)
                 : controller.drawerIndex.value == 1
-                    ? const OrderListScreen()
+                    ? const AllOrdersScreen()
                     : controller.drawerIndex.value == 2
                         ? const WalletScreen()
                         : controller.drawerIndex.value == 3

@@ -338,7 +338,7 @@ class FireStoreUtils {
   }
 
   late StreamController<UserModel> driverStreamController;
-  late StreamSubscription? driverStreamSub;
+  // late StreamSubscription? driverStreamSub;
 
   Stream<UserModel> getDriver(String userId) {
     driverStreamController = StreamController();
@@ -354,11 +354,15 @@ class FireStoreUtils {
     // yield* driverStreamController.stream;
   }
 
-  static Future<VehicleType> getVehicle(String? vehicleId) async {
+  static Future<VehicleType?> getVehicle(String? vehicleId) async {
     DocumentSnapshot<Map<String, dynamic>> vehicleType =
         await firestore.collection(VEHICLETYPE).doc(vehicleId).get();
 
-    return VehicleType.fromJson(vehicleType.data()!);
+    if (vehicleType.exists) {
+      return VehicleType.fromJson(vehicleType.data()!);
+    }
+
+    return null;
   }
 
   static Future<List<VehicleType>> getVehicleType(
@@ -3006,7 +3010,7 @@ class FireStoreUtils {
     }
   }
 
-  static getPayFastSettingData() async {
+  static Future<void> getPayFastSettingData() async {
     firestore.collection(Setting).doc("payFastSettings").get().then((
       payFastData,
     ) {
@@ -3025,7 +3029,7 @@ class FireStoreUtils {
     });
   }
 
-  static getMercadoPagoSettingData() async {
+  static Future<void> getMercadoPagoSettingData() async {
     firestore.collection(Setting).doc("MercadoPago").get().then((mercadoPago) {
       try {
         MercadoPagoSettingData mercadoPagoDataModel =
@@ -3037,7 +3041,7 @@ class FireStoreUtils {
     });
   }
 
-  static getPaypalSettingData() async {
+  static Future<void> getPaypalSettingData() async {
     firestore.collection(Setting).doc("paypalSettings").get().then((
       paypalData,
     ) {
@@ -3068,7 +3072,7 @@ class FireStoreUtils {
   //   });
   // }
 
-  static getOnePaySettingData() async {
+  static Future<void> getOnePaySettingData() async {
     firestore.collection(Setting).doc("onePaySettings").get().then((
       onepaydata,
     ) async {
@@ -3076,7 +3080,6 @@ class FireStoreUtils {
         OnePaySettingData onePaySettingData = OnePaySettingData.fromJson(
           onepaydata.data() as Map<String, dynamic>,
         );
-        log("Get Firebase onePaySettings :: " + onePaySettingData.redirectUrl);
         await UserPreference.setOnePayData(onePaySettingData);
       } catch (error) {
         debugPrint(error.toString());
@@ -3084,7 +3087,7 @@ class FireStoreUtils {
     });
   }
 
-  static getFlutterWaveSettingData() async {
+  static Future<void> getFlutterWaveSettingData() async {
     firestore.collection(Setting).doc("flutterWave").get().then((
       flutterWaveData,
     ) {
@@ -3099,7 +3102,7 @@ class FireStoreUtils {
     });
   }
 
-  static getPayStackSettingData() async {
+  static Future<void> getPayStackSettingData() async {
     firestore.collection(Setting).doc("payStack").get().then((payStackData) {
       try {
         PayStackSettingData payStackSettingData = PayStackSettingData.fromJson(
@@ -3113,7 +3116,7 @@ class FireStoreUtils {
     });
   }
 
-  static getPaytmSettingData() async {
+  static Future<void> getPaytmSettingData() async {
     firestore.collection(Setting).doc("PaytmSettings").get().then((paytmData) {
       try {
         PaytmSettingData paytmSettingData = PaytmSettingData.fromJson(
@@ -3126,7 +3129,7 @@ class FireStoreUtils {
     });
   }
 
-  static getWalletSettingData() {
+  static Future<void> getWalletSettingData() async {
     firestore.collection(Setting).doc('walletSettings').get().then((
       walletSetting,
     ) {
@@ -3140,7 +3143,7 @@ class FireStoreUtils {
     });
   }
 
-  getRazorPayDemo() async {
+  static Future<void> getRazorPayDemo() async {
     RazorPayModel userModel;
     firestore.collection(Setting).doc("razorpaySettings").get().then((user) {
       debugPrint(user.data().toString());

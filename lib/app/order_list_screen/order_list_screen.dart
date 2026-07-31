@@ -11,7 +11,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 
 class OrderListScreen extends StatelessWidget {
@@ -100,7 +99,8 @@ class OrderListScreen extends StatelessWidget {
                               horizontal: 16, vertical: 10),
                           child: controller.orderList.isEmpty
                               ? Constant.showEmptyView(
-                                  message: "Order Not found".tr(), isDark: isDark)
+                                  message: "Order Not found".tr(),
+                                  isDark: isDark)
                               : ListView.builder(
                                   shrinkWrap: true,
                                   itemCount: controller.orderList.length,

@@ -22,10 +22,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:timelines_plus/timelines_plus.dart';
-
 import '../../models/user_model.dart';
 import '../chat_screens/chat_screen.dart';
 
@@ -34,9 +32,8 @@ class RentalHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeController = Get.find<ThemeController>();
     return Obx(() {
-      final isDark = themeController.isDark.value;
+      final isDark = Get.find<ThemeController>().isDark.value;
       return GetX(
           init: RentalHomeController(),
           builder: (controller) {
@@ -270,7 +267,8 @@ class RentalHomeScreen extends StatelessWidget {
                                               height: 20,
                                             ),
                                             RoundedButtonFill(
-                                              title: "Search Rental Booking".tr(),
+                                              title:
+                                                  "Search Rental Booking".tr(),
                                               height: 5.5,
                                               color: AppThemeData.primary300,
                                               textColor: AppThemeData.grey50,
@@ -1083,7 +1081,8 @@ class RentalHomeScreen extends StatelessWidget {
                     await FireStoreUtils.rentalOrderPlace(rentalBookingData)
                         .then((value) {
                       ShowToastDialog.closeLoader();
-                      ShowToastDialog.showToast("Ride started successfully".tr());
+                      ShowToastDialog.showToast(
+                          "Ride started successfully".tr());
                       controller.currentKilometerController.value.clear();
                       otpController.value.clear();
                       Get.back();

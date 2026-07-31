@@ -199,7 +199,6 @@ class FireStoreUtils {
           .get()
           .then((value) async {
         isMaintenance = value.data()?['isMaintenanceModeForDriver'] == true;
-        log("isMaintenance :: $isMaintenance");
       });
       return isMaintenance;
     } catch (e) {
@@ -254,6 +253,23 @@ class FireStoreUtils {
     });
 
     return map;
+  }
+
+  static Future<String?> getVehicleTypeIdByName(String name) async {
+    try {
+      final querySnapshot = await fireStore
+          .collection('vehicle_type')
+          .where('name', isEqualTo: name)
+          .limit(1)
+          .get();
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.id;
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching vehicle type ID for $name: $e');
+      return null;
+    }
   }
 
   static Future<bool> updateUser(UserModel userModel) async {
@@ -505,24 +521,71 @@ class FireStoreUtils {
           .doc("DriverNearBy")
           .get()
           .then((value) {
-        Constant.minimumDepositToRideAccept =
-            value.data()!['minimumDepositToRideAccept'];
+        final data = value.data();
+        if (data != null) {
+          if (data.containsKey('minimumDepositToRideAccept') &&
+              data['minimumDepositToRideAccept'] != null) {
+            Constant.minimumDepositToRideAccept =
+                data['minimumDepositToRideAccept'];
+          }
 
-        Constant.ownerMinimumDepositToRideAccept =
-            value.data()!['ownerMinimumDepositToRideAccept'];
-        Constant.minimumAmountToWithdrawal =
-            value.data()!['minimumAmountToWithdrawal'];
-        Constant.driverLocationUpdate = value.data()!['driverLocationUpdate'];
-        Constant.singleOrderReceive = value.data()!['singleOrderReceive'];
-        Constant.selectedMapType = value.data()!["selectedMapType"];
-        Constant.mapType = value.data()!["mapType"];
-        Constant.autoApproveDriver = value.data()!["auto_approve_driver"];
-        Constant.enableOTPTripStart = value.data()!["enableOTPTripStart"];
-        Constant.enableOTPTripStartForRental =
-            value.data()!["enableOTPTripStartForRental"];
-        Constant.parcelRadius = value.data()!["parcelRadius"];
-        Constant.rentalRadius = value.data()!["rentalRadius"];
-        log("Constant.singleOrderReceive :: ${Constant.singleOrderReceive}");
+          if (data.containsKey('ownerMinimumDepositToRideAccept') &&
+              data['ownerMinimumDepositToRideAccept'] != null) {
+            Constant.ownerMinimumDepositToRideAccept =
+                data['ownerMinimumDepositToRideAccept'];
+          }
+
+          if (data.containsKey('minimumAmountToWithdrawal') &&
+              data['minimumAmountToWithdrawal'] != null) {
+            Constant.minimumAmountToWithdrawal =
+                data['minimumAmountToWithdrawal'];
+          }
+
+          if (data.containsKey('driverLocationUpdate') &&
+              data['driverLocationUpdate'] != null) {
+            Constant.driverLocationUpdate = data['driverLocationUpdate'];
+          }
+
+          if (data.containsKey('singleOrderReceive') &&
+              data['singleOrderReceive'] != null) {
+            Constant.singleOrderReceive = data['singleOrderReceive'];
+          }
+
+          if (data.containsKey('selectedMapType') &&
+              data['selectedMapType'] != null) {
+            Constant.selectedMapType = data['selectedMapType'];
+          }
+
+          if (data.containsKey('mapType') && data['mapType'] != null) {
+            Constant.mapType = data['mapType'];
+          }
+
+          if (data.containsKey('auto_approve_driver') &&
+              data['auto_approve_driver'] != null) {
+            Constant.autoApproveDriver = data['auto_approve_driver'];
+          }
+
+          if (data.containsKey('enableOTPTripStart') &&
+              data['enableOTPTripStart'] != null) {
+            Constant.enableOTPTripStart = data['enableOTPTripStart'];
+          }
+
+          if (data.containsKey('enableOTPTripStartForRental') &&
+              data['enableOTPTripStartForRental'] != null) {
+            Constant.enableOTPTripStartForRental =
+                data['enableOTPTripStartForRental'];
+          }
+
+          if (data.containsKey('parcelRadius') &&
+              data['parcelRadius'] != null) {
+            Constant.parcelRadius = data['parcelRadius'];
+          }
+
+          if (data.containsKey('rentalRadius') &&
+              data['rentalRadius'] != null) {
+            Constant.rentalRadius = data['rentalRadius'];
+          }
+        }
       });
     } catch (e) {
       log("settings error: ${e.toString()}");
@@ -659,7 +722,6 @@ class FireStoreUtils {
 
   static Future<List<VehicleType>> getRentalVehicleType(
       String sectionId) async {
-    print("sectionId :: $sectionId");
     List<VehicleType> airPortList = [];
     await fireStore
         .collection(CollectionName.rentalVehicleType)
@@ -2020,6 +2082,7 @@ class FireStoreUtils {
         .orderBy('createdAt', descending: true)
         .snapshots()
         .map((query) {
+      log(("Length: ${query.docs.length}"));
       List<CabOrderModel> ordersList = [];
       for (var element in query.docs) {
         ordersList.add(CabOrderModel.fromJson(element.data()));

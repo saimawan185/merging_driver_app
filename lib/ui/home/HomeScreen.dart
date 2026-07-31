@@ -523,9 +523,9 @@ class HomeScreenState extends State<HomeScreen>
 
     // Dispose animation controller
     _mapController!.dispose();
-    if (FireStoreUtils().driverStreamSub != null) {
-      FireStoreUtils().driverStreamSub!.cancel();
-    }
+    // if (FireStoreUtils().driverStreamSub != null) {
+    //   FireStoreUtils().driverStreamSub!.cancel();
+    // }
     FireStoreUtils().ordersStreamController.close();
     FireStoreUtils().ordersStreamSub.cancel();
 

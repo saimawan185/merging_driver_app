@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/intl.dart';
 import '../models/cab_order_model.dart';
 import '../utils/fire_store_utils.dart';
@@ -32,7 +31,6 @@ class CabOrderListController extends GetxController {
     isLoading.value = true;
 
     FireStoreUtils.getCabDriverOrders(driverId.value).listen((orders) {
-      print("cabOrder length ::::::${cabOrder.length}");
       cabOrder.value = orders;
       isLoading.value = false;
     });
@@ -49,7 +47,8 @@ class CabOrderListController extends GetxController {
                   "Driver Accepted",
                   "Driver Pending",
                   "Order Shipped",
-                  "In Transit"
+                  "In Transit",
+                  "Reached Destination",
                 ].contains(order.status))
             .toList();
 

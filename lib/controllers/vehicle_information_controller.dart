@@ -100,17 +100,34 @@ class VehicleInformationController extends GetxController {
     final Set<String> typeNames = {};
     final List<VehicleType> types = [];
 
-    for (final section in driverSections) {
-      if (section.serviceTypeFlag == 'delivery-service' ||
-          section.serviceTypeFlag == 'parcel_delivery') {
-        _addTypeIfNotExists(types, typeNames, 'Bike', 'bike');
-        _addTypeIfNotExists(types, typeNames, 'Carriage', 'carriage');
-      } else if (section.serviceTypeFlag == 'cab-service') {
+    final hasCab =
+        allUserSections.any((s) => s.serviceTypeFlag == 'cab-service');
+    final hasRental =
+        allUserSections.any((s) => s.serviceTypeFlag == 'rental-service');
+    final hasNonDelivery = hasCab || hasRental;
+
+    for (final section in allUserSections) {
+      final flag = section.serviceTypeFlag ?? '';
+
+      if (flag == 'delivery-service' || flag == 'parcel_delivery') {
+        final bikeId = await FireStoreUtils.getVehicleTypeIdByName('Bike');
+        if (bikeId != null) {
+          _addTypeIfNotExists(types, typeNames, 'Bike', bikeId);
+          if (!hasNonDelivery) {
+            _addTypeIfNotExists(types, typeNames, 'Carriage', bikeId);
+          }
+        } else {
+          _addTypeIfNotExists(types, typeNames, 'Bike', 'bike');
+          if (!hasNonDelivery) {
+            _addTypeIfNotExists(types, typeNames, 'Carriage', 'carriage');
+          }
+        }
+      } else if (flag == 'cab-service') {
         final cabTypes = await FireStoreUtils.getCabVehicleType(section.id!);
         for (final t in cabTypes) {
           _addTypeIfNotExists(types, typeNames, t.name!, t.id!);
         }
-      } else if (section.serviceTypeFlag == 'rental-service') {
+      } else if (flag == 'rental-service') {
         final rentalTypes =
             await FireStoreUtils.getRentalVehicleType(section.id!);
         for (final t in rentalTypes) {
@@ -118,9 +135,12 @@ class VehicleInformationController extends GetxController {
         }
       }
     }
+
     vehicleTypeOptions.value = types;
     if (types.isNotEmpty && selectedVehicleType.value == null) {
       selectedVehicleType.value = types.first;
+    } else if (types.isEmpty) {
+      selectedVehicleType.value = null;
     }
   }
 
@@ -283,30 +303,51 @@ class VehicleInformationController extends GetxController {
       final carPlate = carPlateController.value.text.trim();
       final rideType = selectedRideType.value;
 
+      String vehicleId;
+      // if (vehicle.name == 'Bike') {
+      //   vehicleId = 'bike';
+      // } else if (vehicle.name == 'Carriage') {
+      //   vehicleId = 'carriage';
+      // } else {
+      vehicleId = vehicle.id?.isNotEmpty == true ? vehicle.id! : vehicle.name!;
+      // }
+
+      // Build details map
       final Map<String, dynamic> details = {
-        'vehicleId': vehicle.id ?? '',
+        'vehicleId': vehicleId,
         'vehicleType': vehicle.name ?? '',
         'carBrand': carMakes.name ?? '',
         'carModel': carModel.name ?? '',
         'carPlateNumber': carPlate,
-        if (initialServiceType == 'cab-service') 'rideType': rideType,
       };
 
+      // Always save rideType if the user has any cab section
+      final hasCab =
+          allUserSections.any((s) => s.serviceTypeFlag == 'cab-service');
+      if (hasCab) {
+        details['rideType'] = rideType;
+      }
+
+      // Update user model fields
+      userModel.value.vehicleId = vehicleId;
       userModel.value.vehicleType = vehicle.name;
-      userModel.value.vehicleId = vehicle.id;
       userModel.value.carMakes = carMakes.name;
       userModel.value.carName = carModel.name;
       userModel.value.carNumber = carPlate;
-      if (initialServiceType == 'cab-service') {
+      if (hasCab) {
         userModel.value.rideType = rideType;
       }
       userModel.value.vehicleDetails = details;
 
       final success = await FireStoreUtils.updateUser(userModel.value);
       ShowToastDialog.closeLoader();
-      ShowToastDialog.showToast(success
-          ? "Vehicle information updated successfully."
-          : "Failed to update. Please try again.");
+      if (success) {
+        ShowToastDialog.showToast("Vehicle information updated successfully.");
+        // Reload user data to refresh all fields
+        await loadUserData();
+      } else {
+        ShowToastDialog.showToast("Failed to update. Please try again.");
+      }
     } catch (e) {
       ShowToastDialog.closeLoader();
       ShowToastDialog.showToast("Error updating vehicle info: $e");

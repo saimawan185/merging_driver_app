@@ -14,6 +14,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../../constants.dart';
 import 'driver_order_list.dart';
 
 class OwnerHomeScreen extends StatelessWidget {
@@ -108,9 +109,9 @@ class OwnerHomeScreen extends StatelessWidget {
                                   num wallet = dashController
                                           .userModel.value.walletAmount ??
                                       0.0;
-                                  return wallet <
-                                          double.parse(Constant
-                                              .ownerMinimumDepositToRideAccept)
+                                  return wallet < 0
+                                      // double.parse(Constant
+                                      //     .ownerMinimumDepositToRideAccept)
                                       ? Padding(
                                           padding:
                                               const EdgeInsets.only(bottom: 10),
@@ -123,8 +124,7 @@ class OwnerHomeScreen extends StatelessWidget {
                                               padding:
                                                   const EdgeInsets.all(8.0),
                                               child: Text(
-                                                "You must have a minimum of ${Constant.amountShow(amount: Constant.ownerMinimumDepositToRideAccept.toString())} in your wallet to receive orders to your driver"
-                                                    .tr(),
+                                                "${"Your wallet balance is ".tr()}${amountShow(amount: wallet.toString())} ${"you’ll temporarily receive card & wallet orders or rides until its’s restored".tr()}",
                                                 style: TextStyle(
                                                   color: AppThemeData.danger300,
                                                   fontSize: 14,

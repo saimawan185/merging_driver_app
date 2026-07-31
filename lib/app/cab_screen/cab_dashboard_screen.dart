@@ -27,6 +27,7 @@ import '../change_section_screen/change_section_screen.dart';
 import '../chat_screens/driver_inbox_screen.dart';
 import '../edit_profile_screen/edit_profile_screen.dart';
 import '../home_screen/home_screen_multiple_order.dart';
+import '../order_list_screen/all_orders_list.dart';
 import '../parcel_screen/parcel_home_screen.dart';
 import '../rental_service/rental_home_screen.dart';
 import '../terms_and_condition/terms_and_condition_screen.dart';
@@ -59,17 +60,19 @@ class CabDashboardScreen extends StatelessWidget {
             symbolatright: false);
       }
     });
-    await FireStoreUtils().getRazorPayDemo();
-    await FireStoreUtils.getOnePaySettingData();
-    await FireStoreUtils.getPaypalSettingData();
-    // await FireStoreUtils.getStripeSettingData();
-    await FireStoreUtils.getPayStackSettingData();
-    await FireStoreUtils.getFlutterWaveSettingData();
-    await FireStoreUtils.getPaytmSettingData();
-    await FireStoreUtils.getWalletSettingData();
-    await FireStoreUtils.getPayFastSettingData();
-    await FireStoreUtils.getMercadoPagoSettingData();
-    await FireStoreUtils.getDriverOrderSetting();
+    await Future.wait([
+      FireStoreUtils.getRazorPayDemo(),
+      FireStoreUtils.getOnePaySettingData(),
+      FireStoreUtils.getPaypalSettingData(),
+      // FireStoreUtils.getStripeSettingData(), // uncomment if needed
+      FireStoreUtils.getPayStackSettingData(),
+      FireStoreUtils.getFlutterWaveSettingData(),
+      FireStoreUtils.getPaytmSettingData(),
+      FireStoreUtils.getWalletSettingData(),
+      FireStoreUtils.getPayFastSettingData(),
+      FireStoreUtils.getMercadoPagoSettingData(),
+      FireStoreUtils.getDriverOrderSetting(),
+    ]);
   }
 
   Widget _buildHomeWithBottomNav(
@@ -312,7 +315,7 @@ class CabDashboardScreen extends StatelessWidget {
                 : controller.drawerIndex.value == 0
                     ? _buildHomeWithBottomNav(controller, context)
                     : controller.drawerIndex.value == 1
-                        ? const CabOrderListScreen()
+                        ? const AllOrdersScreen()
                         : controller.drawerIndex.value == 2
                             ? const WalletScreen()
                             : controller.drawerIndex.value == 3

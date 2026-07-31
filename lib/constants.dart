@@ -201,9 +201,9 @@ Future<void> checkForUpdate({required BuildContext context}) async {
 String amountShow({required String? amount}) {
   if (currencyData == null) return '';
   if (currencyData!.symbolatright == true) {
-    return "${double.parse(amount.toString()).toStringAsFixed(currencyData!.decimal)} ${currencyData!.symbol.toString()}";
+    return "${(double.tryParse(amount.toString()) ?? 0).toStringAsFixed(currencyData!.decimal)} ${currencyData!.symbol.toString()}";
   } else {
-    return "${currencyData!.symbol.toString()} ${double.parse(amount.toString()).toStringAsFixed(currencyData!.decimal)}";
+    return "${currencyData!.symbol.toString()} ${(double.tryParse(amount.toString()) ?? 0).toStringAsFixed(currencyData!.decimal)}";
   }
 }
 
