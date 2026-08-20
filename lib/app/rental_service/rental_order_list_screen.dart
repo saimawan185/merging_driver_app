@@ -8,7 +8,6 @@ import '../../themes/round_button_fill.dart';
 import '../../themes/theme_controller.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class RentalOrderListScreen extends StatelessWidget {
@@ -185,32 +184,32 @@ class RentalOrderListScreen extends StatelessWidget {
                                           ),
                                         ],
                                       ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            "${'Section:'.tr()} ",
-                                            style:
-                                                AppThemeData.regularTextStyle(
-                                                    fontSize: 13,
-                                                    color: isDark
-                                                        ? AppThemeData
-                                                            .greyDark600
-                                                        : AppThemeData.grey600),
-                                          ),
-                                          Text(
-                                            Constant.sectionNameFromId(
-                                                order.sectionId),
-                                            style:
-                                                AppThemeData.semiBoldTextStyle(
-                                                    fontSize: 13,
-                                                    color: isDark
-                                                        ? AppThemeData
-                                                            .greyDark900
-                                                        : AppThemeData.grey900),
-                                          ),
-                                        ],
-                                      ),
+                                      // const SizedBox(height: 8),
+                                      // Row(
+                                      //   children: [
+                                      //     Text(
+                                      //       "${'Section:'.tr()} ",
+                                      //       style:
+                                      //           AppThemeData.regularTextStyle(
+                                      //               fontSize: 13,
+                                      //               color: isDark
+                                      //                   ? AppThemeData
+                                      //                       .greyDark600
+                                      //                   : AppThemeData.grey600),
+                                      //     ),
+                                      //     Text(
+                                      //       Constant.sectionNameFromId(
+                                      //           order.sectionId),
+                                      //       style:
+                                      //           AppThemeData.semiBoldTextStyle(
+                                      //               fontSize: 13,
+                                      //               color: isDark
+                                      //                   ? AppThemeData
+                                      //                       .greyDark900
+                                      //                   : AppThemeData.grey900),
+                                      //     ),
+                                      //   ],
+                                      // ),
                                       const SizedBox(height: 12),
                                       Text("Vehicle Type :".tr(),
                                           style: AppThemeData.boldTextStyle(

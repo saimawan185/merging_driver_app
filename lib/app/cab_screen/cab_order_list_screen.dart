@@ -106,34 +106,34 @@ class CabOrderListScreen extends StatelessWidget {
                                                   : AppThemeData.grey900,
                                             ),
                                           ),
-                                          const SizedBox(height: 6),
-                                          Row(
-                                            children: [
-                                              Text(
-                                                "${'Section:'.tr()} ",
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      AppThemeData.regular,
-                                                  fontSize: 13,
-                                                  color: isDark
-                                                      ? AppThemeData.grey300
-                                                      : AppThemeData.grey600,
-                                                ),
-                                              ),
-                                              Text(
-                                                Constant.sectionNameFromId(
-                                                    order.sectionId),
-                                                style: TextStyle(
-                                                  fontFamily:
-                                                      AppThemeData.semiBold,
-                                                  fontSize: 13,
-                                                  color: isDark
-                                                      ? AppThemeData.grey50
-                                                      : AppThemeData.grey900,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                          // const SizedBox(height: 6),
+                                          // Row(
+                                          //   children: [
+                                          //     Text(
+                                          //       "${'Section:'.tr()} ",
+                                          //       style: TextStyle(
+                                          //         fontFamily:
+                                          //             AppThemeData.regular,
+                                          //         fontSize: 13,
+                                          //         color: isDark
+                                          //             ? AppThemeData.grey300
+                                          //             : AppThemeData.grey600,
+                                          //       ),
+                                          //     ),
+                                          //     Text(
+                                          //       Constant.sectionNameFromId(
+                                          //           order.sectionId),
+                                          //       style: TextStyle(
+                                          //         fontFamily:
+                                          //             AppThemeData.semiBold,
+                                          //         fontSize: 13,
+                                          //         color: isDark
+                                          //             ? AppThemeData.grey50
+                                          //             : AppThemeData.grey900,
+                                          //       ),
+                                          //     ),
+                                          //   ],
+                                          // ),
                                           SizedBox(height: 10),
                                           Row(
                                             crossAxisAlignment:

@@ -1289,7 +1289,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
                         color: Color(COLOR_PRIMARY),
                       ),
                       title: Text(
-                        'Payment Collect From ${currentOrder!.paymentCollectByReceiver == true ? 'Receiver' : 'Sender'}: LKR ${(double.parse(currentOrder!.subTotal ?? '0.0') - double.parse(currentOrder!.discount ?? '0.0'))}',
+                        'Payment Collect From ${currentOrder!.paymentCollectByReceiver == true ? 'Receiver' : 'Sender'}: LKR ${(double.parse(currentOrder!.subTotal ?? '0.0') - double.parse(currentOrder!.discount ?? '0.0')).toStringAsFixed(2)}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
@@ -1537,7 +1537,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
                         color: Color(COLOR_PRIMARY),
                       ),
                       title: Text(
-                        'Payment Collect From ${currentOrder!.paymentCollectByReceiver == true ? 'Receiver' : 'Sender'}: LKR ${(double.parse(currentOrder!.subTotal ?? '0.0') - double.parse(currentOrder!.discount ?? '0.0'))}',
+                        'Payment Collect From ${currentOrder!.paymentCollectByReceiver == true ? 'Receiver' : 'Sender'}: LKR ${(double.parse(currentOrder!.subTotal ?? '0.0') - double.parse(currentOrder!.discount ?? '0.0')).toStringAsFixed(2)}',
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(

@@ -18,8 +18,7 @@ class AllOrdersScreen extends StatefulWidget {
 }
 
 class _AllOrdersScreenState extends State<AllOrdersScreen> {
-  final DashBoardController _dashboardController =
-      Get.find<DashBoardController>();
+  late final DashBoardController _dashboardController;
 
   final ThemeController _themeController = Get.find<ThemeController>();
 
@@ -27,6 +26,13 @@ class _AllOrdersScreenState extends State<AllOrdersScreen> {
 
   @override
   void initState() {
+    try {
+      _dashboardController = Get.find<DashBoardController>();
+    } catch (e) {
+      _dashboardController =
+          Get.put<DashBoardController>(DashBoardController());
+      print('Error in initState: $e');
+    }
     super.initState();
     if (_dashboardController.userSections.isNotEmpty) {
       _selectedSection = _dashboardController.userSections.last;

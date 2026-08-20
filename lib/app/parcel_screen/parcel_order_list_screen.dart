@@ -2,7 +2,6 @@ import 'package:door_delights_driver/app/parcel_screen/parcel_order_details.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../../constant/constant.dart';
 import '../../controllers/parcel_order_list_controller.dart';
 import '../../themes/app_them_data.dart';
@@ -105,37 +104,37 @@ class ParcelOrderListScreen extends StatelessWidget {
                                                           AppThemeData.info400),
                                             ),
                                           ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                bottom: 8.0),
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                  "${'Section:'.tr()} ",
-                                                  style: AppThemeData
-                                                      .regularTextStyle(
-                                                          fontSize: 13,
-                                                          color: isDark
-                                                              ? AppThemeData
-                                                                  .greyDark600
-                                                              : AppThemeData
-                                                                  .grey600),
-                                                ),
-                                                Text(
-                                                  Constant.sectionNameFromId(
-                                                      order.sectionId),
-                                                  style: AppThemeData
-                                                      .semiBoldTextStyle(
-                                                          fontSize: 13,
-                                                          color: isDark
-                                                              ? AppThemeData
-                                                                  .greyDark900
-                                                              : AppThemeData
-                                                                  .grey900),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                                          // Padding(
+                                          //   padding: const EdgeInsets.only(
+                                          //       bottom: 8.0),
+                                          //   child: Row(
+                                          //     children: [
+                                          //       Text(
+                                          //         "${'Section:'.tr()} ",
+                                          //         style: AppThemeData
+                                          //             .regularTextStyle(
+                                          //                 fontSize: 13,
+                                          //                 color: isDark
+                                          //                     ? AppThemeData
+                                          //                         .greyDark600
+                                          //                     : AppThemeData
+                                          //                         .grey600),
+                                          //       ),
+                                          //       Text(
+                                          //         Constant.sectionNameFromId(
+                                          //             order.sectionId),
+                                          //         style: AppThemeData
+                                          //             .semiBoldTextStyle(
+                                          //                 fontSize: 13,
+                                          //                 color: isDark
+                                          //                     ? AppThemeData
+                                          //                         .greyDark900
+                                          //                     : AppThemeData
+                                          //                         .grey900),
+                                          //       ),
+                                          //     ],
+                                          //   ),
+                                          // ),
                                           Row(
                                             crossAxisAlignment:
                                                 CrossAxisAlignment.start,

@@ -5,11 +5,8 @@ import 'package:door_delights_driver/models/user_model.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/preferences.dart';
 import 'package:get/get.dart' hide Trans;
-import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:location/location.dart';
 import 'package:permission_handler/permission_handler.dart' as permission;
-
 import '../models/section_model.dart';
 import '../themes/theme_controller.dart';
 import 'dash_board_controller.dart';
@@ -89,7 +86,7 @@ class RentalDashboardController extends GetxController {
   RxBool isDarkModeSwitch = false.obs;
 
   void getTheme() {
-    bool isDark = Preferences.getBoolean(Preferences.themKey);
+    bool isDark = Preferences.getTheme(Preferences.themKey);
     isDarkMode.value = isDark ? "Dark" : "Light";
     isDarkModeSwitch.value = isDark;
   }

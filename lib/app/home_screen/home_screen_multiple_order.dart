@@ -9,9 +9,7 @@ import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/widget/my_separator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart' hide Trans;
-import 'package:easy_localization/easy_localization.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:timelines_plus/timelines_plus.dart';
@@ -474,13 +472,6 @@ class _OrderCardState extends State<_OrderCard> {
     }
 
     final order = _orderModel!;
-    final distanceInMeters = Geolocator.distanceBetween(
-      order.vendor!.latitude ?? 0.0,
-      order.vendor!.longitude ?? 0.0,
-      order.address!.location!.latitude ?? 0.0,
-      order.address!.location!.longitude ?? 0.0,
-    );
-    final kilometer = distanceInMeters / 1000;
 
     return GestureDetector(
       onTap: () {
@@ -664,16 +655,33 @@ class _OrderCardState extends State<_OrderCard> {
                       ),
                     ),
                   ),
-                  Text(
-                    "${kilometer.toStringAsFixed(2)} ${Constant.distanceType}",
-                    textAlign: TextAlign.start,
-                    style: TextStyle(
-                      fontFamily: AppThemeData.semiBold,
-                      color: widget.isDark
-                          ? AppThemeData.grey50
-                          : AppThemeData.grey900,
-                      fontSize: 16,
+                  FutureBuilder<String?>(
+                    future: Constant.getDistance(
+                      lat1: (order.vendor!.latitude ?? 0.0).toString(),
+                      lng1: (order.vendor!.longitude ?? 0.0).toString(),
+                      lat2:
+                          (order.address!.location!.latitude ?? 0.0).toString(),
+                      lng2: (order.address!.location!.longitude ?? 0.0)
+                          .toString(),
                     ),
+                    builder: (context, snapshot) {
+                      final distance =
+                          snapshot.connectionState == ConnectionState.waiting
+                              ? '...'
+                              : (snapshot.data ?? '0.00');
+
+                      return Text(
+                        '$distance ${Constant.distanceType}',
+                        textAlign: TextAlign.start,
+                        style: TextStyle(
+                          fontFamily: AppThemeData.semiBold,
+                          color: widget.isDark
+                              ? AppThemeData.grey50
+                              : AppThemeData.grey900,
+                          fontSize: 16,
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

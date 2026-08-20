@@ -891,199 +891,414 @@ class HomeScreenState extends State<HomeScreen>
   }
 
   Widget showDriverBottomSheet() {
-    double distanceInMeters = Geolocator.distanceBetween(
-      orderModel!.vendor!.latitude!,
-      orderModel!.vendor!.longitude!,
-      orderModel!.address!.location!.latitude!,
-      orderModel!.address!.location!.longitude!,
+    final distanceFuture = Constant.getDistance(
+      lat1: (orderModel!.vendor!.latitude ?? 0.0).toString(),
+      lng1: (orderModel!.vendor!.longitude ?? 0.0).toString(),
+      lat2: (orderModel!.address!.location!.latitude ?? 0.0).toString(),
+      lng2: (orderModel!.address!.location!.longitude ?? 0.0).toString(),
     );
-    double kilometer = distanceInMeters / 1000;
 
-    if (orderModel != null) {
-      getDeliveryCharges(kilometer, orderModel);
-    }
+    return FutureBuilder<String?>(
+      future: distanceFuture,
+      builder: (context, snapshot) {
+        final kilometer = double.tryParse(snapshot.data ?? '0') ?? 0.0;
 
-    return Padding(
-      padding: EdgeInsets.all(10),
-      child: Container(
-        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
-        decoration: BoxDecoration(
-          color: Color(0xff212121),
-          borderRadius: BorderRadius.all(Radius.circular(15)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        // Avoid setState during build
+        if (snapshot.hasData && orderModel != null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            getDeliveryCharges(kilometer, orderModel);
+          });
+        }
+
+        return Padding(
+          padding: EdgeInsets.all(10),
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+            decoration: BoxDecoration(
+              color: Color(0xff212121),
+              borderRadius: BorderRadius.all(Radius.circular(15)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: Text(
-                    "Trip Distance".tr(),
-                    style: TextStyle(
-                        color: Color(0xffADADAD),
-                        fontFamily: "Poppinsr",
-                        letterSpacing: 0.5),
-                  ),
-                ),
-                Text(
-                  "${kilometer.toStringAsFixed(currencyData!.decimal)} km",
-                  style: TextStyle(
-                      color: Color(0xffFFFFFF),
-                      fontFamily: "Poppinsm",
-                      letterSpacing: 0.5),
-                ),
-              ],
-            ),
-            SizedBox(
-              height: 5,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Expanded(
-                  child: Text(
-                    "Delivery charge".tr(),
-                    style: TextStyle(
-                        color: Color(0xffADADAD),
-                        fontFamily: "Poppinsr",
-                        letterSpacing: 0.5),
-                  ),
-                ),
-                Text(
-                  "${amountShow(amount: deliveryCharges.toString())}",
-                  style: TextStyle(
-                      color: Color(0xffFFFFFF),
-                      fontFamily: "Poppinsm",
-                      letterSpacing: 0.5),
-                ),
-              ],
-            ),
-            SizedBox(height: 5),
-            Card(
-              color: Color(0xffFFFFFF),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 14.0, horizontal: 10),
-                child: Row(
+                SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Image.asset(
-                      'assets/images/location3x.png',
-                      height: 55,
+                    Expanded(
+                      child: Text(
+                        "Trip Distance".tr(),
+                        style: TextStyle(
+                          color: Color(0xffADADAD),
+                          fontFamily: "Poppinsr",
+                          letterSpacing: 0.5,
+                        ),
+                      ),
                     ),
-                    SizedBox(width: 10),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 270,
-                          child: Text(
-                            "${orderModel!.vendor!.location} ",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: Color(0xff333333),
-                                fontFamily: "Poppinsr",
-                                letterSpacing: 0.5),
-                          ),
-                        ),
-                        SizedBox(height: 22),
-                        SizedBox(
-                          width: 270,
-                          child: Text(
-                            "${orderModel!.address!.getFullAddress()} ",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                color: Color(0xff333333),
-                                fontFamily: "Poppinsr",
-                                letterSpacing: 0.5),
-                          ),
-                        ),
-                      ],
+                    Text(
+                      snapshot.connectionState == ConnectionState.waiting
+                          ? '...'
+                          : "${kilometer.toStringAsFixed(currencyData!.decimal)} km",
+                      style: TextStyle(
+                        color: Color(0xffFFFFFF),
+                        fontFamily: "Poppinsm",
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                SizedBox(
-                  height: MediaQuery.sizeOf(context).height / 20,
-                  width: MediaQuery.sizeOf(context).width / 2.5,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 12),
-                      backgroundColor: Color(COLOR_PRIMARY),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(5),
+                SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "Delivery charge".tr(),
+                        style: TextStyle(
+                          color: Color(0xffADADAD),
+                          fontFamily: "Poppinsr",
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
-                    child: Text(
-                      'Reject',
+                    Text(
+                      "${amountShow(amount: deliveryCharges.toString())}",
                       style: TextStyle(
-                          color: Color(0xffFFFFFF),
-                          fontFamily: "Poppinsm",
-                          letterSpacing: 0.5),
+                        color: Color(0xffFFFFFF),
+                        fontFamily: "Poppinsm",
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                    onPressed: () async {
-                      showProgress(context, 'Rejecting order...'.tr(), false);
-                      try {
-                        if (_timer != null) {
-                          _timer!.cancel();
-                        }
-                        await rejectOrder();
-                        hideProgress();
-                      } catch (e) {
-                        hideProgress();
-                        print('HomeScreenState.showDriverBottomSheet $e');
-                      }
-                    },
+                  ],
+                ),
+                SizedBox(height: 5),
+                Card(
+                  color: Color(0xffFFFFFF),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 14.0, horizontal: 10),
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          'assets/images/location3x.png',
+                          height: 55,
+                        ),
+                        SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 270,
+                              child: Text(
+                                "${orderModel!.vendor!.location} ",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Color(0xff333333),
+                                  fontFamily: "Poppinsr",
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 22),
+                            SizedBox(
+                              width: 270,
+                              child: Text(
+                                "${orderModel!.address!.getFullAddress()} ",
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Color(0xff333333),
+                                  fontFamily: "Poppinsr",
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                SizedBox(
-                  height: MediaQuery.sizeOf(context).height / 20,
-                  width: MediaQuery.sizeOf(context).width / 2.5,
-                  child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 6, horizontal: 12),
-                        backgroundColor: Color(COLOR_PRIMARY),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(5),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    SizedBox(
+                      height: MediaQuery.sizeOf(context).height / 20,
+                      width: MediaQuery.sizeOf(context).width / 2.5,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 12),
+                          backgroundColor: Color(COLOR_PRIMARY),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(5),
+                            ),
                           ),
                         ),
-                      ),
-                      child: Text(
-                        'Accept'.tr(),
-                        style: TextStyle(
+                        child: Text(
+                          'Reject',
+                          style: TextStyle(
                             color: Color(0xffFFFFFF),
                             fontFamily: "Poppinsm",
-                            letterSpacing: 0.5),
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        onPressed: () async {
+                          showProgress(
+                              context, 'Rejecting order...'.tr(), false);
+                          try {
+                            if (_timer != null) {
+                              _timer!.cancel();
+                            }
+                            await rejectOrder();
+                            hideProgress();
+                          } catch (e) {
+                            hideProgress();
+                            print('HomeScreenState.showDriverBottomSheet $e');
+                          }
+                        },
                       ),
-                      onPressed: () async {
-                        showProgress(context, 'Accepting order...'.tr(), false);
-                        if (_timer != null) {
-                          _timer!.cancel();
-                        }
-                        await acceptOrder();
-                        hideProgress();
-                      }),
+                    ),
+                    SizedBox(
+                      height: MediaQuery.sizeOf(context).height / 20,
+                      width: MediaQuery.sizeOf(context).width / 2.5,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 6, horizontal: 12),
+                          backgroundColor: Color(COLOR_PRIMARY),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(5),
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          'Accept'.tr(),
+                          style: TextStyle(
+                            color: Color(0xffFFFFFF),
+                            fontFamily: "Poppinsm",
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        onPressed: () async {
+                          showProgress(
+                              context, 'Accepting order...'.tr(), false);
+                          if (_timer != null) {
+                            _timer!.cancel();
+                          }
+                          await acceptOrder();
+                          hideProgress();
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
+
+  // Widget showDriverBottomSheet() {
+  //   double distanceInMeters = Geolocator.distanceBetween(
+  //     orderModel!.vendor!.latitude!,
+  //     orderModel!.vendor!.longitude!,
+  //     orderModel!.address!.location!.latitude!,
+  //     orderModel!.address!.location!.longitude!,
+  //   );
+  //   double kilometer = distanceInMeters / 1000;
+
+  //   if (orderModel != null) {
+  //     getDeliveryCharges(kilometer, orderModel);
+  //   }
+
+  //   return Padding(
+  //     padding: EdgeInsets.all(10),
+  //     child: Container(
+  //       padding: EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+  //       decoration: BoxDecoration(
+  //         color: Color(0xff212121),
+  //         borderRadius: BorderRadius.all(Radius.circular(15)),
+  //       ),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         children: [
+  //           SizedBox(height: 5),
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //             children: [
+  //               Expanded(
+  //                 child: Text(
+  //                   "Trip Distance".tr(),
+  //                   style: TextStyle(
+  //                       color: Color(0xffADADAD),
+  //                       fontFamily: "Poppinsr",
+  //                       letterSpacing: 0.5),
+  //                 ),
+  //               ),
+  //               Text(
+  //                 "${kilometer.toStringAsFixed(currencyData!.decimal)} km",
+  //                 style: TextStyle(
+  //                     color: Color(0xffFFFFFF),
+  //                     fontFamily: "Poppinsm",
+  //                     letterSpacing: 0.5),
+  //               ),
+  //             ],
+  //           ),
+  //           SizedBox(
+  //             height: 5,
+  //           ),
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+  //             children: [
+  //               Expanded(
+  //                 child: Text(
+  //                   "Delivery charge".tr(),
+  //                   style: TextStyle(
+  //                       color: Color(0xffADADAD),
+  //                       fontFamily: "Poppinsr",
+  //                       letterSpacing: 0.5),
+  //                 ),
+  //               ),
+  //               Text(
+  //                 "${amountShow(amount: deliveryCharges.toString())}",
+  //                 style: TextStyle(
+  //                     color: Color(0xffFFFFFF),
+  //                     fontFamily: "Poppinsm",
+  //                     letterSpacing: 0.5),
+  //               ),
+  //             ],
+  //           ),
+  //           SizedBox(height: 5),
+  //           Card(
+  //             color: Color(0xffFFFFFF),
+  //             child: Padding(
+  //               padding:
+  //                   const EdgeInsets.symmetric(vertical: 14.0, horizontal: 10),
+  //               child: Row(
+  //                 children: [
+  //                   Image.asset(
+  //                     'assets/images/location3x.png',
+  //                     height: 55,
+  //                   ),
+  //                   SizedBox(width: 10),
+  //                   Column(
+  //                     crossAxisAlignment: CrossAxisAlignment.start,
+  //                     children: [
+  //                       SizedBox(
+  //                         width: 270,
+  //                         child: Text(
+  //                           "${orderModel!.vendor!.location} ",
+  //                           maxLines: 1,
+  //                           overflow: TextOverflow.ellipsis,
+  //                           style: TextStyle(
+  //                               color: Color(0xff333333),
+  //                               fontFamily: "Poppinsr",
+  //                               letterSpacing: 0.5),
+  //                         ),
+  //                       ),
+  //                       SizedBox(height: 22),
+  //                       SizedBox(
+  //                         width: 270,
+  //                         child: Text(
+  //                           "${orderModel!.address!.getFullAddress()} ",
+  //                           maxLines: 1,
+  //                           overflow: TextOverflow.ellipsis,
+  //                           style: TextStyle(
+  //                               color: Color(0xff333333),
+  //                               fontFamily: "Poppinsr",
+  //                               letterSpacing: 0.5),
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ),
+  //           SizedBox(height: 10),
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //             children: [
+  //               SizedBox(
+  //                 height: MediaQuery.sizeOf(context).height / 20,
+  //                 width: MediaQuery.sizeOf(context).width / 2.5,
+  //                 child: ElevatedButton(
+  //                   style: ElevatedButton.styleFrom(
+  //                     padding: const EdgeInsets.symmetric(
+  //                         vertical: 6, horizontal: 12),
+  //                     backgroundColor: Color(COLOR_PRIMARY),
+  //                     shape: RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.all(
+  //                         Radius.circular(5),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                   child: Text(
+  //                     'Reject',
+  //                     style: TextStyle(
+  //                         color: Color(0xffFFFFFF),
+  //                         fontFamily: "Poppinsm",
+  //                         letterSpacing: 0.5),
+  //                   ),
+  //                   onPressed: () async {
+  //                     showProgress(context, 'Rejecting order...'.tr(), false);
+  //                     try {
+  //                       if (_timer != null) {
+  //                         _timer!.cancel();
+  //                       }
+  //                       await rejectOrder();
+  //                       hideProgress();
+  //                     } catch (e) {
+  //                       hideProgress();
+  //                       print('HomeScreenState.showDriverBottomSheet $e');
+  //                     }
+  //                   },
+  //                 ),
+  //               ),
+  //               SizedBox(
+  //                 height: MediaQuery.sizeOf(context).height / 20,
+  //                 width: MediaQuery.sizeOf(context).width / 2.5,
+  //                 child: ElevatedButton(
+  //                     style: ElevatedButton.styleFrom(
+  //                       padding: const EdgeInsets.symmetric(
+  //                           vertical: 6, horizontal: 12),
+  //                       backgroundColor: Color(COLOR_PRIMARY),
+  //                       shape: RoundedRectangleBorder(
+  //                         borderRadius: BorderRadius.all(
+  //                           Radius.circular(5),
+  //                         ),
+  //                       ),
+  //                     ),
+  //                     child: Text(
+  //                       'Accept'.tr(),
+  //                       style: TextStyle(
+  //                           color: Color(0xffFFFFFF),
+  //                           fontFamily: "Poppinsm",
+  //                           letterSpacing: 0.5),
+  //                     ),
+  //                     onPressed: () async {
+  //                       showProgress(context, 'Accepting order...'.tr(), false);
+  //                       if (_timer != null) {
+  //                         _timer!.cancel();
+  //                       }
+  //                       await acceptOrder();
+  //                       hideProgress();
+  //                     }),
+  //               ),
+  //             ],
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   late Duration _remainingTime;
   Timer? _remaningTimer;

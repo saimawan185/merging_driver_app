@@ -45,7 +45,7 @@ class OwnerDashboardController extends GetxController {
   RxBool isDarkModeSwitch = false.obs;
 
   void getTheme() {
-    bool isDark = Preferences.getBoolean(Preferences.themKey);
+    bool isDark = Preferences.getTheme(Preferences.themKey);
     isDarkMode.value = isDark ? "Dark" : "Light";
     isDarkModeSwitch.value = isDark;
   }

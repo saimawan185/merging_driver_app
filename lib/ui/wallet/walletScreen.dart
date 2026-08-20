@@ -42,10 +42,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 import '../../constant/constant.dart';
 import '../../constants.dart';
+import '../../controllers/dash_board_controller.dart';
 import '../../models/cab_order_model.dart';
 import '../../models/order_model.dart';
 import '../../models/parcel_order_model.dart';
 import '../../models/rental_order_model.dart';
+import '../../models/section_model.dart';
 import '../../models/user_model.dart';
 import '../../theme/app_them_data.dart';
 import '../../theme/responsive.dart';
@@ -80,6 +82,29 @@ class WalletScreenState extends State<WalletScreen> {
       TextEditingController(text: 110.toString());
   TextEditingController _noteController = TextEditingController(text: '');
 
+  late final DashBoardController _dashboardController;
+  SectionModel? _selectedSection;
+
+  String get _selectedServiceType {
+    final flag = _selectedSection?.serviceTypeFlag;
+    if (flag != null && flag.isNotEmpty) return flag;
+    return Constant.userModel?.serviceType ?? 'delivery-service';
+  }
+
+  String _getSectionDisplayName(SectionModel section) {
+    final flag = section.serviceTypeFlag ?? '';
+    switch (flag) {
+      case 'cab-service':
+        return 'Cab'.tr();
+      case 'parcel_delivery':
+        return 'Parcel'.tr();
+      case 'rental-service':
+        return 'Rental'.tr();
+      default:
+        return 'Delivery'.tr();
+    }
+  }
+
   getData() async {
     try {
       userQuery = fireStore.collection(USERS).doc(userId).snapshots();
@@ -93,16 +118,15 @@ class WalletScreenState extends State<WalletScreen> {
         .orderBy('paidDate', descending: true)
         .snapshots();
 
+    _setupEarningQueries(_selectedServiceType);
+  }
+
+  void _setupEarningQueries(String serviceType) {
     DateTime nowDate = DateTime.now();
-    log("Service: ${Constant.userModel!.serviceType}");
-    // Use serviceType (singular) for all checks
-    if (Constant.userModel!.serviceType == "cab-service") {
+    if (serviceType == "cab-service") {
       dailyEarningQuery = fireStore
           .collection(RIDESORDER)
           .where('driverID', isEqualTo: driverId)
-          // .where('createdAt',
-          //     isGreaterThanOrEqualTo: Timestamp.fromDate(
-          //         DateTime(nowDate.year, nowDate.month, nowDate.day)))
           .orderBy('createdAt', descending: true)
           .snapshots();
 
@@ -126,13 +150,10 @@ class WalletScreenState extends State<WalletScreen> {
               )))
           .orderBy('createdAt', descending: true)
           .snapshots();
-    } else if (Constant.userModel!.serviceType == "parcel_delivery") {
+    } else if (serviceType == "parcel_delivery") {
       dailyEarningQuery = fireStore
           .collection(PARCELORDER)
           .where('driverId', isEqualTo: driverId)
-          // .where('createdAt',
-          //     isGreaterThanOrEqualTo: Timestamp.fromDate(
-          //         DateTime(nowDate.year, nowDate.month, nowDate.day)))
           .orderBy('createdAt', descending: true)
           .snapshots();
 
@@ -156,13 +177,10 @@ class WalletScreenState extends State<WalletScreen> {
               )))
           .orderBy('createdAt', descending: true)
           .snapshots();
-    } else if (Constant.userModel!.serviceType == "rental-service") {
+    } else if (serviceType == "rental-service") {
       dailyEarningQuery = fireStore
           .collection(RENTALORDER)
           .where('driverID', isEqualTo: driverId)
-          // .where('createdAt',
-          //     isGreaterThanOrEqualTo: Timestamp.fromDate(
-          //         DateTime(nowDate.year, nowDate.month, nowDate.day)))
           .orderBy('createdAt', descending: true)
           .snapshots();
 
@@ -187,13 +205,9 @@ class WalletScreenState extends State<WalletScreen> {
           .orderBy('createdAt', descending: true)
           .snapshots();
     } else {
-      // default: delivery-service
       dailyEarningQuery = fireStore
           .collection(ORDERS)
           .where('driverID', isEqualTo: driverId)
-          // .where('createdAt',
-          //     isGreaterThanOrEqualTo: Timestamp.fromDate(
-          //         DateTime(nowDate.year, nowDate.month, nowDate.day)))
           .orderBy('createdAt', descending: true)
           .snapshots();
 
@@ -263,6 +277,15 @@ class WalletScreenState extends State<WalletScreen> {
 
   @override
   void initState() {
+    try {
+      _dashboardController = Get.find<DashBoardController>();
+    } catch (e) {
+      _dashboardController =
+          Get.put<DashBoardController>(DashBoardController());
+    }
+    if (_dashboardController.userSections.isNotEmpty) {
+      _selectedSection = _dashboardController.userSections.last;
+    }
     getData();
     getPaymentSettingData();
     selectedRadioTile = "Stripe";
@@ -386,12 +409,63 @@ class WalletScreenState extends State<WalletScreen> {
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
                   child: Column(
                     children: [
-                      Text(
-                        "My Wallet".tr(),
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 18),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "My Wallet".tr(),
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 18),
+                            ),
+                          ),
+                          Obx(() {
+                            final sections = _dashboardController.userSections;
+                            if (sections.isEmpty) {
+                              return const SizedBox.shrink();
+                            }
+                            if (_selectedSection == null) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (!mounted) return;
+                                setState(() {
+                                  _selectedSection = sections.last;
+                                });
+                                getData();
+                              });
+                            }
+                            final selected = sections.firstWhere(
+                              (section) => section.id == _selectedSection?.id,
+                              orElse: () => sections.last,
+                            );
+                            return DropdownButton<SectionModel>(
+                              value: selected,
+                              dropdownColor: Colors.black87,
+                              items: sections.map((section) {
+                                return DropdownMenuItem<SectionModel>(
+                                  value: section,
+                                  child: Text(
+                                    _getSectionDisplayName(section),
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (SectionModel? newSection) {
+                                if (newSection != null) {
+                                  setState(() {
+                                    _selectedSection = newSection;
+                                  });
+                                  getData();
+                                }
+                              },
+                              underline: const SizedBox.shrink(),
+                              icon: const Icon(
+                                Icons.arrow_drop_down,
+                                color: Colors.white,
+                              ),
+                            );
+                          }),
+                        ],
                       ),
                       const SizedBox(height: 10),
                       StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -451,8 +525,8 @@ class WalletScreenState extends State<WalletScreen> {
       ),
       // bottomNavigationBar: Padding(
       //   padding: const EdgeInsets.only(bottom: 10, top: 5),
-      //   child: Constant.userModel!.serviceType == "rental-service" ||
-      //           Constant.userModel!.serviceType == "cab-service"
+      //   child: _selectedServiceType == "rental-service" ||
+      //           _selectedServiceType == "cab-service"
       //       ? Row(
       //           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       //           children: [
@@ -2194,7 +2268,7 @@ class WalletScreenState extends State<WalletScreen> {
           for (var document in snapshot.data!.docs) {
             final currentOrder;
             double amount = 0.0;
-            if (Constant.userModel!.serviceType == "cab-service") {
+            if (_selectedServiceType == "cab-service") {
               currentOrder = CabOrderModel.fromJson(
                   document.data() as Map<String, dynamic>);
               amount = amount + double.parse(currentOrder!.subTotal ?? '0.0');
@@ -2205,13 +2279,13 @@ class WalletScreenState extends State<WalletScreen> {
                       : currentOrder!.tipAmount.toString());
               amount = double.parse(amount.toStringAsFixed(2));
               totalAmounts.add(amount.toString());
-            } else if (Constant.userModel!.serviceType == "parcel_delivery") {
+            } else if (_selectedServiceType == "parcel_delivery") {
               currentOrder = ParcelOrderModel.fromJson(
                   document.data() as Map<String, dynamic>);
               amount = amount + double.parse(currentOrder!.subTotal ?? '0.0');
               amount = double.parse(amount.toStringAsFixed(2));
               totalAmounts.add(amount.toString());
-            } else if (Constant.userModel!.serviceType == "rental-service") {
+            } else if (_selectedServiceType == "rental-service") {
               currentOrder = RentalOrderModel.fromJson(
                   document.data() as Map<String, dynamic>);
               // Rental order processing (if needed)
@@ -2335,15 +2409,13 @@ class WalletScreenState extends State<WalletScreen> {
                     itemBuilder: (context, index) {
                       final document = snapshot.data!.docs[index];
                       final earningData;
-                      if (Constant.userModel!.serviceType == "cab-service") {
+                      if (_selectedServiceType == "cab-service") {
                         earningData = CabOrderModel.fromJson(
                             document.data() as Map<String, dynamic>);
-                      } else if (Constant.userModel!.serviceType ==
-                          "parcel_delivery") {
+                      } else if (_selectedServiceType == "parcel_delivery") {
                         earningData = ParcelOrderModel.fromJson(
                             document.data() as Map<String, dynamic>);
-                      } else if (Constant.userModel!.serviceType ==
-                          "rental-service") {
+                      } else if (_selectedServiceType == "rental-service") {
                         earningData = RentalOrderModel.fromJson(
                             document.data() as Map<String, dynamic>);
                       } else {
@@ -2402,13 +2474,13 @@ class WalletScreenState extends State<WalletScreen> {
       PdfGridRow row = grid.rows.add();
       for (int i = 0; i < transactions.length; i++) {
         final earningData;
-        if (Constant.userModel!.serviceType == "cab-service") {
+        if (_selectedServiceType == "cab-service") {
           earningData = CabOrderModel.fromJson(
               transactions[i].data() as Map<String, dynamic>);
-        } else if (Constant.userModel!.serviceType == "parcel_delivery") {
+        } else if (_selectedServiceType == "parcel_delivery") {
           earningData = ParcelOrderModel.fromJson(
               transactions[i].data() as Map<String, dynamic>);
-        } else if (Constant.userModel!.serviceType == "rental-service") {
+        } else if (_selectedServiceType == "rental-service") {
           earningData = RentalOrderModel.fromJson(
               transactions[i].data() as Map<String, dynamic>);
         } else {
@@ -2474,7 +2546,7 @@ class WalletScreenState extends State<WalletScreen> {
     double adminComm = 0.0;
 
     // --- Calculate amounts based on service type ---
-    if (Constant.userModel!.serviceType == "cab-service") {
+    if (_selectedServiceType == "cab-service") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
@@ -2496,7 +2568,7 @@ class WalletScreenState extends State<WalletScreen> {
           ? 0.0
           : double.parse(orderModel.tipAmount.toString());
       amount = subTotal + totalTax + tipAmount;
-    } else if (Constant.userModel!.serviceType == "parcel_delivery") {
+    } else if (_selectedServiceType == "parcel_delivery") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
@@ -2515,7 +2587,7 @@ class WalletScreenState extends State<WalletScreen> {
             : double.parse(orderModel.adminCommission!);
       }
       amount = subTotal + totalTax;
-    } else if (Constant.userModel!.serviceType == "rental-service") {
+    } else if (_selectedServiceType == "rental-service") {
       double totalTax = 0.0;
       double subTotal = (double.parse(orderModel.subTotal.toString()) +
           double.parse(orderModel.driverRate.toString()));
@@ -2544,7 +2616,7 @@ class WalletScreenState extends State<WalletScreen> {
     }
 
     // --- For delivery service, return a simpler card ---
-    if (Constant.userModel!.serviceType == "delivery-service") {
+    if (_selectedServiceType == "delivery-service") {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 3),
         child: Card(
@@ -2749,7 +2821,7 @@ class WalletScreenState extends State<WalletScreen> {
     double adminComm = 0.0;
 
     // Calculate amounts based on service type
-    if (Constant.userModel!.serviceType == "cab-service") {
+    if (_selectedServiceType == "cab-service") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
@@ -2771,7 +2843,7 @@ class WalletScreenState extends State<WalletScreen> {
           ? 0.0
           : double.parse(orderModel.tipAmount.toString());
       amount = subTotal + totalTax + tipAmount;
-    } else if (Constant.userModel!.serviceType == "parcel_delivery") {
+    } else if (_selectedServiceType == "parcel_delivery") {
       double totalTax = 0.0;
       if (orderModel!.taxModel != null) {
         for (var element in orderModel!.taxModel!) {
@@ -2790,7 +2862,7 @@ class WalletScreenState extends State<WalletScreen> {
             : double.parse(orderModel.adminCommission!);
       }
       amount = subTotal + totalTax;
-    } else if (Constant.userModel!.serviceType == "rental-service") {
+    } else if (_selectedServiceType == "rental-service") {
       double totalTax = 0.0;
       double subTotal = (double.parse(orderModel.subTotal.toString()) +
           double.parse(orderModel.driverRate.toString()));
@@ -3065,8 +3137,7 @@ class WalletScreenState extends State<WalletScreen> {
                       TextButton.icon(
                         onPressed: () async {
                           // Navigate to order detail based on service type
-                          if (Constant.userModel!.serviceType ==
-                              "cab-service") {
+                          if (_selectedServiceType == "cab-service") {
                             await FireStoreUtils.firestore
                                 .collection(RIDESORDER)
                                 .doc(orderModel.id)
@@ -3077,7 +3148,7 @@ class WalletScreenState extends State<WalletScreen> {
                               Get.to(() => CabOrderDetails(),
                                   arguments: {"cabOrderModel": orderModel});
                             });
-                          } else if (Constant.userModel!.serviceType ==
+                          } else if (_selectedServiceType ==
                               "parcel_delivery") {
                             await FireStoreUtils.firestore
                                 .collection(PARCELORDER)
@@ -3089,8 +3160,7 @@ class WalletScreenState extends State<WalletScreen> {
                               Get.to(() => ParcelOrderDetails(),
                                   arguments: orderModel);
                             });
-                          } else if (Constant.userModel!.serviceType ==
-                              "rental-service") {
+                          } else if (_selectedServiceType == "rental-service") {
                             await FireStoreUtils.firestore
                                 .collection(RENTALORDER)
                                 .doc(orderModel.id)
@@ -3140,7 +3210,7 @@ class WalletScreenState extends State<WalletScreen> {
   // Widget buildEarningCard({required var orderModel}) {
   //   final size = MediaQuery.sizeOf(context);
   //   double amount = 0;
-  //   if (Constant.userModel!.serviceType == "cab-service") {
+  //   if (_selectedServiceType == "cab-service") {
   //     double totalTax = 0.0;
   //
   //   /*  if (orderModel.taxType!.isNotEmpty) {
@@ -3171,7 +3241,7 @@ class WalletScreenState extends State<WalletScreen> {
   //     } else {
   //       amount = -(subTotal + totalTax + tipAmount + adminComm);
   //     }
-  //   } else if (Constant.userModel!.serviceType == "parcel_delivery") {
+  //   } else if (_selectedServiceType == "parcel_delivery") {
   //     double totalTax = 0.0;
   //
   //    /* if (orderModel.taxType!.isNotEmpty) {
@@ -3202,7 +3272,7 @@ class WalletScreenState extends State<WalletScreen> {
   //     } else {
   //       amount = -(subTotal + totalTax + adminComm);
   //     }
-  //   } else if (Constant.userModel!.serviceType == "rental-service") {
+  //   } else if (_selectedServiceType == "rental-service") {
   //     double totalTax = 0.0;
   //     double subTotal = (double.parse(orderModel.subTotal.toString()) + double.parse(orderModel.driverRate.toString())) - double.parse(orderModel.discount.toString());
   //

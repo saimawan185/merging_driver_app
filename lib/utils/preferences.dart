@@ -28,8 +28,12 @@ class Preferences {
     pref = await SharedPreferences.getInstance();
   }
 
+  static bool getTheme(String key) {
+    return pref.getBool(key) ?? true;
+  }
+
   static bool getBoolean(String key) {
-    return pref.getBool(key) ?? false;
+    return pref.getBool(key) ?? (themKey == key ? true : false);
   }
 
   static Future<void> setBoolean(String key, bool value) async {

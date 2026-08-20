@@ -483,7 +483,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   // travel (computed from the last known point to the new one) rather than
   // trusting a raw rotation value that may be stale or noisy.
   // ────────────────────────────────────────────────
-  void _updateDriverMarkerAndCamera() {
+  void _updateDriverMarkerAndCamera() async {
     if (_driverModel == null ||
         _driverModel!.location == null ||
         taxiIcon == null) return;
@@ -497,6 +497,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     // Distance moved since last update (meters), used to decide whether we
     // trust a freshly computed bearing or keep the previous heading (avoids
     // the arrow jittering/spinning when the driver is stationary at a light).
+
     final movedMeters = Geolocator.distanceBetween(
       fromPosition.latitude,
       fromPosition.longitude,
@@ -1231,9 +1232,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   Future<List<LatLng>> _getRouteCoordinates(LatLng origin, LatLng destination,
       List<PolylineWayPoint> waypoints) async {
-    log.log(
-        "Getting coordinates from ${origin.latitude},${origin.longitude} to ${destination.latitude},${destination.longitude} with ${waypoints.length} waypoints");
-
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       request: PolylineRequest(
         origin: PointLatLng(origin.latitude, origin.longitude),
@@ -1250,7 +1248,6 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       }
     }
 
-    log.log("Route calculated: ${polylineCoordinates.length} points");
     return polylineCoordinates;
   }
 
@@ -2017,7 +2014,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   color: Color(COLOR_PRIMARY),
                 ),
                 title: Text(
-                  'Discount: '.tr() + currentOrder!.discount.toString(),
+                  'Discount: '.tr() +
+                      currentOrder!.discount!.toStringAsFixed(2),
                   style: TextStyle(
                       color: isDark ? Colors.white : Colors.black,
                       fontFamily: "Poppinsr",
@@ -2410,40 +2408,127 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     }
   }
 
-  Future<dynamic> getDurationDistanceWithWaypoints(LatLng departureLatLong,
-      LatLng destinationLatLong, List<LatLng> stops) async {
-    log.log("Get duration with way points");
-    double originLat, originLong, destLat, destLong;
-    originLat = departureLatLong.latitude;
-    originLong = departureLatLong.longitude;
-    destLat = destinationLatLong.latitude;
-    destLong = destinationLatLong.longitude;
+  Future<Map<String, dynamic>?> getDurationDistanceWithWaypoints(
+    LatLng departureLatLong,
+    LatLng destinationLatLong,
+    List<LatLng> stops,
+  ) async {
+    const url = 'https://routes.googleapis.com/directions/v2:computeRoutes';
 
-    // Build waypoints parameter
-    String waypoints = "";
-    if (stops.isNotEmpty) {
-      waypoints = "&waypoints=";
-      for (int i = 0; i < stops.length; i++) {
-        waypoints += "${stops[i].latitude},${stops[i].longitude}";
-        if (i < stops.length - 1) {
-          waypoints += "|";
+    final intermediates = stops
+        .map((s) => {
+              'location': {
+                'latLng': {
+                  'latitude': s.latitude,
+                  'longitude': s.longitude,
+                }
+              }
+            })
+        .toList();
+
+    final body = {
+      'origin': {
+        'location': {
+          'latLng': {
+            'latitude': departureLatLong.latitude,
+            'longitude': departureLatLong.longitude,
+          }
         }
+      },
+      'destination': {
+        'location': {
+          'latLng': {
+            'latitude': destinationLatLong.latitude,
+            'longitude': destinationLatLong.longitude,
+          }
+        }
+      },
+      if (intermediates.isNotEmpty) 'intermediates': intermediates,
+      'travelMode': 'DRIVE',
+      'routingPreference': 'TRAFFIC_AWARE',
+      'computeAlternativeRoutes': false,
+      'languageCode': 'en-US',
+      'units': 'METRIC',
+    };
+
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': GOOGLE_API_KEY,
+        'X-Goog-FieldMask':
+            'routes.duration,routes.distanceMeters,routes.legs.distanceMeters,routes.legs.duration',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode != 200) return null;
+
+    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    final routes = decoded['routes'] as List?;
+    if (routes == null || routes.isEmpty) return null;
+
+    final route = routes.first as Map<String, dynamic>;
+    final legs = (route['legs'] as List?) ?? [];
+
+    // Top-level distance can be missing when ~0
+    int distanceMeters = (route['distanceMeters'] as num?)?.toInt() ?? 0;
+    if (distanceMeters == 0 && legs.isNotEmpty) {
+      distanceMeters = legs.fold<int>(
+        0,
+        (sum, leg) => sum + ((leg['distanceMeters'] as num?)?.toInt() ?? 0),
+      );
+    }
+
+    String duration = (route['duration'] as String?) ?? '0s';
+    if ((duration == '0s' || duration.isEmpty) && legs.isNotEmpty) {
+      int totalSeconds = 0;
+      for (final leg in legs) {
+        final d = (leg['duration'] as String?) ?? '0s';
+        totalSeconds += int.tryParse(d.replaceAll('s', '')) ?? 0;
       }
+      duration = '${totalSeconds}s';
     }
 
-    String url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
-    http.Response restaurantToCustomerTime = await http.get(Uri.parse(
-        '$url?units=metric&origins=$originLat,'
-        '$originLong&destinations=$destLat,$destLong$waypoints&key=$GOOGLE_API_KEY'));
-
-    var decodedResponse = jsonDecode(restaurantToCustomerTime.body);
-
-    if (decodedResponse['status'] == 'OK' &&
-        decodedResponse['rows'].first['elements'].first['status'] == 'OK') {
-      return decodedResponse;
-    }
-    return null;
+    return {
+      'distanceMeters': distanceMeters,
+      'duration': duration,
+      'legs': legs,
+    };
   }
+  // Future<dynamic> getDurationDistanceWithWaypoints(LatLng departureLatLong,
+  //     LatLng destinationLatLong, List<LatLng> stops) async {
+  //   double originLat, originLong, destLat, destLong;
+  //   originLat = departureLatLong.latitude;
+  //   originLong = departureLatLong.longitude;
+  //   destLat = destinationLatLong.latitude;
+  //   destLong = destinationLatLong.longitude;
+
+  //   // Build waypoints parameter
+  //   String waypoints = "";
+  //   if (stops.isNotEmpty) {
+  //     waypoints = "&waypoints=";
+  //     for (int i = 0; i < stops.length; i++) {
+  //       waypoints += "${stops[i].latitude},${stops[i].longitude}";
+  //       if (i < stops.length - 1) {
+  //         waypoints += "|";
+  //       }
+  //     }
+  //   }
+
+  //   String url = 'https://maps.googleapis.com/maps/api/distancematrix/json';
+  //   http.Response restaurantToCustomerTime = await http.get(Uri.parse(
+  //       '$url?units=metric&origins=$originLat,'
+  //       '$originLong&destinations=$destLat,$destLong$waypoints&key=$GOOGLE_API_KEY'));
+
+  //   var decodedResponse = jsonDecode(restaurantToCustomerTime.body);
+
+  //   if (decodedResponse['status'] == 'OK' &&
+  //       decodedResponse['rows'].first['elements'].first['status'] == 'OK') {
+  //     return decodedResponse;
+  //   }
+  //   return null;
+  // }
 
   completePickUp() async {
     if (enableOTPTripStart) {
@@ -2508,14 +2593,14 @@ class _CabHomeScreenState extends State<CabHomeScreen>
           stops,
         ).then((durationValue) async {
           if (durationValue != null) {
-            double distance = durationValue['rows']
-                    .first['elements']
-                    .first['distance']['value'] /
-                1000.00;
-            String duration = durationValue['rows']
-                .first['elements']
-                .first['duration']['text']
-                .toString();
+            final distanceMeters =
+                (durationValue['distanceMeters'] as num?)?.toInt() ?? 0;
+            final distance = distanceMeters / 1000.0;
+            String duration = int.parse(
+              (durationValue['duration'] as String).replaceAll('s', ''),
+            ).toString();
+
+            log.log("Distance: $distance km, Duration: $duration seconds");
             if (vehicleModel != null) {
               if (distance > (double.tryParse(currentOrder!.distance!) ?? 0)) {
                 currentOrder!.subTotal =

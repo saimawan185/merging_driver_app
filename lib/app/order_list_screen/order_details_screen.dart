@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import '../../model/ProductModel.dart';
 
@@ -149,7 +148,9 @@ class OrderDetailsScreen extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: AppThemeData.semiBold,
                               fontSize: 16,
-                              color: AppThemeData.primary300,
+                              color: isDark
+                                  ? AppThemeData.grey300
+                                  : AppThemeData.primary300,
                             ),
                           ),
                           Text(
@@ -172,7 +173,9 @@ class OrderDetailsScreen extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: AppThemeData.semiBold,
                               fontSize: 16,
-                              color: AppThemeData.primary300,
+                              color: isDark
+                                  ? AppThemeData.grey300
+                                  : AppThemeData.primary300,
                             ),
                           ),
                           Text(
@@ -180,7 +183,9 @@ class OrderDetailsScreen extends StatelessWidget {
                             style: TextStyle(
                               fontFamily: AppThemeData.semiBold,
                               fontSize: 16,
-                              color: AppThemeData.primary300,
+                              color: isDark
+                                  ? AppThemeData.grey300
+                                  : AppThemeData.primary300,
                             ),
                           ),
                           Text(
@@ -363,7 +368,7 @@ class OrderDetailsScreen extends StatelessWidget {
           ],
         ),
         // Variants
-        if (product.variant_info?.variantOptions?.isNotEmpty == true) ...[
+        if (product.variant_info?.variant_options?.isNotEmpty == true) ...[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
             child: Column(
@@ -381,8 +386,8 @@ class OrderDetailsScreen extends StatelessWidget {
                 Wrap(
                   spacing: 6,
                   runSpacing: 6,
-                  children: product.variant_info!.variantOptions!.entries
-                      .map((entry) {
+                  children: product.variant_info!.variant_options!.entries
+                      .map<Widget>((entry) {
                     return Container(
                       decoration: ShapeDecoration(
                         color: isDark
@@ -399,14 +404,14 @@ class OrderDetailsScreen extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: AppThemeData.medium,
                             color: isDark
-                                ? AppThemeData.grey500
+                                ? AppThemeData.grey300
                                 : AppThemeData.grey400,
                           ),
                         ),
                       ),
                     );
                   }).toList(),
-                ),
+                )
               ],
             ),
           ),
@@ -742,8 +747,7 @@ Widget amountRow({
             amount,
             style: TextStyle(
               fontFamily: AppThemeData.regular,
-              color: amountColor ??
-                  (isDark ? AppThemeData.grey50 : AppThemeData.grey900),
+              color: (isDark ? AppThemeData.grey300 : AppThemeData.grey900),
               fontSize: 16,
             ),
           ),

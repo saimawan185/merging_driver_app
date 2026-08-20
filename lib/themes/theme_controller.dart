@@ -21,9 +21,9 @@ class ThemeController extends GetxController {
 
   void loadTheme() {
     try {
-      isDark.value = Preferences.getBoolean(Preferences.themKey);
+      isDark.value = Preferences.getTheme(Preferences.themKey);
     } catch (e) {
-      Preferences.setBoolean(Preferences.themKey, false);
+      Preferences.setBoolean(Preferences.themKey, true);
     }
   }
 

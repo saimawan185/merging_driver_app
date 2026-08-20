@@ -254,47 +254,47 @@ class OrderListScreen extends StatelessWidget {
                                                     ),
                                                   ],
                                                 ),
-                                                const SizedBox(height: 5),
-                                                Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    Expanded(
-                                                      child: Text(
-                                                        "Section".tr(),
-                                                        textAlign:
-                                                            TextAlign.start,
-                                                        style: TextStyle(
-                                                          fontFamily:
-                                                              AppThemeData
-                                                                  .regular,
-                                                          color: isDark
-                                                              ? AppThemeData
-                                                                  .grey300
-                                                              : AppThemeData
-                                                                  .grey600,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      Constant
-                                                          .sectionNameFromId(
-                                                              orderModel
-                                                                  .sectionId),
-                                                      textAlign:
-                                                          TextAlign.start,
-                                                      style: TextStyle(
-                                                        fontFamily: AppThemeData
-                                                            .semiBold,
-                                                        color: isDark
-                                                            ? AppThemeData
-                                                                .grey50
-                                                            : AppThemeData
-                                                                .grey900,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                // const SizedBox(height: 5),
+                                                // Row(
+                                                //   crossAxisAlignment:
+                                                //       CrossAxisAlignment.start,
+                                                //   children: [
+                                                //     Expanded(
+                                                //       child: Text(
+                                                //         "Section".tr(),
+                                                //         textAlign:
+                                                //             TextAlign.start,
+                                                //         style: TextStyle(
+                                                //           fontFamily:
+                                                //               AppThemeData
+                                                //                   .regular,
+                                                //           color: isDark
+                                                //               ? AppThemeData
+                                                //                   .grey300
+                                                //               : AppThemeData
+                                                //                   .grey600,
+                                                //         ),
+                                                //       ),
+                                                //     ),
+                                                //     Text(
+                                                //       Constant
+                                                //           .sectionNameFromId(
+                                                //               orderModel
+                                                //                   .sectionId),
+                                                //       textAlign:
+                                                //           TextAlign.start,
+                                                //       style: TextStyle(
+                                                //         fontFamily: AppThemeData
+                                                //             .semiBold,
+                                                //         color: isDark
+                                                //             ? AppThemeData
+                                                //                 .grey50
+                                                //             : AppThemeData
+                                                //                 .grey900,
+                                                //       ),
+                                                //     ),
+                                                //   ],
+                                                // ),
                                                 Padding(
                                                   padding: const EdgeInsets
                                                       .symmetric(vertical: 10),

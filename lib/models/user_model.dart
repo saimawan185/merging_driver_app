@@ -418,7 +418,19 @@ class ShippingAddress {
   }
 
   String getFullAddress() {
-    return '${address ?? ''} ${locality ?? ''} ${landmark ?? ''}'.trim();
+    bool isValid(String? value) {
+      if (value == null) return false;
+      final v = value.trim();
+      return v.isNotEmpty && v.toLowerCase() != 'null';
+    }
+
+    final parts = <String>[
+      if (isValid(address)) address!.trim(),
+      if (isValid(locality)) locality!.trim(),
+      if (isValid(landmark)) landmark!.trim(),
+    ];
+
+    return parts.join(' ');
   }
 }
 
