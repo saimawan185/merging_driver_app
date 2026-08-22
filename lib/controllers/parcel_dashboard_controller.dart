@@ -3,6 +3,7 @@ import 'package:permission_handler/permission_handler.dart' as permission;
 import 'package:door_delights_driver/constant/collection_name.dart';
 import 'package:door_delights_driver/constant/show_toast_dialog.dart';
 import 'package:door_delights_driver/models/user_model.dart';
+import 'package:door_delights_driver/services/incoming_order_bridge.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/preferences.dart';
 import 'package:get/get.dart' hide Trans;
@@ -25,6 +26,12 @@ class ParcelDashboardController extends GetxController {
     getTheme();
     loadUserSections();
     super.onInit();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    IncomingOrderBridge.ensureIncomingOrderPermissions();
   }
 
   final RxInt sectionIndex = 0.obs;

@@ -14,6 +14,7 @@ import '../constant/show_toast_dialog.dart';
 import '../models/order_model.dart';
 import '../models/section_model.dart';
 import '../models/user_model.dart';
+import '../services/incoming_order_bridge.dart';
 import '../themes/theme_controller.dart';
 import '../utils/fire_store_utils.dart';
 import '../utils/preferences.dart';
@@ -30,6 +31,12 @@ class DashBoardController extends GetxController {
     getTheme();
     loadUserSections();
     super.onInit();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    IncomingOrderBridge.ensureIncomingOrderPermissions();
   }
 
   Future<void> loadUserSections() async {

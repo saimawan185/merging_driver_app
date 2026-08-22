@@ -1672,5 +1672,19 @@
   "{} sent a video": "{} sent a video",
   "{} sent a voice message": "{} sent a voice message",
   "{} sent an image": "{} sent an image",
-  "}": "}"
+  "}": "}",
+  "Accept Now": "Accept Now",
+  "Decline": "Decline",
+  "New Order Request": "New Order Request",
+  "Accepting...": "Accepting...",
+  "Order accepted": "Order accepted",
+  "Order declined": "Order declined",
+  "Please login again": "Please login again",
+  "Something went wrong. Please try again.": "Something went wrong. Please try again.",
+  "Allow order popup": "Allow order popup",
+  "To show new ride/order requests when the app is closed, allow \"Display over other apps\" for Door Delights Driver.": "To show new ride/order requests when the app is closed, allow \"Display over other apps\" for Door Delights Driver.",
+  "Later": "Later",
+  "Open Settings": "Open Settings",
+  "Allow full screen alerts": "Allow full screen alerts",
+  "Allow full screen notifications so new orders can appear over other apps.": "Allow full screen notifications so new orders can appear over other apps."
 }

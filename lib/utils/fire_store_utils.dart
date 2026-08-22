@@ -947,6 +947,36 @@ class FireStoreUtils {
     return orderModel;
   }
 
+  static Future<CabOrderModel?> getCabOrderById(String orderId) async {
+    try {
+      final value = await fireStore
+          .collection(CollectionName.ridesBooking)
+          .doc(orderId)
+          .get();
+      if (value.exists && value.data() != null) {
+        return CabOrderModel.fromJson(value.data()!);
+      }
+    } catch (e, s) {
+      log('FireStoreUtils.getCabOrderById $e $s');
+    }
+    return null;
+  }
+
+  static Future<ParcelOrderModel?> getParcelOrderById(String orderId) async {
+    try {
+      final value = await fireStore
+          .collection(CollectionName.parcelOrders)
+          .doc(orderId)
+          .get();
+      if (value.exists && value.data() != null) {
+        return ParcelOrderModel.fromJson(value.data()!);
+      }
+    } catch (e, s) {
+      log('FireStoreUtils.getParcelOrderById $e $s');
+    }
+    return null;
+  }
+
   static Future<SectionModel?> getSectionBySectionId(String sectionId) async {
     SectionModel? orderModel;
     try {

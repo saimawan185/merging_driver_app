@@ -1,19 +1,14 @@
-import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
-
-import '../../app/auth_screen/phone_number_screen.dart';
 import '../../app/auth_screen/signup_screen.dart';
 import '../../app/forgot_password_screen/forgot_password_screen.dart';
 import '../../constant/show_toast_dialog.dart';
 import '../../controllers/login_controller.dart';
 import '../../theme/app_them_data.dart';
 import '../../theme/responsive.dart';
-import '../../theme/round_button_fill.dart';
 import '../../themes/text_field_widget.dart';
 import '../../themes/theme_controller.dart';
 
@@ -263,7 +258,8 @@ class LoginScreen extends StatelessWidget {
                     if (controller.emailEditingController.value.text
                         .trim()
                         .isEmpty) {
-                      ShowToastDialog.showToast("Please enter valid email".tr());
+                      ShowToastDialog.showToast(
+                          "Please enter valid email".tr());
                     } else if (controller.passwordEditingController.value.text
                         .trim()
                         .isEmpty) {

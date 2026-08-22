@@ -11,10 +11,8 @@ import 'package:door_delights_driver/widget/geoflutterfire/src/models/point.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as latlong;
-import 'package:intl/intl.dart';
 
 class ParcelSearchController extends GetxController {
   // Implement parcel search logic here

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../../constant/show_toast_dialog.dart';
 import '../../controllers/login_controller.dart';
 import '../../theme/app_them_data.dart';
@@ -240,7 +239,8 @@ class LoginScreen extends StatelessWidget {
                     if (controller.emailEditingController.value.text
                         .trim()
                         .isEmpty) {
-                      ShowToastDialog.showToast("Please enter valid email".tr());
+                      ShowToastDialog.showToast(
+                          "Please enter valid email".tr());
                     } else if (controller.passwordEditingController.value.text
                         .trim()
                         .isEmpty) {

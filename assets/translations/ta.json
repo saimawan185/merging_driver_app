@@ -353,7 +353,7 @@
   "date&time": "தேதி & நேரம்",
   "days": "நாட்கள்",
   "deactivate_pack_time": "தேர்வு நேரத்தை செயலிழக்கச் செய்யவும்",
-  "Decline": "நிராகரிக்கவும்",
+  "Decline": "நிராகரி",
   "delay_price": "தாமதக் கட்டணம்",
   "delete": "நீக்கு",
   "Delete": "நீக்கு",
@@ -1781,5 +1781,18 @@
   "{} sent a video": "{} ஒரு வீடியோவை அனுப்பியுள்ளார்",
   "{} sent a voice message": "{} ஒரு குரல் செய்தியை அனுப்பியுள்ளார்",
   "{} sent an image": "{} ஒரு படத்தை அனுப்பியுள்ளார்",
-  "}": "}"
+  "}": "}",
+  "Accept Now": "இப்போது ஏற்றுக்கொள்",
+  "New Order Request": "புதிய ஆர்டர் கோரிக்கை",
+  "Accepting...": "ஏற்கப்படுகிறது...",
+  "Order accepted": "ஆர்டர் ஏற்கப்பட்டது",
+  "Order declined": "ஆர்டர் நிராகரிக்கப்பட்டது",
+  "Please login again": "மீண்டும் உள்நுழையவும்",
+  "Something went wrong. Please try again.": "ஏதோ தவறு நடந்துவிட்டது. மீண்டும் முயற்சிக்கவும்.",
+  "Allow order popup": "ஆர்டர் பாப்அப்பை அனுமதிக்கவும்",
+  "To show new ride/order requests when the app is closed, allow \"Display over other apps\" for Door Delights Driver.": "ஆப் மூடப்பட்டிருக்கும்போது புதிய ரைடு/ஆர்டர்களைக் காட்ட, Door Delights Driver-க்கு \"மற்ற ஆப்ஸின் மேல் காட்டு\" அனுமதி அளிக்கவும்.",
+  "Later": "பிறகு",
+  "Open Settings": "அமைப்புகளைத் திற",
+  "Allow full screen alerts": "முழுத்திரை எச்சரிக்கைகளை அனுமதிக்கவும்",
+  "Allow full screen notifications so new orders can appear over other apps.": "புதிய ஆர்டர்கள் மற்ற ஆப்ஸின் மேல் தோன்ற முழுத்திரை அறிவிப்புகளை அனுமதிக்கவும்."
 }

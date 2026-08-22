@@ -11,6 +11,8 @@ import 'package:get/instance_manager.dart';
 import 'package:get/route_manager.dart';
 import 'package:get/state_manager.dart';
 import 'package:in_app_update/in_app_update.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 import 'app/splash_screen.dart';
 import 'constant/constant.dart';
 import 'controllers/global_setting_controller.dart';
@@ -23,13 +25,16 @@ import 'themes/easy_loading_config.dart';
 import 'themes/theme_controller.dart';
 import 'userPrefrence.dart';
 import 'utils/fire_store_utils.dart';
+import 'utils/notification_service.dart';
 import 'utils/preferences.dart';
+import 'services/incoming_order_bridge.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   FirebaseApp firebaseApp = await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  FirebaseMessaging.onBackgroundMessage(firebaseMessageBackgroundHandle);
 
   if (currentEnv == FirebaseEnv.defaultDb) {
     FireStoreUtils.instance.init(firebaseApp);
@@ -111,6 +116,7 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
+    IncomingOrderBridge.bind();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final prefsCode = Preferences.getString('languageCode', defaultValue: '');
       String code;
@@ -155,8 +161,10 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
-        state == AppLifecycleState.paused) {
-      AudioPlayerService.initAudio();
+        state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.detached) {
+      AudioPlayerService.playSound(false);
     }
   }
 

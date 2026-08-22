@@ -8,18 +8,24 @@ import 'package:door_delights_driver/app/owner_screen/owner_dashboard_screen.dar
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/controllers/signup_controller.dart';
 import 'package:door_delights_driver/models/user_model.dart';
+import 'package:door_delights_driver/services/incoming_order_bridge.dart';
+import 'package:door_delights_driver/services/incoming_order_handler.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/notification_service.dart';
 import 'package:door_delights_driver/utils/preferences.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart' hide Trans;
-import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 
 class SplashController extends GetxController {
   @override
   void onInit() {
-    Timer(const Duration(seconds: 3), () => redirectScreen());
+    final hasPending =
+        Preferences.getString(IncomingOrderHandler.pendingKey).isNotEmpty;
+    // Open faster when woken by an incoming-order intent.
+    Timer(
+      Duration(milliseconds: hasPending ? 400 : 3000),
+      () => redirectScreen(),
+    );
     super.onInit();
   }
 
@@ -42,11 +48,17 @@ class SplashController extends GetxController {
                 if (userModel.active == true) {
                   userModel.fcmToken = await NotificationService.getToken();
                   await FireStoreUtils.updateUser(userModel);
+                  Constant.userModel = userModel;
                   if (userModel.isOwner == true) {
                     Get.offAll(OwnerDashboardScreen());
                   } else {
                     SignupController.navigateByUserModel(userModel);
                   }
+                  IncomingOrderHandler.handlePendingIfAny();
+                  // After dashboard mounts — show "Display over other apps" dialog.
+                  Future.delayed(const Duration(milliseconds: 1200), () {
+                    IncomingOrderBridge.ensureIncomingOrderPermissions();
+                  });
                 } else {
                   await FirebaseAuth.instance.signOut();
                   Get.offAll(const LoginScreen());

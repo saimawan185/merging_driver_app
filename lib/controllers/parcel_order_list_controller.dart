@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:intl/intl.dart';
 import '../models/parcel_order_model.dart';
 import '../utils/fire_store_utils.dart'; // adjust path if needed
@@ -35,7 +34,8 @@ class ParcelOrderListController extends GetxController {
   void listenParcelOrders() {
     isLoading.value = true;
     _parcelSubscription?.cancel();
-    _parcelSubscription = FireStoreUtils.listenParcelOrders(driverId.value).listen(
+    _parcelSubscription =
+        FireStoreUtils.listenParcelOrders(driverId.value).listen(
       (orders) {
         parcelOrder.assignAll(orders);
         isLoading.value = false;
@@ -51,13 +51,30 @@ class ParcelOrderListController extends GetxController {
   List<ParcelOrderModel> getOrdersForTab(String tab) {
     switch (tab) {
       case "In Transit":
-        return parcelOrder.where((order) => ["Order Placed", "Order Accepted", "Driver Accepted", "Driver Pending", "Order Shipped", "In Transit"].contains(order.status)).toList();
+        return parcelOrder
+            .where((order) => [
+                  "Order Placed",
+                  "Order Accepted",
+                  "Driver Accepted",
+                  "Driver Pending",
+                  "Order Shipped",
+                  "In Transit"
+                ].contains(order.status))
+            .toList();
 
       case "Delivered":
-        return parcelOrder.where((order) => ["Order Completed"].contains(order.status)).toList();
+        return parcelOrder
+            .where((order) => ["Order Completed"].contains(order.status))
+            .toList();
 
       case "Cancelled":
-        return parcelOrder.where((order) => ["Order Rejected", "Order Cancelled", "Driver Rejected"].contains(order.status)).toList();
+        return parcelOrder
+            .where((order) => [
+                  "Order Rejected",
+                  "Order Cancelled",
+                  "Driver Rejected"
+                ].contains(order.status))
+            .toList();
 
       default:
         return [];

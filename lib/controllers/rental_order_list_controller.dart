@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'package:get/get.dart' hide Trans;
-import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../models/rental_order_model.dart';
 import '../utils/fire_store_utils.dart';
 
@@ -64,10 +62,18 @@ class RentalOrderListController extends GetxController {
             .toList();
 
       case "Completed":
-        return rentalOrders.where((order) => ["Order Completed"].contains(order.status)).toList();
+        return rentalOrders
+            .where((order) => ["Order Completed"].contains(order.status))
+            .toList();
 
       case "Cancelled":
-        return rentalOrders.where((order) => ["Order Rejected", "Order Cancelled", "Driver Rejected"].contains(order.status)).toList();
+        return rentalOrders
+            .where((order) => [
+                  "Order Rejected",
+                  "Order Cancelled",
+                  "Driver Rejected"
+                ].contains(order.status))
+            .toList();
 
       default:
         return [];

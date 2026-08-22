@@ -1,7 +1,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:easy_localization/easy_localization.dart';
 
 /// Draw a dotted line.
 ///
@@ -37,12 +36,12 @@ class DottedLine extends StatelessWidget {
     this.dashRadius = 0.0,
     this.dashGapRadius = 0.0,
   })  : assert(
-  dashGradient == null || dashGradient.length == 2,
-  'The dashGradient must have only two colors.\n'
-      'The beginning color and the ending color of the gradient.'),
+            dashGradient == null || dashGradient.length == 2,
+            'The dashGradient must have only two colors.\n'
+            'The beginning color and the ending color of the gradient.'),
         assert(
-        dashGapGradient == null || dashGapGradient.length == 2,
-        'The dashGapGradient must have only two colors.\n'
+            dashGapGradient == null || dashGapGradient.length == 2,
+            'The dashGapGradient must have only two colors.\n'
             'The beginning color and the ending color of the gradient.');
 
   /// The direction of the entire dotted line. Default [Axis.horizontal].
@@ -129,8 +128,8 @@ class DottedLine extends StatelessWidget {
   double _getLineLength(BoxConstraints constraints, bool isHorizontal) {
     return lineLength == double.infinity
         ? isHorizontal
-        ? constraints.maxWidth
-        : constraints.maxHeight
+            ? constraints.maxWidth
+            : constraints.maxHeight
         : lineLength;
   }
 
@@ -165,11 +164,11 @@ class DottedLine extends StatelessWidget {
     return dashGradient == null
         ? dashColor
         : _calculateGradientColor(
-      dashGradient![0],
-      dashGradient![1],
-      maxDashCount,
-      index,
-    );
+            dashGradient![0],
+            dashGradient![1],
+            maxDashCount,
+            index,
+          );
   }
 
   Widget _buildDashGap(bool isHorizontal, Color color) {
@@ -187,19 +186,19 @@ class DottedLine extends StatelessWidget {
     return dashGapGradient == null
         ? dashGapColor
         : _calculateGradientColor(
-      dashGapGradient![0],
-      dashGapGradient![1],
-      maxDashGapCount,
-      index,
-    );
+            dashGapGradient![0],
+            dashGapGradient![1],
+            maxDashGapCount,
+            index,
+          );
   }
 
   Color _calculateGradientColor(
-      Color startColor,
-      Color endColor,
-      int maxItemCount,
-      int index,
-      ) {
+    Color startColor,
+    Color endColor,
+    int maxItemCount,
+    int index,
+  ) {
     var diffAlpha = (endColor.alpha - startColor.alpha);
     var diffRed = (endColor.red - startColor.red);
     var diffGreen = (endColor.green - startColor.green);

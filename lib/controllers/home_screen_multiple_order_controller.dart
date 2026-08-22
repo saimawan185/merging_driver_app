@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:door_delights_driver/constant/collection_name.dart';
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/constant/send_notification.dart';
@@ -9,7 +7,6 @@ import 'package:door_delights_driver/models/user_model.dart';
 import 'package:door_delights_driver/services/audio_player_service.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:get/get.dart' hide Trans;
-import 'package:easy_localization/easy_localization.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import '../constants.dart';

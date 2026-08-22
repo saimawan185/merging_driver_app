@@ -1781,5 +1781,18 @@
   "{} sent a video": "{} වීඩියෝවක් එවා ඇත",
   "{} sent a voice message": "{} හඬ පණිවිඩයක් එවා ඇත",
   "{} sent an image": "{} පින්තූරයක් එව්වා",
-  "}": "}"
+  "}": "}",
+  "Accept Now": "දැන්ම ගන්න",
+  "New Order Request": "නව ඇණවුම් ඉල්ලීම",
+  "Accepting...": "පිළිගනිමින්...",
+  "Order accepted": "ඇණවුම පිළිගන්නා ලදී",
+  "Order declined": "ඇණවුම ප්‍රතික්ෂේප කරන ලදී",
+  "Please login again": "කරුණාකර නැවත ලොග් වන්න",
+  "Something went wrong. Please try again.": "යමක් වැරදී ඇත. කරුණාකර නැවත උත්සාහ කරන්න.",
+  "Allow order popup": "ඇණවුම් පොප්අප් අවසර දෙන්න",
+  "To show new ride/order requests when the app is closed, allow \"Display over other apps\" for Door Delights Driver.": "යෙදුම වසා ඇති විට නව ගමන්/ඇණවුම් පෙන්වීමට Door Delights Driver සඳහා \"වෙනත් යෙදුම් මත ප්‍රදර්ශනය\" අවසර දෙන්න.",
+  "Later": "පසුව",
+  "Open Settings": "සැකසුම් විවෘත කරන්න",
+  "Allow full screen alerts": "පූර්ණ තිර ඇඟවීම් අවසර දෙන්න",
+  "Allow full screen notifications so new orders can appear over other apps.": "නව ඇණවුම් වෙනත් යෙදුම් මත පෙනීමට පූර්ණ තිර දැනුම්දීම් අවසර දෙන්න."
 }

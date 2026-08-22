@@ -2,6 +2,7 @@ import 'package:door_delights_driver/constant/collection_name.dart';
 import 'package:door_delights_driver/constant/constant.dart';
 import 'package:door_delights_driver/constant/show_toast_dialog.dart';
 import 'package:door_delights_driver/models/user_model.dart';
+import 'package:door_delights_driver/services/incoming_order_bridge.dart';
 import 'package:door_delights_driver/utils/fire_store_utils.dart';
 import 'package:door_delights_driver/utils/preferences.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -24,6 +25,12 @@ class CabDashBoardController extends GetxController {
     getTheme();
     loadUserSections();
     super.onInit();
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    IncomingOrderBridge.ensureIncomingOrderPermissions();
   }
 
   Future<void> loadUserSections() async {

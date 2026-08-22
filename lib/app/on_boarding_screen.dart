@@ -3,12 +3,12 @@ import 'package:door_delights_driver/themes/responsive.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import '../../controllers/on_boarding_controller.dart';
 import '../../themes/app_them_data.dart';
 import '../../utils/network_image_widget.dart';
 import '../../utils/preferences.dart';
 import '../themes/round_button_fill.dart';
+import '../themes/theme_controller.dart';
 import 'auth_screen/login_screen.dart';
 
 class OnboardingScreen extends StatelessWidget {
@@ -16,6 +16,9 @@ class OnboardingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeController = Get.find<ThemeController>();
+    final isDark = themeController.isDark.value;
+
     return GetX<OnboardingController>(
       init: OnboardingController(),
       builder: (controller) {
@@ -49,14 +52,18 @@ class OnboardingScreen extends StatelessWidget {
                                       text:
                                           "${controller.currentPage.value + 1}",
                                       style: AppThemeData.regularTextStyle(
-                                        color: AppThemeData.grey800,
+                                        color: isDark
+                                            ? AppThemeData.grey50
+                                            : AppThemeData.grey800,
                                       ),
                                     ),
                                     TextSpan(
                                       text:
                                           "/${controller.onboardingList.length}",
                                       style: AppThemeData.regularTextStyle(
-                                        color: AppThemeData.grey400,
+                                        color: isDark
+                                            ? AppThemeData.grey50
+                                            : AppThemeData.grey400,
                                       ),
                                     ),
                                   ],
@@ -77,7 +84,9 @@ class OnboardingScreen extends StatelessWidget {
                                         Text(
                                           item.title ?? '',
                                           style: AppThemeData.boldTextStyle(
-                                            color: AppThemeData.grey900,
+                                            color: isDark
+                                                ? AppThemeData.grey50
+                                                : AppThemeData.grey900,
                                           ),
                                           textAlign: TextAlign.center,
                                         ),

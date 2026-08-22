@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ic_launcher_background">#ffffff</color>
-
+    <color name="incoming_order_green">#5BC236</color>
+    <color name="incoming_order_card">#1C1C1E</color>
+    <color name="incoming_order_chip">#2C2C2E</color>
+    <color name="incoming_order_close">#3A3A3C</color>
+    <color name="incoming_order_red">#E53935</color>
+    <color name="incoming_order_dim">#99000000</color>
 </resources>
