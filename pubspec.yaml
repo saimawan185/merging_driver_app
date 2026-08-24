@@ -4,8 +4,8 @@ description: A new Flutter application.
 publish_to: 'none' 
 
 #Flutter 3.41.6
-# version: 1.0.25+1  #IOS
-version: 2.1.2+50  #Android
+version: 1.0.26+1  #IOS
+# version: 2.2.2+51  #Android
 
 environment:
   sdk: ">=3.0.5 <4.0.0"
