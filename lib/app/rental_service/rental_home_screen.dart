@@ -26,6 +26,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:timelines_plus/timelines_plus.dart';
 import '../../models/user_model.dart';
 import '../chat_screens/chat_screen.dart';
+import '../../services/FirebaseHelper.dart' as FirebaseHelper;
 
 class RentalHomeScreen extends StatelessWidget {
   const RentalHomeScreen({super.key});
@@ -1252,10 +1253,11 @@ class RentalHomeScreen extends StatelessWidget {
                         "type": "rental_order",
                         "orderId": rentalBookingData.id
                       };
-                      SendNotification.sendFcmMessage(
-                          Constant.rentalCompleted,
-                          rentalBookingData.author!.fcmToken.toString(),
-                          payLoad);
+                      FirebaseHelper.FireStoreUtils.sendFcmMessage(
+                        Constant.rentalCompleted,
+                        rentalBookingData.author!.fcmToken.toString(),
+                        payLoad,
+                      );
                       ShowToastDialog.closeLoader();
                       ShowToastDialog.showToast(
                           "Ride completed successfully".tr());

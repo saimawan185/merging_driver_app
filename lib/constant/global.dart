@@ -1,13 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import '../constants.dart';
 
 Future<dynamic> getDurationDistance(
     LatLng departureLatLong, LatLng destinationLatLong) async {
-  log("Get duration distane");
-
   try {
     double originLat, originLong, destLat, destLong;
     originLat = departureLatLong.latitude;

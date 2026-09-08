@@ -29,7 +29,7 @@ import 'utils/notification_service.dart';
 import 'utils/preferences.dart';
 import 'services/incoming_order_bridge.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   FirebaseApp firebaseApp = await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

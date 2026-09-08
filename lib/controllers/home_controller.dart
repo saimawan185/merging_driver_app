@@ -17,7 +17,6 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
@@ -108,7 +107,6 @@ class HomeController extends GetxController {
 
     await FireStoreUtils.updateUser(driverModel.value);
     await FireStoreUtils.setOrder(currentOrder.value);
-    print("SendNotification ===========>");
     SendNotification.sendFcmMessage(Constant.driverAcceptedNotification,
         currentOrder.value.author?.fcmToken ?? '', {});
     SendNotification.sendFcmMessage(Constant.driverAcceptedNotification,

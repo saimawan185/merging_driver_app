@@ -759,7 +759,6 @@ class FireStoreUtils {
   }) async {
     dynamic walletAmount = 0;
     await firestore.collection(USERS).doc(userId).get().then((value) async {
-      log("Userr got");
       DocumentSnapshot<Map<String, dynamic>> userDocument = value;
       if (userDocument.data() != null && userDocument.exists) {
         try {
@@ -785,14 +784,10 @@ class FireStoreUtils {
           print(error);
           if (error.toString() ==
               "Bad state: field does not exist within the DocumentSnapshotPlatform") {
-            print("does not exist");
           } else {
-            print("went wrong!!");
             walletAmount = "ERROR";
           }
         }
-        print("data val");
-        print(walletAmount);
         return walletAmount; //User.fromJson(userDocument.data()!);
       } else {
         return 0.111;
@@ -1857,22 +1852,41 @@ class FireStoreUtils {
         .set(orderModel.toJson(), SetOptions(merge: true));
   }
 
-  late StreamController<OrderModel> ordersStreamController;
-  late StreamSubscription ordersStreamSub;
+  StreamController<OrderModel>? _ordersStreamController;
+  StreamSubscription? _ordersStreamSub;
 
-  Stream<OrderModel?> getOrderByID(String inProgressOrderID) async* {
-    ordersStreamController = StreamController();
-    ordersStreamSub = firestore
-        .collection(ORDERS)
-        .doc(inProgressOrderID)
-        .snapshots()
-        .listen((onData) async {
-      if (onData.data() != null) {
-        OrderModel? orderModel = OrderModel.fromJson(onData.data()!);
-        ordersStreamController.sink.add(orderModel);
-      }
-    });
-    yield* ordersStreamController.stream;
+  Stream<OrderModel> getOrderByID(String inProgressOrderID) {
+    closeOrderStream();
+
+    _ordersStreamController = StreamController<OrderModel>.broadcast();
+    _ordersStreamSub =
+        firestore.collection(ORDERS).doc(inProgressOrderID).snapshots().listen(
+      (snapshot) {
+        if (snapshot.exists) {
+          try {
+            final order = OrderModel.fromJson(snapshot.data()!);
+            _ordersStreamController?.add(order);
+          } catch (e, stack) {
+            _ordersStreamController?.addError(e, stack);
+          }
+        }
+      },
+      onError: (error) {
+        _ordersStreamController?.addError(error);
+      },
+      onDone: () {
+        _ordersStreamController?.close();
+      },
+    );
+
+    return _ordersStreamController!.stream;
+  }
+
+  void closeOrderStream() {
+    _ordersStreamSub?.cancel();
+    _ordersStreamSub = null;
+    _ordersStreamController?.close();
+    _ordersStreamController = null;
   }
 
   StreamController<CabOrderModel>? cabOrdersStreamController;

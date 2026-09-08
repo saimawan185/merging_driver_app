@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
-
 import '../constant/constant.dart';
 import '../constant/send_notification.dart';
 import '../constant/show_toast_dialog.dart';
@@ -10,6 +8,7 @@ import '../models/order_model.dart';
 import '../models/wallet_transaction_model.dart';
 import '../services/audio_player_service.dart';
 import '../utils/fire_store_utils.dart';
+import '../services/FirebaseHelper.dart' as FirebaseHelper;
 
 class DeliverOrderController extends GetxController {
   RxBool isLoading = true.obs;
@@ -79,7 +78,7 @@ class DeliverOrderController extends GetxController {
       }
     });
 
-    await SendNotification.sendFcmMessage(Constant.driverCompleted,
+    await FirebaseHelper.FireStoreUtils.sendFcmMessage(Constant.driverCompleted,
         orderModel.value.author!.fcmToken.toString(), {});
     ShowToastDialog.closeLoader();
     Get.back(result: true);

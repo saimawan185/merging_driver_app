@@ -373,15 +373,19 @@ class _OrderCardState extends State<_OrderCard> {
   Future<void> _loadOrder() async {
     final order = await FireStoreUtils.getOrderById(widget.orderId);
     if (order != null) {
-      setState(() {
-        _orderModel = order;
-        _isLoading = false;
-      });
-      _fetchDistances();
+      if (mounted) {
+        setState(() {
+          _orderModel = order;
+          _isLoading = false;
+        });
+        _fetchDistances();
+      }
     } else {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 

@@ -322,77 +322,126 @@ class SignupController extends GetxController {
   }
 
   Future<void> _uploadImagesAndUpdateUser(UserModel user) async {
-    final List<Future> uploadFutures = [];
-    final List<File> filesToDelete = [];
+    final List<String> errors = [];
+
+    // ── Prepare upload tasks ──────────────────────────────────────────────
+    final uploadFutures = <Future<MapEntry<String, String?>>>[];
 
     if (profileImage.value != null) {
-      final file = profileImage.value!;
-      filesToDelete.add(file);
       uploadFutures.add(
         FireStoreUtils.uploadUserImageToFireStorage(
-          file,
+          profileImage.value!,
           user.id!,
-        ).then((url) => user.profilePictureURL = url),
+        ).then((url) => MapEntry('profile', url)).catchError((e, stack) {
+          errors.add('Profile image: $e');
+          log('Profile upload error: $e');
+          log('Stack: $stack');
+          return MapEntry('profile', null);
+        }),
       );
     }
 
     if (carImage.value != null) {
-      final file = carImage.value!;
-      filesToDelete.add(file);
       uploadFutures.add(
         FireStoreUtils.uploadCarImageToFireStorage(
-          file,
+          carImage.value!,
           user.id!,
-        ).then((url) => user.carPictureURL = url),
+        ).then((url) => MapEntry('car', url)).catchError((e, stack) {
+          errors.add('Car image: $e');
+          log('Car upload error: $e');
+          log('Stack: $stack');
+          return MapEntry('car', null);
+        }),
       );
     }
 
     if (vehicleLicenseImage.value != null) {
-      final file = vehicleLicenseImage.value!;
-      filesToDelete.add(file);
       uploadFutures.add(
         FireStoreUtils.uploadCarImageToFireStorage(
-          file,
+          vehicleLicenseImage.value!,
           'vehicle_license_${user.id}',
-        ).then((url) => user.carProofPictureURL = url),
+        ).then((url) => MapEntry('vehicleLicense', url)).catchError((e, stack) {
+          errors.add('Vehicle license: $e');
+          log('Vehicle license upload error: $e');
+          log('Stack: $stack');
+          return MapEntry('vehicleLicense', null);
+        }),
       );
     }
 
     if (driverLicenseImage.value != null) {
-      final file = driverLicenseImage.value!;
-      filesToDelete.add(file);
       uploadFutures.add(
         FireStoreUtils.uploadCarImageToFireStorage(
-          file,
+          driverLicenseImage.value!,
           'driver_license_${user.id}',
-        ).then((url) => user.driverProofPictureURL = url),
+        ).then((url) => MapEntry('driverLicense', url)).catchError((e, stack) {
+          errors.add('Driver license: $e');
+          log('Driver license upload error: $e');
+          log('Stack: $stack');
+          return MapEntry('driverLicense', null);
+        }),
       );
     }
 
-    try {
-      if (uploadFutures.isNotEmpty) {
-        await Future.wait(uploadFutures);
-      }
-      await FireStoreUtils.updateUser(user);
-    } finally {
-      profileImage.value = null;
-      carImage.value = null;
-      vehicleLicenseImage.value = null;
-      driverLicenseImage.value = null;
-      for (final file in filesToDelete) {
-        try {
-          if (await file.exists()) {
-            file.delete();
-          }
-        } catch (e) {
-          print('Error deleting temporary file: $e');
+    // ── Run all uploads concurrently ──────────────────────────────────────
+    final results = await Future.wait(uploadFutures);
+
+    // ── Apply successful uploads ──────────────────────────────────────────
+    for (final entry in results) {
+      final url = entry.value;
+      if (url != null) {
+        switch (entry.key) {
+          case 'profile':
+            user.profilePictureURL = url;
+            break;
+          case 'car':
+            user.carPictureURL = url;
+            break;
+          case 'vehicleLicense':
+            user.carProofPictureURL = url;
+            break;
+          case 'driverLicense':
+            user.driverProofPictureURL = url;
+            break;
         }
       }
     }
+
+    // ── Update user in Firestore ──────────────────────────────────────────
+    await FireStoreUtils.updateUser(user);
+
+    // ── Feedback ──────────────────────────────────────────────────────────
+    if (errors.isNotEmpty) {
+      ShowToastDialog.showToast(
+        'Profile created, but some images failed to upload: ${errors.join('; ')}',
+      );
+    } else {
+      ShowToastDialog.showToast('Profile created successfully.');
+    }
+
+    // ── Clean up ──────────────────────────────────────────────────────────
+    _clearTempFiles();
+  }
+
+  void _clearTempFiles() {
+    final files = [
+      profileImage.value,
+      carImage.value,
+      vehicleLicenseImage.value,
+      driverLicenseImage.value,
+    ];
+    for (final file in files) {
+      if (file != null && file.existsSync()) {
+        file.deleteSync();
+      }
+    }
+    profileImage.value = null;
+    carImage.value = null;
+    vehicleLicenseImage.value = null;
+    driverLicenseImage.value = null;
   }
 
   // ── Sign up ──────────────────────────────────────────────────────
-
   Future<void> signUpWithEmailAndPassword() async {
     await signUp();
   }
@@ -433,9 +482,7 @@ class SignupController extends GetxController {
         } else if (e.code == 'invalid-email') {
           ShowToastDialog.showToast("Enter email is Invalid".tr());
         }
-        print(e);
       } catch (e) {
-        print(e);
         ShowToastDialog.showToast(e.toString());
       }
     }

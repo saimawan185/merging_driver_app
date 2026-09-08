@@ -112,35 +112,37 @@ class FireStoreUtils {
     }
   }
 
-  static Future<String> uploadUserImageToFireStorage(
+  static Future<String?> uploadUserImageToFireStorage(
     File image,
     String userID,
   ) async {
-    Reference upload = storage.child(STORAGE_ROOT + '/images/$userID.png');
-    UploadTask uploadTask = upload.putFile(image);
-    var downloadUrl = await (await uploadTask.whenComplete(
-      () {},
-    ))
-        .ref
-        .getDownloadURL();
-    return downloadUrl.toString();
+    try {
+      Reference upload = storage.child(STORAGE_ROOT + '/images/$userID.png');
+      UploadTask uploadTask = upload.putFile(image);
+      final snapshot = await uploadTask.whenComplete(() {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl.toString();
+    } catch (e) {
+      return null;
+    }
   }
 
-  static Future<String> uploadCarImageToFireStorage(
+  static Future<String?> uploadCarImageToFireStorage(
     File image,
     String userID,
   ) async {
-    Reference upload = storage.child(
-      STORAGE_ROOT + '/drivers/carImages/$userID.png',
-    );
-    File compressedCarImage = await compressImage(image);
-    UploadTask uploadTask = upload.putFile(compressedCarImage);
-    var downloadUrl = await (await uploadTask.whenComplete(
-      () {},
-    ))
-        .ref
-        .getDownloadURL();
-    return downloadUrl.toString();
+    try {
+      Reference upload = storage.child(
+        STORAGE_ROOT + '/drivers/carImages/$userID.png',
+      );
+      final File compressedCarImage = await compressImage(image);
+      UploadTask uploadTask = upload.putFile(compressedCarImage);
+      final snapshot = await uploadTask.whenComplete(() {});
+      final downloadUrl = await snapshot.ref.getDownloadURL();
+      return downloadUrl.toString();
+    } catch (e) {
+      return null;
+    }
   }
 
   static Future<CurrencyModel?> getCurrency() async {
@@ -157,7 +159,6 @@ class FireStoreUtils {
       });
       return currency;
     } catch (e) {
-      log("Currency error: $e");
       return null;
     }
   }

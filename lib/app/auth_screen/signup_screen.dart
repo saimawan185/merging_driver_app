@@ -931,7 +931,8 @@ class SignupScreen extends StatelessWidget {
                       return;
                     }
                     if (controller.carImage.value == null) {
-                      ShowToastDialog.showToast('Please upload a car image.'.tr());
+                      ShowToastDialog.showToast(
+                          'Please upload a car image.'.tr());
                       return;
                     }
                     if (controller.vehicleLicenseImage.value == null) {
@@ -956,11 +957,16 @@ class SignupScreen extends StatelessWidget {
                         .lastNameEditingController.value.text.isEmpty) {
                       ShowToastDialog.showToast("Please enter last name".tr());
                     } else if (controller
-                        .emailEditingController.value.text.isEmpty) {
-                      ShowToastDialog.showToast("Please enter valid email".tr());
+                            .emailEditingController.value.text.isEmpty ||
+                        !controller.emailEditingController.value.text
+                            .trim()
+                            .isEmail) {
+                      ShowToastDialog.showToast(
+                          "Please enter valid email".tr());
                     } else if (controller
                         .phoneNUmberEditingController.value.text.isEmpty) {
-                      ShowToastDialog.showToast("Please enter Phone number".tr());
+                      ShowToastDialog.showToast(
+                          "Please enter Phone number".tr());
                     } else if (controller.type.value != "google" &&
                         controller.type.value != "apple" &&
                         controller.type.value != "mobileNumber" &&

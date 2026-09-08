@@ -40,8 +40,7 @@ class HomeScreen extends StatefulWidget {
   HomeScreenState createState() => HomeScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final fireStoreUtils = FireStoreUtils();
 
   GoogleMapController? _mapController;
@@ -299,9 +298,6 @@ class HomeScreenState extends State<HomeScreen>
         _isFirstOrderLoad = false;
         previousStatus = currentOrder?.status;
         getDirections();
-      } else {
-        log("Order current status: ${currentOrder!.status}");
-        log("Order prev status: ${previousStatus}");
       }
     });
   }
@@ -455,7 +451,6 @@ class HomeScreenState extends State<HomeScreen>
     required double fromRotation,
     required double toRotation,
   }) {
-    _markerAnimationController?.dispose();
     _markerAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -526,8 +521,7 @@ class HomeScreenState extends State<HomeScreen>
     // if (FireStoreUtils().driverStreamSub != null) {
     //   FireStoreUtils().driverStreamSub!.cancel();
     // }
-    FireStoreUtils().ordersStreamController.close();
-    FireStoreUtils().ordersStreamSub.cancel();
+    FireStoreUtils().closeOrderStream();
 
     _remaningTimer?.cancel();
     _markerAnimationController?.dispose();
@@ -641,13 +635,15 @@ class HomeScreenState extends State<HomeScreen>
             : FloatingActionButton(
                 onPressed: () {
                   getCurrentOrder(currentOrder!.id!);
-                  setState(() {
-                    if (isShow == true) {
-                      isShow = false;
-                    } else {
-                      isShow = true;
-                    }
-                  });
+                  if (mounted) {
+                    setState(() {
+                      if (isShow == true) {
+                        isShow = false;
+                      } else {
+                        isShow = true;
+                      }
+                    });
+                  }
                 },
                 child: Icon(
                   isShow ? Icons.close : Icons.remove_red_eye,
@@ -760,8 +756,6 @@ class HomeScreenState extends State<HomeScreen>
 
   Future<List<LatLng>> _getRouteCoordinates(
       LatLng origin, LatLng destination) async {
-    log("Getting coordinates from ${origin.latitude},${origin.longitude} to ${destination.latitude},${destination.longitude}");
-
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       request: PolylineRequest(
         origin: PointLatLng(origin.latitude, origin.longitude),
@@ -777,7 +771,6 @@ class HomeScreenState extends State<HomeScreen>
       }
     }
 
-    log("Route calculated: ${polylineCoordinates.length} points");
     return polylineCoordinates;
   }
 

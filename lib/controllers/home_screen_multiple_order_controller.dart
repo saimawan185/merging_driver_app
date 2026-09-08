@@ -66,9 +66,9 @@ class HomeScreenMultipleOrderController extends GetxController {
   }
 
   Future<void> acceptOrder(OrderModel currentOrder) async {
-    await AudioPlayerService.playSound(false);
     ShowToastDialog.showLoader("Please wait".tr());
 
+    await AudioPlayerService.playSound(false);
     driverModel.value.inProgressOrderID = currentOrder.id;
     driverModel.value.orderRequestData = null;
     final orderId = currentOrder.id;

@@ -7,7 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:door_delights_driver/app/wallet_screen/payment_list_screen.dart';
 import 'package:door_delights_driver/constant/collection_name.dart';
 import 'package:door_delights_driver/constant/constant.dart';
-import 'package:door_delights_driver/constant/send_notification.dart';
 import 'package:door_delights_driver/constant/show_toast_dialog.dart';
 import 'package:door_delights_driver/models/cab_order_model.dart';
 import 'package:door_delights_driver/models/section_model.dart';
@@ -23,10 +22,10 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart' hide Trans;
 import 'package:easy_localization/easy_localization.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart' as location;
+import '../services/FirebaseHelper.dart' as FirebaseHelper;
 
 class CabHomeController extends GetxController {
   RxBool isLoading = true.obs;
@@ -176,7 +175,8 @@ class CabHomeController extends GetxController {
 
       ShowToastDialog.closeLoader();
 
-      await SendNotification.sendFcmMessage(Constant.driverAcceptedNotification,
+      await FirebaseHelper.FireStoreUtils.sendFcmMessage(
+          Constant.driverAcceptedNotification,
           currentOrder.value.author?.fcmToken ?? "", {});
     } catch (e, s) {
       ShowToastDialog.closeLoader();
