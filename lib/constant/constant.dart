@@ -28,7 +28,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import 'package:http/http.dart' as http;
 import 'package:easy_localization/easy_localization.dart';
-
+import 'package:cloud_functions/cloud_functions.dart';
 import '../constants.dart';
 import 'distance_cache.dart';
 
@@ -276,58 +276,90 @@ class Constant {
     required String lat2,
     required String lng2,
   }) async {
-    // 1) Cache hit → 0 API call
-    final cached = DistanceCache.get(lat1, lng1, lat2, lng2);
-    if (cached != null) return cached;
+    return DistanceCache.getOrFetch(lat1, lng1, lat2, lng2, () async {
+      try {
+        final callable = FirebaseFunctions.instance.httpsCallable(
+          'computeRouteDistance',
+          options: HttpsCallableOptions(timeout: const Duration(seconds: 20)),
+        );
 
-    const url = 'https://routes.googleapis.com/directions/v2:computeRoutes';
+        final result = await callable.call({
+          'lat1': double.parse(lat1),
+          'lng1': double.parse(lng1),
+          'lat2': double.parse(lat2),
+          'lng2': double.parse(lng2),
+        });
 
-    final body = {
-      'origin': {
-        'location': {
-          'latLng': {
-            'latitude': double.parse(lat1),
-            'longitude': double.parse(lng1),
-          }
-        }
-      },
-      'destination': {
-        'location': {
-          'latLng': {
-            'latitude': double.parse(lat2),
-            'longitude': double.parse(lng2),
-          }
-        }
-      },
-      'travelMode': 'DRIVE',
-      'routingPreference': 'TRAFFIC_AWARE',
-      'units': 'METRIC',
-    };
+        final data = result.data as Map<String, dynamic>;
+        final distance = data['distance']?.toString();
+        final match = data['match'] ?? 'unknown';
+        final cached = data['cached'] ?? false;
 
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Goog-Api-Key': GOOGLE_API_KEY,
-        'X-Goog-FieldMask': 'routes.distanceMeters',
-      },
-      body: jsonEncode(body),
-    );
+        debugPrint('[Distance] $distance km | match=$match | cached=$cached');
 
-    if (response.statusCode != 200) return null;
-
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
-    final routes = decoded['routes'] as List?;
-    if (routes == null || routes.isEmpty) return null;
-
-    final meters = (routes.first['distanceMeters'] as num?)?.toInt() ?? 0;
-    final distance = distanceType == 'miles' ? meters / 1609 : meters / 1000;
-    final value = distance.toStringAsFixed(2);
-
-    // 2) Save for next time
-    DistanceCache.set(lat1, lng1, lat2, lng2, value);
-    return value;
+        return distance;
+      } on FirebaseFunctionsException catch (e) {
+        debugPrint('[Distance] Function error: ${e.code} - ${e.message}');
+        return null;
+      } catch (e) {
+        debugPrint('[Distance] Unexpected error: $e');
+        return null;
+      }
+    });
   }
+
+  // static Future<String?> getDistance({
+  //   required String lat1,
+  //   required String lng1,
+  //   required String lat2,
+  //   required String lng2,
+  // }) async {
+  //   return DistanceCache.getOrFetch(lat1, lng1, lat2, lng2, () async {
+  //     const url = 'https://routes.googleapis.com/directions/v2:computeRoutes';
+
+  //     final body = {
+  //       'origin': {
+  //         'location': {
+  //           'latLng': {
+  //             'latitude': double.parse(lat1),
+  //             'longitude': double.parse(lng1),
+  //           }
+  //         }
+  //       },
+  //       'destination': {
+  //         'location': {
+  //           'latLng': {
+  //             'latitude': double.parse(lat2),
+  //             'longitude': double.parse(lng2),
+  //           }
+  //         }
+  //       },
+  //       'travelMode': 'DRIVE',
+  //       'routingPreference': 'TRAFFIC_UNAWARE',
+  //       'units': 'METRIC',
+  //     };
+
+  //     final response = await http.post(
+  //       Uri.parse(url),
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'X-Goog-Api-Key': GOOGLE_API_KEY,
+  //         'X-Goog-FieldMask': 'routes.distanceMeters',
+  //       },
+  //       body: jsonEncode(body),
+  //     );
+
+  //     if (response.statusCode != 200) return null;
+
+  //     final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+  //     final routes = decoded['routes'] as List?;
+  //     if (routes == null || routes.isEmpty) return null;
+
+  //     final meters = (routes.first['distanceMeters'] as num?)?.toInt() ?? 0;
+  //     final distance = distanceType == 'miles' ? meters / 1609 : meters / 1000;
+  //     return distance.toStringAsFixed(2);
+  //   });
+  // }
 
   // static String getDistance(
   //     {required String lat1,
