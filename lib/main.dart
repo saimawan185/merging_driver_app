@@ -145,8 +145,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               title: code == 'si'
                   ? 'Sinhala'
                   : code == 'ta'
-                      ? 'Tamil'
-                      : 'English',
+                  ? 'Tamil'
+                  : 'English',
               isActive: true,
             ).toJson(),
           ),
