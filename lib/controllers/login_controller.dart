@@ -63,7 +63,8 @@ class LoginController extends GetxController {
       if (e.code == 'user-not-found') {
         ShowToastDialog.showToast("No user found for that email.".tr());
       } else if (e.code == 'wrong-password') {
-        ShowToastDialog.showToast("Wrong password provided for that user.".tr());
+        ShowToastDialog.showToast(
+            "Wrong password provided for that user.".tr());
       } else if (e.code == 'invalid-email') {
         ShowToastDialog.showToast("Invalid Email.".tr());
       } else {

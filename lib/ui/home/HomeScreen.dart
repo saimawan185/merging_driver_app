@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:door_delights_driver/constant/constant.dart';
@@ -30,10 +31,7 @@ import '../../themes/theme_controller.dart';
 import 'pick_order.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({
-    Key? key,
-    required this.isAppBarShow,
-  }) : super(key: key);
+  const HomeScreen({Key? key, required this.isAppBarShow}) : super(key: key);
   final bool isAppBarShow;
 
   @override
@@ -71,20 +69,16 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   setIcons() async {
     BitmapDescriptor.asset(
-            const ImageConfiguration(
-              size: Size(50, 50),
-            ),
-            "assets/images/pickup.png")
-        .then((value) {
+      const ImageConfiguration(size: Size(50, 50)),
+      "assets/images/pickup.png",
+    ).then((value) {
       departureIcon = value;
     });
 
     BitmapDescriptor.asset(
-            const ImageConfiguration(
-              size: Size(50, 50),
-            ),
-            "assets/images/dropoff.png")
-        .then((value) {
+      const ImageConfiguration(size: Size(50, 50)),
+      "assets/images/dropoff.png",
+    ).then((value) {
       destinationIcon = value;
     });
 
@@ -134,7 +128,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       ..style = PaintingStyle.stroke
       ..strokeWidth = size * 0.045;
     canvas.drawCircle(
-        center, radius - borderPaint.strokeWidth / 2, borderPaint);
+      center,
+      radius - borderPaint.strokeWidth / 2,
+      borderPaint,
+    );
 
     // Small glossy highlight, purely cosmetic.
     final highlightPaint = Paint()..color = Colors.white.withOpacity(0.18);
@@ -187,14 +184,17 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     await FirebaseFirestore.instance
         .collection(ORDERS)
-        .where('status',
-            whereIn: [ORDER_STATUS_ACCEPTED, ORDER_STATUS_DRIVER_REJECTED])
+        .where(
+          'status',
+          whereIn: [ORDER_STATUS_ACCEPTED, ORDER_STATUS_DRIVER_REJECTED],
+        )
         .where('createdAt', isGreaterThan: startTimestamp)
         .get()
         .then((value) async {
           print('---->${value.docs.length}');
-          await Future.forEach(value.docs,
-              (QueryDocumentSnapshot<Map<String, dynamic>> element) {
+          await Future.forEach(value.docs, (
+            QueryDocumentSnapshot<Map<String, dynamic>> element,
+          ) {
             try {
               orders.add(OrderModel.fromJson(element.data()));
             } catch (e, s) {
@@ -234,8 +234,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _mapController?.animateCamera(
       CameraUpdate.newCameraPosition(
         CameraPosition(
-          target: LatLng(locationDataFinal?.latitude ?? 0.0,
-              locationDataFinal?.longitude ?? 0.0),
+          target: LatLng(
+            locationDataFinal?.latitude ?? 0.0,
+            locationDataFinal?.longitude ?? 0.0,
+          ),
           zoom: 20,
           bearing: double.parse(_driverModel!.rotation.toString()),
         ),
@@ -252,9 +254,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   getDeliveryCharges(num km, OrderModel? requestedOrder) async {
     deliverExec = true;
 
-    await FireStoreUtils()
-        .getVendorByVendorID(requestedOrder!.vendorID!)
-        .then((value) {
+    await FireStoreUtils().getVendorByVendorID(requestedOrder!.vendorID!).then((
+      value,
+    ) {
       vendorModel = value;
     });
     deliveryCharges = requestedOrder.deliveryCharge ?? '80.0';
@@ -289,8 +291,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
       if (currentOrder!.status == ORDER_STATUS_COMPLETED) {
         Constant.userModel!.inProgressOrderID = null;
-        Constant.userModel!.deliveryInProgressOrderIds
-            ?.removeWhere((orderId) => orderId == currentOrder!.id);
+        Constant.userModel!.deliveryInProgressOrderIds?.removeWhere(
+          (orderId) => orderId == currentOrder!.id,
+        );
         FireStoreUtils.updateCurrentUser(Constant.userModel!);
       }
 
@@ -306,23 +309,21 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void startTimer(UserModel _driverModel) {
     const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
-      oneSec,
-      (Timer timer) async {
-        if (driverOrderAcceptRejectDuration == 0) {
-          timer.cancel();
+    _timer = new Timer.periodic(oneSec, (Timer timer) async {
+      if (driverOrderAcceptRejectDuration == 0) {
+        timer.cancel();
 
-          if (_driverModel.deliveryOrderRequests != null &&
-              _driverModel.deliveryOrderRequests?.firstWhereOrNull(
-                      (order) => order.id == orderModel!.id) !=
-                  null) {
-            await rejectOrder();
-          }
-        } else {
-          driverOrderAcceptRejectDuration--;
+        if (_driverModel.deliveryOrderRequests != null &&
+            _driverModel.deliveryOrderRequests?.firstWhereOrNull(
+                  (order) => order.id == orderModel!.id,
+                ) !=
+                null) {
+          await rejectOrder();
         }
-      },
-    );
+      } else {
+        driverOrderAcceptRejectDuration--;
+      }
+    });
   }
 
   getDriver() async {
@@ -465,8 +466,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     final latTween = Tween<double>(begin: from.latitude, end: to.latitude);
     final lngTween = Tween<double>(begin: from.longitude, end: to.longitude);
-    final rotationTween =
-        Tween<double>(begin: fromRotation, end: adjustedToRotation);
+    final rotationTween = Tween<double>(
+      begin: fromRotation,
+      end: adjustedToRotation,
+    );
 
     final curved = CurvedAnimation(
       parent: _markerAnimationController!,
@@ -475,8 +478,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
     _markerAnimationController!.addListener(() {
       if (taxiIcon == null) return;
-      final animatedPosition =
-          LatLng(latTween.evaluate(curved), lngTween.evaluate(curved));
+      final animatedPosition = LatLng(
+        latTween.evaluate(curved),
+        lngTween.evaluate(curved),
+      );
       final animatedRotation = rotationTween.evaluate(curved) % 360;
 
       _markers['Driver'] = Marker(
@@ -497,10 +502,7 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         _isAutoCameraMove = true;
         _mapController!.animateCamera(
           CameraUpdate.newCameraPosition(
-            CameraPosition(
-              target: animatedPosition,
-              zoom: 17,
-            ),
+            CameraPosition(target: animatedPosition, zoom: 17),
           ),
         );
       }
@@ -541,11 +543,13 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final isDark = Get.find<ThemeController>().isDark.value;
 
       isDark
-          ? _mapController?.setMapStyle('[{"featureType": "all","'
+          ? _mapController?.setMapStyle(
+              '[{"featureType": "all","'
               'elementType": "'
               'geo'
               'met'
-              'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]')
+              'ry","stylers": [{"color": "#242f3e"}]},{"featureType": "all","elementType": "labels.text.stroke","stylers": [{"lightness": -80}]},{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#746855"}]},{"featureType": "administrative.locality","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "poi.park","elementType": "geometry","stylers": [{"color": "#263c3f"}]},{"featureType": "poi.park","elementType": "labels.text.fill","stylers": [{"color": "#6b9a76"}]},{"featureType": "road","elementType": "geometry.fill","stylers": [{"color": "#2b3544"}]},{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#9ca5b3"}]},{"featureType": "road.arterial","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.arterial","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "road.highway","elementType": "geometry.fill","stylers": [{"color": "#746855"}]},{"featureType": "road.highway","elementType": "geometry.stroke","stylers": [{"color": "#1f2835"}]},{"featureType": "road.highway","elementType": "labels.text.fill","stylers": [{"color": "#f3d19c"}]},{"featureType": "road.local","elementType": "geometry.fill","stylers": [{"color": "#38414e"}]},{"featureType": "road.local","elementType": "geometry.stroke","stylers": [{"color": "#212a37"}]},{"featureType": "transit","elementType": "geometry","stylers": [{"color": "#2f3948"}]},{"featureType": "transit.station","elementType": "labels.text.fill","stylers": [{"color": "#d59563"}]},{"featureType": "water","elementType": "geometry","stylers": [{"color": "#17263c"}]},{"featureType": "water","elementType": "labels.text.fill","stylers": [{"color": "#515c6d"}]},{"featureType": "water","elementType": "labels.text.stroke","stylers": [{"lightness": -20}]}]',
+            )
           : _mapController?.setMapStyle(null);
 
       return Scaffold(
@@ -555,15 +559,16 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     isDark ? AppThemeData.grey900 : AppThemeData.grey50,
                 centerTitle: false,
                 iconTheme: IconThemeData(
-                    color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                    size: 20),
+                  color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                  size: 20,
+                ),
                 title: Text(
                   "Order".tr(),
                   style: TextStyle(
-                      color:
-                          isDark ? AppThemeData.grey50 : AppThemeData.grey900,
-                      fontSize: 18,
-                      fontFamily: AppThemeData.medium),
+                    color: isDark ? AppThemeData.grey50 : AppThemeData.grey900,
+                    fontSize: 18,
+                    fontFamily: AppThemeData.medium,
+                  ),
                 ),
               )
             : null,
@@ -607,8 +612,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 },
                 initialCameraPosition: CameraPosition(
                   zoom: 15,
-                  target: LatLng(_driverModel!.location?.latitude ?? 0,
-                      _driverModel!.location?.longitude ?? 0),
+                  target: LatLng(
+                    _driverModel!.location?.latitude ?? 0,
+                    _driverModel!.location?.longitude ?? 0,
+                  ),
                 ),
               ),
             ),
@@ -620,11 +627,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 : Container(),
             (orderModel != null &&
                     _driverModel != null &&
-                    (_driverModel!.deliveryOrderRequests
-                            ?.any((order) => order.id == orderModel!.id) ??
+                    (_driverModel!.deliveryOrderRequests?.any(
+                          (order) => order.id == orderModel!.id,
+                        ) ??
                         false))
                 ? showDriverBottomSheet()
-                : Container()
+                : Container(),
           ],
         ),
         floatingActionButton: (_driverModel!.deliveryOrderRequests != null &&
@@ -679,30 +687,44 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     if (currentOrder != null) {
       if (currentOrder!.status == ORDER_STATUS_SHIPPED ||
           currentOrder!.status == ORDER_STATUS_DRIVER_ACCEPTED) {
-        origin = LatLng(_driverModel!.location!.latitude!,
-            _driverModel!.location!.longitude!);
+        origin = LatLng(
+          _driverModel!.location!.latitude!,
+          _driverModel!.location!.longitude!,
+        );
         destination = LatLng(
-            currentOrder!.vendor!.latitude!, currentOrder!.vendor!.longitude!);
+          currentOrder!.vendor!.latitude!,
+          currentOrder!.vendor!.longitude!,
+        );
       } else if (currentOrder!.status == ORDER_STATUS_IN_TRANSIT) {
-        origin = LatLng(_driverModel!.location!.latitude!,
-            _driverModel!.location!.longitude!);
-        destination = LatLng(currentOrder!.address!.location!.latitude!,
-            currentOrder!.address!.location!.longitude!);
+        origin = LatLng(
+          _driverModel!.location!.latitude!,
+          _driverModel!.location!.longitude!,
+        );
+        destination = LatLng(
+          currentOrder!.address!.location!.latitude!,
+          currentOrder!.address!.location!.longitude!,
+        );
       } else {
         return;
       }
     } else if (orderModel != null) {
-      origin = LatLng(_driverModel!.location!.latitude!,
-          _driverModel!.location!.longitude!);
-      destination =
-          LatLng(orderModel!.vendor!.latitude!, orderModel!.vendor!.longitude!);
+      origin = LatLng(
+        _driverModel!.location!.latitude!,
+        _driverModel!.location!.longitude!,
+      );
+      destination = LatLng(
+        orderModel!.vendor!.latitude!,
+        orderModel!.vendor!.longitude!,
+      );
     } else {
       return;
     }
 
     try {
-      List<LatLng> polylineCoordinates =
-          await _getRouteCoordinates(origin, destination);
+      List<LatLng> polylineCoordinates = await _getRouteCoordinates(
+        origin,
+        destination,
+      );
 
       _updateMarkers(origin, destination, includeDriverMarker);
       addPolyLine(polylineCoordinates);
@@ -755,7 +777,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<List<LatLng>> _getRouteCoordinates(
-      LatLng origin, LatLng destination) async {
+    LatLng origin,
+    LatLng destination,
+  ) async {
     PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
       request: PolylineRequest(
         origin: PointLatLng(origin.latitude, origin.longitude),
@@ -775,7 +799,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void _updateMarkers(
-      LatLng origin, LatLng destination, bool includeDriverMarker) {
+    LatLng origin,
+    LatLng destination,
+    bool includeDriverMarker,
+  ) {
     setState(() {
       // Clear existing markers
       _markers.clear();
@@ -785,8 +812,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       // _updateDriverMarkerAndCamera / _animateDriverMarker, so redrawing
       // the route never causes the driver icon to jump or snap back.
       if (includeDriverMarker && _driverModel != null && taxiIcon != null) {
-        final driverLatLng = LatLng(_driverModel!.location!.latitude!,
-            _driverModel!.location!.longitude!);
+        final driverLatLng = LatLng(
+          _driverModel!.location!.latitude!,
+          _driverModel!.location!.longitude!,
+        );
         _markers['Driver'] = Marker(
           markerId: const MarkerId('Driver'),
           infoWindow: const InfoWindow(title: "Driver"),
@@ -810,8 +839,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _markers['Vendor'] = Marker(
             markerId: const MarkerId('Vendor'),
             infoWindow: InfoWindow(title: currentOrder!.vendor!.title),
-            position: LatLng(currentOrder!.vendor!.latitude!,
-                currentOrder!.vendor!.longitude!),
+            position: LatLng(
+              currentOrder!.vendor!.latitude!,
+              currentOrder!.vendor!.longitude!,
+            ),
             icon: departureIcon!,
           );
         } else if (currentOrder!.status == ORDER_STATUS_IN_TRANSIT) {
@@ -819,8 +850,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           _markers['Customer'] = Marker(
             markerId: const MarkerId('Customer'),
             infoWindow: InfoWindow(title: currentOrder!.author!.fullName()),
-            position: LatLng(currentOrder!.address!.location!.latitude!,
-                currentOrder!.address!.location!.longitude!),
+            position: LatLng(
+              currentOrder!.address!.location!.latitude!,
+              currentOrder!.address!.location!.longitude!,
+            ),
             icon: destinationIcon!,
           );
         }
@@ -830,7 +863,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           markerId: const MarkerId('Vendor'),
           infoWindow: InfoWindow(title: orderModel!.vendor!.title),
           position: LatLng(
-              orderModel!.vendor!.latitude!, orderModel!.vendor!.longitude!),
+            orderModel!.vendor!.latitude!,
+            orderModel!.vendor!.longitude!,
+          ),
           icon: departureIcon!,
         );
       }
@@ -851,7 +886,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Update camera to show the route
     if (polylineCoordinates.isNotEmpty) {
       updateCameraLocation(
-          polylineCoordinates.first, polylineCoordinates.last, _mapController);
+        polylineCoordinates.first,
+        polylineCoordinates.last,
+        _mapController,
+      );
     }
 
     setState(() {});
@@ -860,27 +898,30 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Keep all your existing methods below - they don't need changes
   openChatWithCustomer() async {
     ShowToastDialog.showLoader("Please wait".tr());
-    UserModel? customer =
-        await FireStoreUtils.getCurrentUser(currentOrder!.authorID!);
+    UserModel? customer = await FireStoreUtils.getCurrentUser(
+      currentOrder!.authorID!,
+    );
     print(currentOrder!.driverID);
 
-    UserModel? driver =
-        await FireStoreUtils.getCurrentUser(currentOrder!.driverID.toString());
+    UserModel? driver = await FireStoreUtils.getCurrentUser(
+      currentOrder!.driverID.toString(),
+    );
     ShowToastDialog.closeLoader();
     push(
-        context,
-        ChatScreens(
-          type: "vendor_chat",
-          customerName: customer!.firstName! + " " + customer.lastName!,
-          restaurantName: driver!.firstName! + " " + driver.lastName!,
-          orderId: currentOrder!.id,
-          restaurantId: driver.id!,
-          customerId: customer.id!,
-          customerProfileImage: customer.profilePictureURL!,
-          restaurantProfileImage: driver.profilePictureURL,
-          token: customer.fcmToken,
-          chatType: 'Driver',
-        ));
+      context,
+      ChatScreens(
+        type: "vendor_chat",
+        customerName: customer!.firstName! + " " + customer.lastName!,
+        restaurantName: driver!.firstName! + " " + driver.lastName!,
+        orderId: currentOrder!.id,
+        restaurantId: driver.id!,
+        customerId: customer.id!,
+        customerProfileImage: customer.profilePictureURL!,
+        restaurantProfileImage: driver.profilePictureURL,
+        token: customer.fcmToken,
+        chatType: 'Driver',
+      ),
+    );
   }
 
   Widget showDriverBottomSheet() {
@@ -969,13 +1010,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   color: Color(0xffFFFFFF),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                        vertical: 14.0, horizontal: 10),
+                      vertical: 14.0,
+                      horizontal: 10,
+                    ),
                     child: Row(
                       children: [
-                        Image.asset(
-                          'assets/images/location3x.png',
-                          height: 55,
-                        ),
+                        Image.asset('assets/images/location3x.png', height: 55),
                         SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1023,12 +1063,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 12),
+                            vertical: 6,
+                            horizontal: 12,
+                          ),
                           backgroundColor: Color(COLOR_PRIMARY),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(5),
-                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
                           ),
                         ),
                         child: Text(
@@ -1041,7 +1081,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                         onPressed: () async {
                           showProgress(
-                              context, 'Rejecting order...'.tr(), false);
+                            context,
+                            'Rejecting order...'.tr(),
+                            false,
+                          );
                           try {
                             if (_timer != null) {
                               _timer!.cancel();
@@ -1061,12 +1104,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 6, horizontal: 12),
+                            vertical: 6,
+                            horizontal: 12,
+                          ),
                           backgroundColor: Color(COLOR_PRIMARY),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.all(
-                              Radius.circular(5),
-                            ),
+                            borderRadius: BorderRadius.all(Radius.circular(5)),
                           ),
                         ),
                         child: Text(
@@ -1079,7 +1122,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         ),
                         onPressed: () async {
                           showProgress(
-                              context, 'Accepting order...'.tr(), false);
+                            context,
+                            'Accepting order...'.tr(),
+                            false,
+                          );
                           if (_timer != null) {
                             _timer!.cancel();
                           }
@@ -1370,10 +1416,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           totalPrice + double.parse(currentOrder!.deliveryCharge ?? '0.0');
 
       totalPrice = totalPrice -
-          double.parse((currentOrder!.discount.toString() != 'null' &&
-                  currentOrder!.discount.toString() != '')
-              ? currentOrder!.discount.toString()
-              : '0.0');
+          double.parse(
+            (currentOrder!.discount.toString() != 'null' &&
+                    currentOrder!.discount.toString() != '')
+                ? currentOrder!.discount.toString()
+                : '0.0',
+          );
       totalPrice = totalPrice -
           ((currentOrder!.specialDiscount != null &&
                   currentOrder!.specialDiscount is Map &&
@@ -1382,7 +1430,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ))
               ? double.parse(
                   (currentOrder!.specialDiscount!['special_discount'] ?? 0)
-                      .toString())
+                      .toString(),
+                )
               : 0);
       totalPrice = totalPrice +
           double.parse(currentOrder!.tipAmount ?? '0.0') +
@@ -1401,7 +1450,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       width: MediaQuery.sizeOf(context).width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(8), topRight: Radius.circular(18)),
+          topLeft: Radius.circular(8),
+          topRight: Radius.circular(18),
+        ),
         color: isDark ? Color(0xff000000) : Color(0xffFFFFFF),
       ),
       child: SingleChildScrollView(
@@ -1417,9 +1468,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     title: Text(
                       title,
                       style: TextStyle(
-                          color: isDark ? Color(0xffFFFFFF) : Color(0xff000000),
-                          fontFamily: "Poppinsm",
-                          letterSpacing: 0.5),
+                        color: isDark ? Color(0xffFFFFFF) : Color(0xff000000),
+                        fontFamily: "Poppinsm",
+                        letterSpacing: 0.5,
+                      ),
                     ),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
@@ -1427,42 +1479,48 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         '${currentOrder!.vendor!.location}',
                         maxLines: 2,
                         style: TextStyle(
-                            color:
-                                isDark ? Color(0xffFFFFFF) : Color(0xff000000),
-                            fontFamily: "Poppinsr",
-                            letterSpacing: 0.5),
+                          color: isDark ? Color(0xffFFFFFF) : Color(0xff000000),
+                          fontFamily: "Poppinsr",
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                     trailing: TextButton.icon(
-                        style: TextButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(6.0),
-                            side: BorderSide(color: Color(0xff3DAE7D)),
-                          ),
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size(85, 30),
-                          alignment: Alignment.center,
-                          backgroundColor: Color(0xffFFFFFF),
+                      style: TextButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6.0),
+                          side: BorderSide(color: Color(0xff3DAE7D)),
                         ),
-                        onPressed: () {
-                          print(
-                              "=========Phone Number : ${currentOrder!.vendor!.phonenumber}");
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size(85, 30),
+                        alignment: Alignment.center,
+                        backgroundColor: Color(0xffFFFFFF),
+                      ),
+                      onPressed: () {
+                        print(
+                          "=========Phone Number : ${currentOrder!.vendor!.phonenumber}",
+                        );
 
-                          UrlLauncher.launchUrl(Uri.parse(
-                              "tel://${currentOrder!.vendor!.phonenumber}"));
-                        },
-                        icon: Image.asset(
-                          'assets/images/call3x.png',
-                          height: 14,
-                          width: 14,
+                        UrlLauncher.launchUrl(
+                          Uri.parse(
+                            "tel://${currentOrder!.vendor!.phonenumber}",
+                          ),
+                        );
+                      },
+                      icon: Image.asset(
+                        'assets/images/call3x.png',
+                        height: 14,
+                        width: 14,
+                      ),
+                      label: Text(
+                        "CALL".tr(),
+                        style: TextStyle(
+                          color: Color(0xff3DAE7D),
+                          fontFamily: "Poppinsm",
+                          letterSpacing: 0.5,
                         ),
-                        label: Text(
-                          "CALL".tr(),
-                          style: TextStyle(
-                              color: Color(0xff3DAE7D),
-                              fontFamily: "Poppinsm",
-                              letterSpacing: 0.5),
-                        )),
+                      ),
+                    ),
                   ),
                   if ((currentOrder!.status == ORDER_STATUS_SHIPPED ||
                           currentOrder!.status ==
@@ -1477,11 +1535,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           Text(
                             'Prepration Time'.tr(),
                             style: TextStyle(
-                                color: isDark
-                                    ? Color(0xffFFFFFF)
-                                    : Color(0xff555555),
-                                fontFamily: "Poppinsr",
-                                letterSpacing: 0.5),
+                              color: isDark
+                                  ? Color(0xffFFFFFF)
+                                  : Color(0xff555555),
+                              fontFamily: "Poppinsr",
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ],
                       ),
@@ -1490,12 +1549,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         child: Text(
                           _formatDuration(_remainingTime),
                           style: TextStyle(
-                              color: isDark
-                                  ? Color(0xffFFFFFF)
-                                  : Color(0xff333333),
-                              fontFamily: "Poppinsm",
-                              letterSpacing: 0.5,
-                              fontWeight: FontWeight.bold),
+                            color:
+                                isDark ? Color(0xffFFFFFF) : Color(0xff333333),
+                            fontFamily: "Poppinsm",
+                            letterSpacing: 0.5,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -1507,11 +1566,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         Text(
                           'Payment Type'.tr(),
                           style: TextStyle(
-                              color: isDark
-                                  ? Color(0xffFFFFFF)
-                                  : Color(0xff555555),
-                              fontFamily: "Poppinsr",
-                              letterSpacing: 0.5),
+                            color:
+                                isDark ? Color(0xffFFFFFF) : Color(0xff555555),
+                            fontFamily: "Poppinsr",
+                            letterSpacing: 0.5,
+                          ),
                         ),
                       ],
                     ),
@@ -1520,29 +1579,31 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: Text(
                         '${currentOrder!.paymentMethod!.toUpperCase().toString()}',
                         style: TextStyle(
-                            color:
-                                isDark ? Color(0xffFFFFFF) : Color(0xff333333),
-                            fontFamily: "Poppinsm",
-                            letterSpacing: 0.5,
-                            fontWeight: FontWeight.bold),
+                          color: isDark ? Color(0xffFFFFFF) : Color(0xff333333),
+                          fontFamily: "Poppinsm",
+                          letterSpacing: 0.5,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                   ListTile(
                     tileColor: Color(0xffF1F4F8),
-                    contentPadding:
-                        EdgeInsets.symmetric(horizontal: 32, vertical: 6),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 6,
+                    ),
                     title: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'ORDER ID '.tr(),
                           style: TextStyle(
-                              color: isDark
-                                  ? Color(0xffFFFFFF)
-                                  : Color(0xff555555),
-                              fontFamily: "Poppinsr",
-                              letterSpacing: 0.5),
+                            color:
+                                isDark ? Color(0xffFFFFFF) : Color(0xff555555),
+                            fontFamily: "Poppinsr",
+                            letterSpacing: 0.5,
+                          ),
                         ),
                         Expanded(
                           child: Text(
@@ -1550,11 +1611,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                                color: isDark
-                                    ? Color(0xffFFFFFF)
-                                    : Color(0xff000000),
-                                fontFamily: "Poppinsr",
-                                letterSpacing: 0.5),
+                              color: isDark
+                                  ? Color(0xffFFFFFF)
+                                  : Color(0xff000000),
+                              fontFamily: "Poppinsr",
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                       ],
@@ -1564,10 +1626,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: Text(
                         '${currentOrder!.author!.fullName()}',
                         style: TextStyle(
-                            color:
-                                isDark ? Color(0xffFFFFFF) : Color(0xff333333),
-                            fontFamily: "Poppinsm",
-                            letterSpacing: 0.5),
+                          color: isDark ? Color(0xffFFFFFF) : Color(0xff333333),
+                          fontFamily: "Poppinsm",
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                   ),
@@ -1588,9 +1650,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: isDark ? Color(0xffFFFFFF) : Color(0xff000000),
-                          fontFamily: "Poppinsm",
-                          letterSpacing: 0.5),
+                        color: isDark ? Color(0xffFFFFFF) : Color(0xff000000),
+                        fontFamily: "Poppinsm",
+                        letterSpacing: 0.5,
+                      ),
                     ),
                     subtitle: Row(
                       children: [
@@ -1599,9 +1662,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           child: Text(
                             'ORDER ID '.tr(),
                             style: TextStyle(
-                                color: Color(0xff555555),
-                                fontFamily: "Poppinsr",
-                                letterSpacing: 0.5),
+                              color: Color(0xff555555),
+                              fontFamily: "Poppinsr",
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                         Padding(
@@ -1613,11 +1677,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  color: isDark
-                                      ? Color(0xffFFFFFF)
-                                      : Color(0xff000000),
-                                  fontFamily: "Poppinsr",
-                                  letterSpacing: 0.5),
+                                color: isDark
+                                    ? Color(0xffFFFFFF)
+                                    : Color(0xff000000),
+                                fontFamily: "Poppinsr",
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ),
                         ),
@@ -1627,32 +1692,37 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         TextButton.icon(
-                            style: TextButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6.0),
-                                side: BorderSide(color: Color(0xff3DAE7D)),
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6.0),
+                              side: BorderSide(color: Color(0xff3DAE7D)),
+                            ),
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size(85, 30),
+                            alignment: Alignment.center,
+                            backgroundColor: Color(0xffFFFFFF),
+                          ),
+                          onPressed: () {
+                            UrlLauncher.launchUrl(
+                              Uri.parse(
+                                "tel://${currentOrder!.author!.phoneNumber}",
                               ),
-                              padding: EdgeInsets.zero,
-                              minimumSize: Size(85, 30),
-                              alignment: Alignment.center,
-                              backgroundColor: Color(0xffFFFFFF),
+                            );
+                          },
+                          icon: Image.asset(
+                            'assets/images/call3x.png',
+                            height: 14,
+                            width: 14,
+                          ),
+                          label: Text(
+                            "CALL".tr(),
+                            style: TextStyle(
+                              color: Color(0xff3DAE7D),
+                              fontFamily: "Poppinsm",
+                              letterSpacing: 0.5,
                             ),
-                            onPressed: () {
-                              UrlLauncher.launchUrl(Uri.parse(
-                                  "tel://${currentOrder!.author!.phoneNumber}"));
-                            },
-                            icon: Image.asset(
-                              'assets/images/call3x.png',
-                              height: 14,
-                              width: 14,
-                            ),
-                            label: Text(
-                              "CALL".tr(),
-                              style: TextStyle(
-                                  color: Color(0xff3DAE7D),
-                                  fontFamily: "Poppinsm",
-                                  letterSpacing: 0.5),
-                            )),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -1666,9 +1736,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     title: Text(
                       'DELIVER'.tr(),
                       style: TextStyle(
-                          color: Color(0xff9091A4),
-                          fontFamily: "Poppinsr",
-                          letterSpacing: 0.5),
+                        color: Color(0xff9091A4),
+                        fontFamily: "Poppinsr",
+                        letterSpacing: 0.5,
+                      ),
                     ),
                     subtitle: Padding(
                       padding: const EdgeInsets.only(top: 4.0),
@@ -1677,39 +1748,41 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                            color:
-                                isDark ? Color(0xffFFFFFF) : Color(0xff333333),
-                            fontFamily: "Poppinsr",
-                            letterSpacing: 0.5),
+                          color: isDark ? Color(0xffFFFFFF) : Color(0xff333333),
+                          fontFamily: "Poppinsr",
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       children: [
                         TextButton.icon(
-                            style: TextButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(6.0),
-                                side: BorderSide(color: Color(0xff3DAE7D)),
-                              ),
-                              padding: EdgeInsets.zero,
-                              minimumSize: Size(100, 30),
-                              alignment: Alignment.center,
-                              backgroundColor: Color(0xffFFFFFF),
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(6.0),
+                              side: BorderSide(color: Color(0xff3DAE7D)),
                             ),
-                            onPressed: () => openChatWithCustomer(),
-                            icon: Icon(
-                              Icons.message,
-                              size: 16,
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size(100, 30),
+                            alignment: Alignment.center,
+                            backgroundColor: Color(0xffFFFFFF),
+                          ),
+                          onPressed: () => openChatWithCustomer(),
+                          icon: Icon(
+                            Icons.message,
+                            size: 16,
+                            color: Color(0xff3DAE7D),
+                          ),
+                          label: Text(
+                            "Message".tr(),
+                            style: TextStyle(
                               color: Color(0xff3DAE7D),
+                              fontFamily: "Poppinsm",
+                              letterSpacing: 0.5,
                             ),
-                            label: Text(
-                              "Message".tr(),
-                              style: TextStyle(
-                                  color: Color(0xff3DAE7D),
-                                  fontFamily: "Poppinsm",
-                                  letterSpacing: 0.5),
-                            )),
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -1727,11 +1800,12 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          color: isDark ? Color(0xffFFFFFF) : Color(0xff333333),
-                          fontFamily: "Poppinsr",
-                          letterSpacing: 0.5,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16),
+                        color: isDark ? Color(0xffFFFFFF) : Color(0xff333333),
+                        fontFamily: "Poppinsr",
+                        letterSpacing: 0.5,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
                   ),
                 ],
@@ -1744,19 +1818,14 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(4),
-                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(4)),
                     ),
                     backgroundColor: Color(COLOR_PRIMARY),
                   ),
                   onPressed: () async {
                     if (currentOrder!.status == ORDER_STATUS_SHIPPED ||
                         currentOrder!.status == ORDER_STATUS_DRIVER_ACCEPTED) {
-                      push(
-                        context,
-                        PickOrder(currentOrder: currentOrder),
-                      );
+                      push(context, PickOrder(currentOrder: currentOrder));
                     } else if (currentOrder!.status ==
                         ORDER_STATUS_IN_TRANSIT) {
                       push(
@@ -1771,38 +1840,45 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             title: Text(
                               "Deliver".tr() + ": ${currentOrder!.id}",
                               style: TextStyle(
-                                  color: isDark
-                                      ? Color(0xffFFFFFF)
-                                      : Color(0xff000000),
-                                  fontFamily: "Poppinsr",
-                                  letterSpacing: 0.5),
+                                color: isDark
+                                    ? Color(0xffFFFFFF)
+                                    : Color(0xff000000),
+                                fontFamily: "Poppinsr",
+                                letterSpacing: 0.5,
+                              ),
                             ),
                             centerTitle: false,
                           ),
                           body: SingleChildScrollView(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 25.0, vertical: 20),
+                                horizontal: 25.0,
+                                vertical: 20,
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 25.0, vertical: 20),
+                                      horizontal: 25.0,
+                                      vertical: 20,
+                                    ),
                                     decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(2),
-                                        border: Border.all(
-                                            color: Colors.grey.shade100,
-                                            width: 0.1),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.grey.shade200,
-                                            blurRadius: 2.0,
-                                            spreadRadius: 0.4,
-                                            offset: Offset(0.2, 0.2),
-                                          ),
-                                        ],
-                                        color: Colors.white),
+                                      borderRadius: BorderRadius.circular(2),
+                                      border: Border.all(
+                                        color: Colors.grey.shade100,
+                                        width: 0.1,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.grey.shade200,
+                                          blurRadius: 2.0,
+                                          spreadRadius: 0.4,
+                                          offset: Offset(0.2, 0.2),
+                                        ),
+                                      ],
+                                      color: Colors.white,
+                                    ),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -1814,62 +1890,73 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             Text(
                                               'DELIVER'.tr().toUpperCase(),
                                               style: TextStyle(
-                                                  color: Color(0xff9091A4),
-                                                  fontFamily: "Poppinsr",
-                                                  letterSpacing: 0.5),
+                                                color: Color(0xff9091A4),
+                                                fontFamily: "Poppinsr",
+                                                letterSpacing: 0.5,
+                                              ),
                                             ),
                                             TextButton.icon(
-                                                style: TextButton.styleFrom(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            6.0),
-                                                    side: BorderSide(
-                                                        color:
-                                                            Color(0xff3DAE7D)),
+                                              style: TextButton.styleFrom(
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                    6.0,
                                                   ),
-                                                  padding: EdgeInsets.zero,
-                                                  minimumSize: Size(85, 30),
-                                                  alignment: Alignment.center,
-                                                  backgroundColor:
-                                                      Color(0xffFFFFFF),
+                                                  side: BorderSide(
+                                                    color: Color(0xff3DAE7D),
+                                                  ),
                                                 ),
-                                                onPressed: () {
-                                                  UrlLauncher.launchUrl(Uri.parse(
-                                                      "tel://${currentOrder!.author!.phoneNumber}"));
-                                                },
-                                                icon: Image.asset(
-                                                  'assets/images/call3x.png',
-                                                  height: 14,
-                                                  width: 14,
+                                                padding: EdgeInsets.zero,
+                                                minimumSize: Size(85, 30),
+                                                alignment: Alignment.center,
+                                                backgroundColor: Color(
+                                                  0xffFFFFFF,
                                                 ),
-                                                label: Text(
-                                                  "CALL".tr().toUpperCase(),
-                                                  style: TextStyle(
-                                                      color: Color(0xff3DAE7D),
-                                                      fontFamily: "Poppinsm",
-                                                      letterSpacing: 0.5),
-                                                )),
+                                              ),
+                                              onPressed: () {
+                                                UrlLauncher.launchUrl(
+                                                  Uri.parse(
+                                                    "tel://${currentOrder!.author!.phoneNumber}",
+                                                  ),
+                                                );
+                                              },
+                                              icon: Image.asset(
+                                                'assets/images/call3x.png',
+                                                height: 14,
+                                                width: 14,
+                                              ),
+                                              label: Text(
+                                                "CALL".tr().toUpperCase(),
+                                                style: TextStyle(
+                                                  color: Color(0xff3DAE7D),
+                                                  fontFamily: "Poppinsm",
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ),
                                           ],
                                         ),
                                         Text(
                                           '${currentOrder!.author!.fullName()}',
                                           style: TextStyle(
-                                              color: Color(0xff333333),
-                                              fontFamily: "Poppinsm",
-                                              letterSpacing: 0.5),
+                                            color: Color(0xff333333),
+                                            fontFamily: "Poppinsm",
+                                            letterSpacing: 0.5,
+                                          ),
                                         ),
                                         Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 4.0),
+                                          padding: const EdgeInsets.only(
+                                            top: 4.0,
+                                          ),
                                           child: Text(
                                             '${currentOrder!.address!.getFullAddress()},',
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
-                                                color: Color(0xff9091A4),
-                                                fontFamily: "Poppinsr",
-                                                letterSpacing: 0.5),
+                                              color: Color(0xff9091A4),
+                                              fontFamily: "Poppinsr",
+                                              letterSpacing: 0.5,
+                                            ),
                                           ),
                                         ),
                                       ],
@@ -1879,147 +1966,154 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   Text(
                                     "ITEMS".tr().toUpperCase(),
                                     style: TextStyle(
-                                        color: Color(0xff9091A4),
-                                        fontFamily: "Poppinsm",
-                                        letterSpacing: 0.5),
+                                      color: Color(0xff9091A4),
+                                      fontFamily: "Poppinsm",
+                                      letterSpacing: 0.5,
+                                    ),
                                   ),
                                   SizedBox(height: 24),
                                   ListView.builder(
-                                      shrinkWrap: true,
-                                      itemCount: currentOrder!.products!.length,
-                                      physics: NeverScrollableScrollPhysics(),
-                                      itemBuilder: (context, index) {
-                                        String adOns = '';
-                                        dynamic extra = currentOrder!
-                                            .products![index].extras;
-                                        for (int i = 0;
-                                            i < extra!.length;
-                                            i++) {
-                                          List adon = extra[i]
-                                              .toString()
-                                              .replaceAll("\"", "")
-                                              .split('_');
-                                          adOns +=
-                                              '${adon.first} x ${adon.last} ${(i == extra.length - 1) ? "" : ", "}';
-                                        }
-                                        return Container(
-                                            padding:
-                                                EdgeInsets.only(bottom: 10),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                    shrinkWrap: true,
+                                    itemCount: currentOrder!.products!.length,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemBuilder: (context, index) {
+                                      String adOns = '';
+                                      dynamic extra =
+                                          currentOrder!.products![index].extras;
+                                      for (int i = 0; i < extra!.length; i++) {
+                                        List adon = extra[i]
+                                            .toString()
+                                            .replaceAll("\"", "")
+                                            .split('_');
+                                        adOns +=
+                                            '${adon.first} x ${adon.last} ${(i == extra.length - 1) ? "" : ", "}';
+                                      }
+                                      return Container(
+                                        padding: EdgeInsets.only(bottom: 10),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
                                               children: [
-                                                Row(
-                                                  children: [
-                                                    Expanded(
-                                                      flex: 2,
-                                                      child: CachedNetworkImage(
-                                                          height: 55,
-                                                          imageUrl:
-                                                              '${currentOrder!.products![index].photo}',
-                                                          imageBuilder: (context,
-                                                                  imageProvider) =>
-                                                              Container(
-                                                                decoration:
-                                                                    BoxDecoration(
-                                                                        borderRadius:
-                                                                            BorderRadius.circular(
-                                                                                8),
-                                                                        image:
-                                                                            DecorationImage(
-                                                                          image:
-                                                                              imageProvider,
-                                                                          fit: BoxFit
-                                                                              .cover,
-                                                                        )),
-                                                              )),
+                                                Expanded(
+                                                  flex: 2,
+                                                  child: CachedNetworkImage(
+                                                    height: 55,
+                                                    imageUrl:
+                                                        '${currentOrder!.products![index].photo}',
+                                                    imageBuilder: (
+                                                      context,
+                                                      imageProvider,
+                                                    ) =>
+                                                        Container(
+                                                      decoration: BoxDecoration(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                          8,
+                                                        ),
+                                                        image: DecorationImage(
+                                                          image: imageProvider,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
                                                     ),
-                                                    Expanded(
-                                                      flex: 10,
-                                                      child: Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(
-                                                                left: 14.0),
-                                                        child: Column(
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
+                                                  ),
+                                                ),
+                                                Expanded(
+                                                  flex: 10,
+                                                  child: Padding(
+                                                    padding:
+                                                        const EdgeInsets.only(
+                                                      left: 14.0,
+                                                    ),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Text(
+                                                          '${currentOrder!.products![index].name}',
+                                                          style: TextStyle(
+                                                            fontFamily:
+                                                                'Poppinsr',
+                                                            letterSpacing: 0.5,
+                                                            color: isDarkMode(
+                                                              context,
+                                                            )
+                                                                ? Color(
+                                                                    0xffFFFFFF,
+                                                                  )
+                                                                : Color(
+                                                                    0xff333333,
+                                                                  ),
+                                                          ),
+                                                        ),
+                                                        SizedBox(height: 5),
+                                                        Row(
                                                           children: [
-                                                            Text(
-                                                              '${currentOrder!.products![index].name}',
-                                                              style: TextStyle(
-                                                                  fontFamily:
-                                                                      'Poppinsr',
-                                                                  letterSpacing:
-                                                                      0.5,
-                                                                  color: isDarkMode(
-                                                                          context)
-                                                                      ? Color(
-                                                                          0xffFFFFFF)
-                                                                      : Color(
-                                                                          0xff333333)),
+                                                            Icon(
+                                                              Icons.close,
+                                                              size: 15,
+                                                              color: Color(
+                                                                COLOR_PRIMARY,
+                                                              ),
                                                             ),
-                                                            SizedBox(height: 5),
-                                                            Row(
-                                                              children: [
-                                                                Icon(
-                                                                  Icons.close,
-                                                                  size: 15,
-                                                                  color: Color(
-                                                                      COLOR_PRIMARY),
+                                                            Text(
+                                                              '${currentOrder!.products![index].quantity}',
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    'Poppinsm',
+                                                                letterSpacing:
+                                                                    0.5,
+                                                                color: Color(
+                                                                  COLOR_PRIMARY,
                                                                 ),
-                                                                Text(
-                                                                    '${currentOrder!.products![index].quantity}',
-                                                                    style:
-                                                                        TextStyle(
-                                                                      fontFamily:
-                                                                          'Poppinsm',
-                                                                      letterSpacing:
-                                                                          0.5,
-                                                                      color: Color(
-                                                                          COLOR_PRIMARY),
-                                                                    )),
-                                                              ],
+                                                              ),
                                                             ),
                                                           ],
                                                         ),
-                                                      ),
-                                                    )
-                                                  ],
-                                                ),
-                                                if (adOns.isNotEmpty)
-                                                  Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                            top: 12, bottom: 6),
-                                                    child:
-                                                        Text('Addons: ' + adOns,
-                                                            style: TextStyle(
-                                                              fontFamily:
-                                                                  'Poppinsm',
-                                                              fontSize: 16,
-                                                              color: isDarkMode(
-                                                                      context)
-                                                                  ? Color(
-                                                                      0xffFFFFFF)
-                                                                  : Color(
-                                                                      0xff333333),
-                                                            )),
+                                                      ],
+                                                    ),
                                                   ),
+                                                ),
                                               ],
-                                            ));
-                                      }),
+                                            ),
+                                            if (adOns.isNotEmpty)
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  top: 12,
+                                                  bottom: 6,
+                                                ),
+                                                child: Text(
+                                                  'Addons: ' + adOns,
+                                                  style: TextStyle(
+                                                    fontFamily: 'Poppinsm',
+                                                    fontSize: 16,
+                                                    color: isDarkMode(context)
+                                                        ? Color(0xffFFFFFF)
+                                                        : Color(0xff333333),
+                                                  ),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
                                   SizedBox(height: 28),
                                   Container(
                                     decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(
-                                            color: Color(0xffC2C4CE)),
-                                        color: Colors.white),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: Color(0xffC2C4CE),
+                                      ),
+                                      color: Colors.white,
+                                    ),
                                     child: ListTile(
                                       minLeadingWidth: 20,
                                       leading: Image.asset(
@@ -2032,36 +2126,41 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                             " ${currentOrder!.products!.length} " +
                                             "item to customer".tr(),
                                         style: TextStyle(
-                                            color: Color(0xff3DAE7D),
-                                            fontFamily: 'Poppinsm',
-                                            letterSpacing: 0.5),
+                                          color: Color(0xff3DAE7D),
+                                          fontFamily: 'Poppinsm',
+                                          letterSpacing: 0.5,
+                                        ),
                                       ),
                                     ),
                                   ),
                                   SizedBox(height: 26),
                                   Container(
                                     decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(
-                                            color: Color(0xffC2C4CE)),
-                                        color: Colors.white),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: Color(0xffC2C4CE),
+                                      ),
+                                      color: Colors.white,
+                                    ),
                                     child: ListTile(
                                       minLeadingWidth: 20,
                                       title: Text(
                                         "Payment Type",
                                         style: TextStyle(
-                                            color: Color(0xff3DAE7D),
-                                            fontFamily: 'Poppinsm',
-                                            letterSpacing: 0.5),
+                                          color: Color(0xff3DAE7D),
+                                          fontFamily: 'Poppinsm',
+                                          letterSpacing: 0.5,
+                                        ),
                                       ),
                                       trailing: Text(
                                         "${currentOrder!.paymentMethod!.toUpperCase().toString()}",
                                         style: TextStyle(
-                                            color: Color(0xff3DAE7D),
-                                            fontFamily: 'Poppinsm',
-                                            letterSpacing: 0.5,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16),
+                                          color: Color(0xff3DAE7D),
+                                          fontFamily: 'Poppinsm',
+                                          letterSpacing: 0.5,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -2078,7 +2177,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(4),
                                         border: Border.all(
-                                            color: Color(0xffC2C4CE)),
+                                          color: Color(0xffC2C4CE),
+                                        ),
                                         color: Colors.white,
                                       ),
                                       child: ListTile(
@@ -2086,18 +2186,20 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                         title: Text(
                                           "Collect Cash".tr(),
                                           style: TextStyle(
-                                              color: Color(0xff3DAE7D),
-                                              fontFamily: 'Poppinsm',
-                                              letterSpacing: 0.5),
+                                            color: Color(0xff3DAE7D),
+                                            fontFamily: 'Poppinsm',
+                                            letterSpacing: 0.5,
+                                          ),
                                         ),
                                         trailing: Text(
                                           "LKR $totalPrice",
                                           style: TextStyle(
-                                              color: Color(0xff3DAE7D),
-                                              fontFamily: 'Poppinsm',
-                                              letterSpacing: 0.5,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16),
+                                            color: Color(0xff3DAE7D),
+                                            fontFamily: 'Poppinsm',
+                                            letterSpacing: 0.5,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -2107,7 +2209,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                           bottomNavigationBar: Padding(
                             padding: const EdgeInsets.symmetric(
-                                vertical: 14.0, horizontal: 26),
+                              vertical: 14.0,
+                              horizontal: 26,
+                            ),
                             child: SizedBox(
                               height: 45,
                               child: ElevatedButton(
@@ -2138,9 +2242,10 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: Text(
                     buttonText ?? "",
                     style: TextStyle(
-                        color: Color(0xffFFFFFF),
-                        fontFamily: "Poppinsm",
-                        letterSpacing: 0.5),
+                      color: Color(0xffFFFFFF),
+                      fontFamily: "Poppinsm",
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
               ),
@@ -2153,26 +2258,21 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   width: MediaQuery.sizeOf(context).width,
                   child: ElevatedButton(
                     onPressed: () async {
-                      UrlLauncher.launchUrl(
-                        Uri.parse(
-                          googleMapUrl,
-                        ),
-                      );
+                      UrlLauncher.launchUrl(Uri.parse(googleMapUrl));
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(4),
-                        ),
+                        borderRadius: BorderRadius.all(Radius.circular(4)),
                       ),
                       backgroundColor: Color(0xff3DAE7D),
                     ),
                     child: Text(
                       'Direction on Map',
                       style: TextStyle(
-                          color: Color(0xffFFFFFF),
-                          fontFamily: "Poppinsm",
-                          letterSpacing: 0.5),
+                        color: Color(0xffFFFFFF),
+                        fontFamily: "Poppinsm",
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
@@ -2191,8 +2291,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       try {
         OrderModel orderModel = order!;
         _driverModel!.orderRequestData = null;
-        _driverModel!.deliveryOrderRequests
-            ?.removeWhere((order) => order.id == orderModel.id);
+        _driverModel!.deliveryOrderRequests?.removeWhere(
+          (order) => order.id == orderModel.id,
+        );
         _driverModel!.inProgressOrderID = orderModel.id;
         _driverModel!.deliveryInProgressOrderIds?.add(orderModel.id!);
 
@@ -2227,7 +2328,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           debugPrint("Failed to accept order after $retryCount attempts: $e");
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text('Failed to accept order. Please try again.')),
+              content: Text('Failed to accept order. Please try again.'),
+            ),
           );
         } else {
           await Future.delayed(const Duration(milliseconds: 600));
@@ -2238,8 +2340,11 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   bool orderProgress = false;
 
-  Future<void> updateWallateAmount(OrderModel orderModel,
-      {int maxRetries = 3, int retryDelay = 2}) async {
+  Future<void> updateWallateAmount(
+    OrderModel orderModel, {
+    int maxRetries = 3,
+    int retryDelay = 2,
+  }) async {
     try {
       double total = 0.0;
       double discount = 0.0;
@@ -2257,7 +2362,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (orderModel.specialDiscount != null ||
           orderModel.specialDiscount!['special_discount'] != null) {
         specialDiscount = double.tryParse(
-                orderModel.specialDiscount!['special_discount'].toString()) ??
+              orderModel.specialDiscount!['special_discount'].toString(),
+            ) ??
             0;
       }
 
@@ -2289,8 +2395,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
 
       await FireStoreUtils.updateWalletAmount(
-          userId: orderModel.driverID!,
-          amount: double.parse(driverAmount.toStringAsFixed(2)));
+        userId: orderModel.driverID!,
+        amount: double.parse(driverAmount.toStringAsFixed(2)),
+      );
     } catch (e) {
       if (maxRetries > 0) {
         await Future.delayed(Duration(seconds: retryDelay));
@@ -2338,8 +2445,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         });
 
         _driverModel!.inProgressOrderID = null;
-        _driverModel!.deliveryInProgressOrderIds
-            ?.removeWhere((order) => order == orderModel!.id);
+        _driverModel!.deliveryInProgressOrderIds?.removeWhere(
+          (order) => order == orderModel!.id,
+        );
         _driverModel!.location = UserLocation(
           latitude: locationData.latitude,
           longitude: locationData.longitude,
@@ -2386,7 +2494,8 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           setState(() => orderProgress = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-                content: Text("Failed to complete order. Please try again.")),
+              content: Text("Failed to complete order. Please try again."),
+            ),
           );
           break;
         }
@@ -2405,8 +2514,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     orderModel!.status = ORDER_STATUS_DRIVER_REJECTED;
     await FireStoreUtils.updateOrder(orderModel!);
     _driverModel!.orderRequestData = null;
-    _driverModel!.deliveryOrderRequests
-        ?.removeWhere((order) => order.id == orderModel!.id);
+    _driverModel!.deliveryOrderRequests?.removeWhere(
+      (order) => order.id == orderModel!.id,
+    );
 
     await FireStoreUtils.updateCurrentUser(_driverModel!);
   }
@@ -2429,7 +2539,9 @@ class HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Future<void> checkCameraLocation(
-      CameraUpdate cameraUpdate, GoogleMapController mapController) async {
+    CameraUpdate cameraUpdate,
+    GoogleMapController mapController,
+  ) async {
     mapController.animateCamera(cameraUpdate);
     LatLngBounds l1 = await mapController.getVisibleRegion();
     LatLngBounds l2 = await mapController.getVisibleRegion();

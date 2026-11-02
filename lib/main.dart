@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -122,9 +123,9 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
       String code;
       if (prefsCode.isNotEmpty) {
         code = LocalizationService.normalizeLang(prefsCode);
-      } else if (Preferences.getString(
-        Preferences.languageCodeKey,
-      ).toString().isNotEmpty) {
+      } else if (Preferences.getString(Preferences.languageCodeKey)
+          .toString()
+          .isNotEmpty) {
         code = LocalizationService.normalizeLang(
           Constant.getLanguage().slug.toString(),
         );
@@ -145,8 +146,8 @@ class MyAppState extends State<MyApp> with WidgetsBindingObserver {
               title: code == 'si'
                   ? 'Sinhala'
                   : code == 'ta'
-                      ? 'Tamil'
-                      : 'English',
+                  ? 'Tamil'
+                  : 'English',
               isActive: true,
             ).toJson(),
           ),

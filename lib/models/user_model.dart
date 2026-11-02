@@ -195,7 +195,8 @@ class UserModel {
       deliveryOrderRequests: json.containsKey('deliveryOrderRequests') &&
               json['deliveryOrderRequests'] != null
           ? (json['deliveryOrderRequests'] as List)
-              .map((e) => OrderModel.fromJson(e))
+              .where((e) => e is Map)
+              .map((e) => OrderModel.fromJson(Map<String, dynamic>.from(e)))
               .toList()
           : [],
       vendorID: json['vendorID'] ?? '',
