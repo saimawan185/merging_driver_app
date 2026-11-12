@@ -273,15 +273,28 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
 
   @override
   void dispose() {
-    _animationController!.dispose();
-    // FireStoreUtils().driverStreamSub?.cancel();
+    _driverSubscription?.cancel();
+    _driverSubscription = null;
 
+    _orderSubscription?.cancel();
+    _orderSubscription = null;
+
+    _timer?.cancel();
+    _timer = null;
+
+    _markerAnimationController?.dispose();
+    _markerAnimationController = null;
+
+    _animationController?.dispose();
+    _animationController = null;
+
+    // Null-safe: this throws today if no parcel order stream was ever opened,
+    // which prevents super.dispose() from completing cleanly.
     FireStoreUtils().parcelOrdersStreamController.close();
     FireStoreUtils().parcelOrdersStreamSub.cancel();
-    _timer?.cancel();
 
     playSound(false);
-    _markerAnimationController?.dispose();
+
     super.dispose();
   }
 
@@ -407,6 +420,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
   void _onMapCreated(GoogleMapController controller) async {
     _mapController = controller;
     await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
 
     _isAutoCameraMove = true;
     controller.animateCamera(
@@ -440,6 +454,8 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
 
   // ─── Smooth driver marker update (same as before) ────────────────────
   void _updateDriverMarkerAndCamera() {
+    if (!mounted) return;
+
     if (_driverModel == null ||
         _driverModel!.location == null ||
         taxiIcon == null) return;
@@ -536,6 +552,8 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
     );
 
     _markerAnimationController!.addListener(() {
+      if (!mounted) return;
+
       if (taxiIcon == null) return;
       final animatedPosition =
           LatLng(latTween.evaluate(curved), lngTween.evaluate(curved));
@@ -982,6 +1000,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
   String? _lastOrderStatus;
 
   getDirections() async {
+    if (!mounted) return;
     if (currentOrder == null) return;
 
     final currentStatus = currentOrder!.status;
@@ -1107,6 +1126,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
     LatLng destination,
     bool includeDriverMarker,
   ) {
+    if (!mounted) return;
     setState(() {
       _markers.clear();
 
@@ -1153,6 +1173,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
   }
 
   addPolyLine(List<LatLng> polylineCoordinates) {
+    if (!mounted) return;
     PolylineId id = const PolylineId("poly");
     Polyline polyline = Polyline(
       polylineId: id,
@@ -1173,16 +1194,18 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
 
   bool _isFirstOrderLoad = true;
 
-  getCurrentOrder() async {
+  Future<void> getCurrentOrder() async {
+    await _orderSubscription?.cancel();
+
     ordersFuture = FireStoreUtils().getParcelOrderByID(
       Constant.userModel!.inProgressOrderID.toString(),
     );
 
-    ordersFuture.listen((event) {
-      if (event == null) return;
+    _orderSubscription = ordersFuture.listen((event) {
+      if (!mounted || event == null) return;
 
       final previousStatus = currentOrder?.status;
-      currentOrder = event;
+      setState(() => currentOrder = event);
 
       if (currentOrder!.status == ORDER_STATUS_DRIVER_REJECTED ||
           currentOrder!.status == ORDER_STATUS_DRIVER_PENDING ||
@@ -1197,24 +1220,26 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
     });
   }
 
+  StreamSubscription<UserModel>? _driverSubscription;
+  StreamSubscription<ParcelOrderModel?>? _orderSubscription;
+
   getDriver() async {
+    await _driverSubscription?.cancel();
+
     driverStream = FireStoreUtils().getDriver(FireStoreUtils.getCurrentUid());
-    driverStream.listen((event) async {
+
+    _driverSubscription = driverStream.listen((event) {
+      if (!mounted) return;
+
       _driverModel = event;
-      if (mounted) {
-        setState(() {
-          Constant.userModel = _driverModel;
-        });
-      }
+      setState(() => Constant.userModel = _driverModel);
 
       getDirections();
-
       _updateDriverMarkerAndCamera();
 
-      if (_driverModel!.isActive == true) {
-        if (_driverModel!.orderParcelRequestData != null) {
-          playSound(true);
-        }
+      if (_driverModel!.isActive == true &&
+          _driverModel!.orderParcelRequestData != null) {
+        playSound(true);
       }
       if (_driverModel!.inProgressOrderID != null) {
         getCurrentOrder();

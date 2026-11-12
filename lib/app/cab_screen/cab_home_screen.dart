@@ -287,6 +287,7 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   @override
   void dispose() {
+    _orderSubscription?.cancel();
     // Cancel driver stream subscription
     _driverSubscription?.cancel();
     _driverSubscription = null;
@@ -873,44 +874,12 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                     ),
                     onPressed: () async {
                       playSound(false);
-                      await FireStoreUtils.getCabOrderByOrderId(
-                              currentCabOrderID)
-                          .then((value) async {
-                        print("----->1111${value!.status}");
-                        if (value.status == ORDER_STATUS_REJECTED) {
-                          Navigator.pop(context);
-
-                          Constant.userModel!.orderCabRequestData = null;
-                          Constant.userModel!.inProgressOrderID = null;
-                          await FireStoreUtils.updateCurrentUser(
-                              Constant.userModel!);
-                          final snack = SnackBar(
-                            content: Text(
-                              "This Ride is already reject by customer.".tr(),
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            duration: Duration(seconds: 2),
-                            backgroundColor: Colors.black,
-                          );
-                          ScaffoldMessenger.of(
-                                  scaffoldMessengerKey.currentContext!)
-                              .showSnackBar(snack);
-                          if (mounted) {
-                            setState(() {});
-                          }
-                        } else {
-                          //Navigator.pop(context);
-                          showProgress(
-                              context, "Rejecting Ride...".tr(), false);
-                          try {
-                            await rejectOrder();
-                            hideProgress();
-                          } catch (e) {
-                            hideProgress();
-                            print('HomeScreenState.showDriverBottomSheet $e');
-                          }
-                        }
-                      });
+                      showProgress(context, "Rejecting Ride...".tr(), false);
+                      try {
+                        await rejectOrder();
+                      } finally {
+                        hideProgress();
+                      }
                     },
                   ),
                 ),
@@ -918,67 +887,34 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                   height: MediaQuery.sizeOf(context).height / 20,
                   width: MediaQuery.sizeOf(context).width / 2.5,
                   child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 6, horizontal: 12),
-                        backgroundColor: Color(COLOR_PRIMARY),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(
-                            Radius.circular(5),
-                          ),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 12),
+                      backgroundColor: Color(COLOR_PRIMARY),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(5),
                         ),
                       ),
-                      child: Text(
-                        'Accept'.tr(),
-                        style: TextStyle(
-                          color: Color(0xffFFFFFF),
-                          fontFamily: "Poppinsm",
-                          letterSpacing: 0.5,
-                        ),
+                    ),
+                    child: Text(
+                      'Accept'.tr(),
+                      style: TextStyle(
+                        color: Color(0xffFFFFFF),
+                        fontFamily: "Poppinsm",
+                        letterSpacing: 0.5,
                       ),
-                      onPressed: () async {
-                        playSound(false);
-                        await FireStoreUtils.getCabOrderByOrderId(
-                                currentCabOrderID)
-                            .then((value) async {
-                          if (value!.status == ORDER_STATUS_REJECTED) {
-                            Navigator.pop(context);
-
-                            Constant.userModel!.orderCabRequestData = null;
-                            Constant.userModel!.inProgressOrderID = null;
-
-                            await FireStoreUtils.updateCurrentUser(
-                                Constant.userModel!);
-                            final snack = SnackBar(
-                              content: Text(
-                                "This Ride is reject by customer.".tr(),
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              duration: Duration(seconds: 2),
-                              backgroundColor: Colors.black,
-                            );
-                            ScaffoldMessenger.of(
-                                    scaffoldMessengerKey.currentContext!!)
-                                .showSnackBar(snack);
-                            if (mounted) {
-                              setState(() {});
-                            }
-                          } else {
-                            showProgress(
-                                context, 'Accepting Ride....'.tr(), false);
-                            try {
-                              if (_timer != null) {
-                                _timer!.cancel();
-                              }
-                              print("Accepting order");
-                              await acceptOrder();
-                              hideProgress();
-                            } catch (e) {
-                              hideProgress();
-                            }
-                          }
-                        });
-                      }),
+                    ),
+                    onPressed: () async {
+                      playSound(false);
+                      showProgress(context, 'Accepting Ride....'.tr(), false);
+                      try {
+                        await acceptOrder();
+                      } finally {
+                        hideProgress();
+                      }
+                    },
+                  ),
                 ),
               ],
             ),
@@ -1042,64 +978,299 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     }
   }
 
-  acceptOrder() async {
+  bool _isAccepting = false;
+
+  static const Set<String> _acceptableStatuses = {
+    ORDER_STATUS_PLACED,
+    ORDER_STATUS_DRIVER_PENDING,
+    ORDER_STATUS_DRIVER_REJECTED,
+  };
+
+  Future<void> acceptOrder() async {
+    if (_isAccepting || _isRejecting) return;
+    _isAccepting = true;
+    _timer?.cancel();
+
+    // ✅ Non-null driverId from the top — easier to pass around everywhere
+    final driverId = _driverModel?.id?.trim() ?? '';
+    final order = _driverModel?.orderCabRequestData;
+    if (driverId.isEmpty || order?.id == null) {
+      _isAccepting = false;
+      return;
+    }
+    final orderId = order!.id!;
+    final authorToken = order.author?.fcmToken;
+
     try {
-      CabOrderModel orderModel = _driverModel!.orderCabRequestData!;
-
-      _driverModel!.orderCabRequestData = null;
-      _driverModel!.inProgressOrderID = orderModel.id!;
-      _followDriverWithCamera = true;
-
-      orderModel.status = ORDER_STATUS_DRIVER_ACCEPTED;
-      orderModel.driverId = _driverModel!.id;
-      orderModel.driver = _driverModel!;
-
-      if (enableOTPTripStart) {
-        orderModel.otpCode = (Random().nextInt(900000) + 100000).toString();
-      }
-
-      await Future.wait([
-        FireStoreUtils.updateCurrentUser(_driverModel!),
-        FireStoreUtils.updateCabOrder(orderModel),
-      ]);
-
-      await getCurrentOrder();
-
-      Map<String, dynamic> payLoad = <String, dynamic>{
-        "type": "cab_order",
-        "orderId": currentOrder!.id
-      };
-
-      FireStoreUtils.sendFcmMessage(
-        cabAccepted,
-        orderModel.author!.fcmToken ?? '',
-        payLoad,
+      await _acceptOrderTransaction(
+        orderId,
+        driverId,
+        generateOtp: enableOTPTripStart,
       );
 
+      _driverModel!.orderCabRequestData = null;
+      _driverModel!.inProgressOrderID = orderId;
+      Constant.userModel = _driverModel;
+      _followDriverWithCamera = true;
+
+      await Future.wait<void>([
+        _notifyCustomerOfAccept(orderId, authorToken),
+      ], eagerError: false);
+
+      if (mounted) setState(() => isShow = true);
+    } on _AcceptAbortedException catch (e) {
+      log.log('Accept aborted: ${e.reason}');
+
+      // Clear local state so the UI stops showing the ride immediately.
+      _driverModel?.orderCabRequestData = null;
+
+      await _clearDriverPendingRequestInFirestore(driverId);
+
       if (mounted) {
-        setState(() {
-          isShow = true;
-        });
+        setState(() {});
+        ScaffoldMessenger.of(scaffoldMessengerKey.currentContext!)
+            .showSnackBar(SnackBar(content: Text(e.reason)));
       }
-    } catch (e) {
-      print("Error while accepting: $e");
+    } catch (e, st) {
+      log.log('Accept failed: $e\n$st');
+      if (mounted) {
+        ScaffoldMessenger.of(scaffoldMessengerKey.currentContext!).showSnackBar(
+            SnackBar(
+                content: Text('Could not accept ride. Please retry.'.tr())));
+      }
+    } finally {
+      _isAccepting = false;
     }
   }
 
-  rejectOrder() async {
-    if (_timer != null) {
-      _timer!.cancel();
-    }
-    CabOrderModel orderModel = _driverModel!.orderCabRequestData!;
-    if (orderModel.rejectedByDrivers == null) {
-      orderModel.rejectedByDrivers = [];
-    }
-    orderModel.rejectedByDrivers!.add(_driverModel!.id);
-    orderModel.status = ORDER_STATUS_DRIVER_REJECTED;
-    await FireStoreUtils.updateCabOrder(orderModel);
-    _driverModel!.orderCabRequestData = null;
+  Future<void> _acceptOrderTransaction(
+    String orderId,
+    String driverId, {
+    required bool generateOtp,
+  }) async {
+    await FirebaseFirestore.instance.runTransaction((tx) async {
+      final orderRef =
+          FirebaseFirestore.instance.collection(RIDESORDER).doc(orderId);
+      final driverRef =
+          FirebaseFirestore.instance.collection(USERS).doc(driverId);
 
-    await FireStoreUtils.updateCurrentUser(_driverModel!);
+      final orderSnap = await tx.get(orderRef);
+      final driverSnap = await tx.get(driverRef);
+
+      if (!orderSnap.exists) {
+        throw const _AcceptAbortedException('Ride no longer available.');
+      }
+      if (!driverSnap.exists) {
+        throw const _AcceptAbortedException('Driver profile missing.');
+      }
+
+      final existingInProgress =
+          driverSnap.data()?['inProgressOrderID']?.toString() ?? '';
+      if (existingInProgress.isNotEmpty && existingInProgress != orderId) {
+        throw const _AcceptAbortedException('You already have an active ride.');
+      }
+
+      final orderData = orderSnap.data()!;
+      final driverData = driverSnap.data()!;
+      final currentStatus = orderData['status'] as String?;
+
+      if (!_acceptableStatuses.contains(currentStatus)) {
+        throw _AcceptAbortedException(
+            'Ride already ${_prettyStatus(currentStatus)}.');
+      }
+
+      final existingDriverId = orderData['driverId']?.toString() ?? '';
+      if (existingDriverId.isNotEmpty && existingDriverId != driverId) {
+        throw const _AcceptAbortedException(
+            'Another driver already accepted this ride.');
+      }
+
+      // ✅ Remove BOTH spellings from the driver snapshot (defensive against
+      //    legacy data written under either key).
+      final driverSnapshot = Map<String, dynamic>.from(driverData)
+        ..remove('ordercabRequestData')
+        ..remove('orderCabRequestData')
+        ..['inProgressOrderID'] = orderId;
+
+      final orderPatch = <String, dynamic>{
+        'status': ORDER_STATUS_DRIVER_ACCEPTED,
+        'driverId': driverId,
+        'driver': driverSnapshot,
+      };
+      if (generateOtp) {
+        orderPatch['otpCode'] = (Random().nextInt(900000) + 100000).toString();
+      }
+
+      // ✅ Delete the real key. FieldValue.delete() on a non-existent field
+      //    is a no-op, so keeping the legacy spelling here is free insurance.
+      final driverPatch = <String, dynamic>{
+        'ordercabRequestData': FieldValue.delete(),
+        'orderCabRequestData': FieldValue.delete(),
+        'inProgressOrderID': orderId,
+      };
+
+      tx.update(orderRef, orderPatch);
+      tx.update(driverRef, driverPatch);
+    });
+  }
+
+  Future<void> _notifyCustomerOfAccept(String orderId, String? token) async {
+    if (token == null || token.isEmpty) return;
+    try {
+      await FireStoreUtils.sendFcmMessage(
+        cabAccepted,
+        token,
+        {'type': 'cab_order', 'orderId': orderId},
+      );
+    } catch (e) {
+      log.log('Accept FCM skipped: $e');
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────────────
+// Reject flow — atomic + parallel
+// ──────────────────────────────────────────────────────────────────────
+  bool _isRejecting = false;
+
+  static const Set<String> _rejectableStatuses = {
+    ORDER_STATUS_PLACED,
+    ORDER_STATUS_DRIVER_PENDING,
+    ORDER_STATUS_DRIVER_REJECTED,
+  };
+
+  Future<void> rejectOrder() async {
+    if (_isRejecting || _isAccepting) return;
+    _isRejecting = true;
+    _timer?.cancel();
+
+    final driverId = _driverModel?.id?.trim() ?? '';
+    final order = _driverModel?.orderCabRequestData;
+    if (driverId.isEmpty || order?.id == null) {
+      _isRejecting = false;
+      return;
+    }
+    final orderId = order!.id!;
+
+    try {
+      await _rejectOrderTransaction(orderId, driverId);
+
+      _driverModel!.orderCabRequestData = null;
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(scaffoldMessengerKey.currentContext!)
+            .showSnackBar(SnackBar(content: Text('Ride rejected'.tr())));
+      }
+    } on _RejectAbortedException catch (e) {
+      log.log('Reject aborted: ${e.reason}');
+
+      _driverModel?.orderCabRequestData = null;
+
+      // ✅ Same cleanup as accept
+      await _clearDriverPendingRequestInFirestore(driverId);
+
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(scaffoldMessengerKey.currentContext!)
+            .showSnackBar(SnackBar(content: Text(e.reason)));
+      }
+    } catch (e, st) {
+      log.log('Reject failed: $e\n$st');
+      if (mounted) {
+        ScaffoldMessenger.of(scaffoldMessengerKey.currentContext!).showSnackBar(
+            SnackBar(
+                content: Text('Could not reject ride. Please retry.'.tr())));
+      }
+    } finally {
+      _isRejecting = false;
+    }
+  }
+
+  Future<void> _clearDriverPendingRequestInFirestore(String driverId) async {
+    if (driverId.isEmpty) return;
+    try {
+      await FirebaseFirestore.instance.collection(USERS).doc(driverId).update({
+        'ordercabRequestData': FieldValue.delete(),
+        'orderCabRequestData': FieldValue.delete(),
+      });
+    } catch (e) {
+      log.log('Failed to clear driver pending request: $e');
+    }
+  }
+
+  Future<void> _rejectOrderTransaction(String orderId, String driverId) async {
+    await FirebaseFirestore.instance.runTransaction((tx) async {
+      final orderRef =
+          FirebaseFirestore.instance.collection(RIDESORDER).doc(orderId);
+      final driverRef =
+          FirebaseFirestore.instance.collection(USERS).doc(driverId);
+
+      final orderSnap = await tx.get(orderRef);
+      final driverSnap = await tx.get(driverRef);
+
+      if (!orderSnap.exists) {
+        throw const _RejectAbortedException('Ride no longer available.');
+      }
+
+      final data = orderSnap.data()!;
+      final currentStatus = data['status'] as String?;
+      final rejected = (data['rejectedByDrivers'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const [];
+
+      final alreadyRejectedByUs = rejected.contains(driverId);
+
+      if (!alreadyRejectedByUs &&
+          !_rejectableStatuses.contains(currentStatus)) {
+        throw _RejectAbortedException(
+            'Ride already ${_prettyStatus(currentStatus)}.');
+      }
+
+      if (!alreadyRejectedByUs) {
+        tx.update(orderRef, {
+          'rejectedByDrivers': FieldValue.arrayUnion([driverId]),
+        });
+      }
+
+      // ── Write 2: driver ─────────────────────────────────────
+      if (driverSnap.exists) {
+        final driverData = driverSnap.data() ?? {};
+        final inProgress = (driverData['deliveryInProgressOrderIds'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            <String>[];
+
+        final driverPatch = <String, dynamic>{
+          'inProgressOrderID': FieldValue.delete(),
+          'ordercabRequestData': FieldValue.delete(),
+          'orderCabRequestData': FieldValue.delete(),
+        };
+        if (inProgress.contains(orderId)) {
+          final remaining = inProgress.where((id) => id != orderId).toList();
+          driverPatch['deliveryInProgressOrderIds'] =
+              remaining.isEmpty ? FieldValue.delete() : remaining;
+        }
+        tx.update(driverRef, driverPatch);
+      }
+    });
+  }
+
+  String _prettyStatus(String? s) {
+    switch (s) {
+      case ORDER_STATUS_ACCEPTED:
+      case ORDER_STATUS_DRIVER_ACCEPTED:
+        return 'accepted';
+      case ORDER_STATUS_CANCELLED:
+      case ORDER_STATUS_REJECTED:
+        return 'cancelled';
+      case ORDER_STATUS_COMPLETED:
+        return 'completed';
+      case ORDER_STATUS_IN_TRANSIT:
+      case ORDER_STATUS_SHIPPED:
+        return 'in progress';
+      default:
+        return s ?? 'updated';
+    }
   }
 
   getDirections() async {
@@ -1268,7 +1439,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
             icon: taxiIcon!,
             rotation: _lastKnownDriverRotation != 0
                 ? _lastKnownDriverRotation
-                : double.parse(_driverModel!.rotation.toString()),
+                : (double.tryParse(_driverModel!.rotation?.toString() ?? '') ??
+                    0),
             anchor: const Offset(0.5, 0.5),
             flat: false,
             zIndex: 2,
@@ -1409,28 +1581,43 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   late Stream<UserModel> driverStream;
   UserModel? _driverModel = UserModel();
   String? previousStatus;
+  StreamSubscription<CabOrderModel?>? _orderSubscription;
 
-  getCurrentOrder() async {
-    ordersFuture = FireStoreUtils()
-        .getCabOrderByID(Constant.userModel!.inProgressOrderID.toString());
-    ordersFuture.listen((event) {
-      if (mounted) {
-        setState(() {
-          currentOrder = event;
-          if (currentOrder!.status == ORDER_STATUS_DRIVER_REJECTED ||
-              currentOrder!.status == ORDER_STATUS_DRIVER_PENDING ||
-              currentOrder!.status == ORDER_STATUS_ACCEPTED) {
-            currentOrder!.status = ORDER_STATUS_DRIVER_ACCEPTED;
-            currentCabOrderID = currentOrder!.id!;
-          }
+  String? _subscribedOrderId;
 
-          if (_isFirstOrderLoad || previousStatus != currentOrder!.status) {
-            _isFirstOrderLoad = false;
-            previousStatus = currentOrder?.status;
-            getDirections();
-          }
-        });
-      }
+  Future<void> getCurrentOrder() async {
+    final orderId = Constant.userModel?.inProgressOrderID;
+
+    // Already subscribed to this order — nothing to do.
+    if (orderId == _subscribedOrderId && _orderSubscription != null) return;
+
+    await _orderSubscription?.cancel();
+    _subscribedOrderId = orderId;
+
+    if (orderId == null || orderId.isEmpty) {
+      currentOrder = null;
+      return;
+    }
+
+    ordersFuture = FireStoreUtils().getCabOrderByID(orderId);
+    _orderSubscription = ordersFuture.listen((event) {
+      if (!mounted || event == null) return;
+
+      setState(() {
+        currentOrder = event;
+        if (currentOrder!.status == ORDER_STATUS_DRIVER_REJECTED ||
+            currentOrder!.status == ORDER_STATUS_DRIVER_PENDING ||
+            currentOrder!.status == ORDER_STATUS_ACCEPTED) {
+          currentOrder!.status = ORDER_STATUS_DRIVER_ACCEPTED;
+          currentCabOrderID = currentOrder!.id!;
+        }
+
+        if (_isFirstOrderLoad || previousStatus != currentOrder!.status) {
+          _isFirstOrderLoad = false;
+          previousStatus = currentOrder?.status;
+          getDirections();
+        }
+      });
     });
   }
 
@@ -2310,12 +2497,12 @@ class _CabHomeScreenState extends State<CabHomeScreen>
                 TextButton(
                   onPressed: _selectedCancellationReason == null ||
                           (_selectedCancellationReason == 'Other' &&
-                              _otherReason.isEmpty)
+                              _otherReason.trim().isEmpty)
                       ? null
                       : () {
                           Navigator.of(context).pop();
                           final reason = _selectedCancellationReason == 'Other'
-                              ? _otherReason
+                              ? _otherReason.trim()
                               : _selectedCancellationReason!;
                           _cancelRide(reason);
                         },
@@ -2332,80 +2519,230 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     );
   }
 
+  bool _isCancellingRide = false;
+
+// ═══════════════════════════════════════════════════════════════════
+// Cancel Ride (driver-side, after acceptance)
+// ═══════════════════════════════════════════════════════════════════
   Future<void> _cancelRide(String reason) async {
-    playSound(false);
-    await FireStoreUtils.getCabOrderByOrderId(
-      currentCabOrderID.isEmpty ? currentOrder!.id! : currentCabOrderID,
-    ).then((value) async {
-      print("----->1111${value!.status}");
-      if (value.status == ORDER_STATUS_REJECTED ||
-          value.status == ORDER_STATUS_CANCELLED) {
-        Navigator.pop(context);
+    if (_isCancellingRide) return;
 
-        Constant.userModel!.orderCabRequestData = null;
-        Constant.userModel!.inProgressOrderID = null;
+    // Resolve order ID from the driver doc (canonical), fall back to local
+    // state in case the stream is mid-emit.
+    final fromDriver = _driverModel?.inProgressOrderID?.trim() ?? '';
+    final orderId = fromDriver.isNotEmpty
+        ? fromDriver
+        : (currentOrder?.id ?? currentCabOrderID).trim();
 
-        await FireStoreUtils.updateCurrentUser(Constant.userModel!);
-        final snack = SnackBar(
-          content: Text(
-            "This Ride is already cancelled by customer.".tr(),
-            style: TextStyle(color: Colors.white),
-          ),
-          duration: Duration(seconds: 2),
-          backgroundColor: Colors.black,
-        );
-        ScaffoldMessenger.of(scaffoldMessengerKey.currentContext!)
-            .showSnackBar(snack);
-        setState(() {});
-      } else {
-        //Navigator.pop(context);
-        showProgress(context, "Cancelling Ride...".tr(), false);
-        try {
-          await cancelOrder();
-        } catch (e) {}
-      }
-    });
+    if (orderId.isEmpty) {
+      _showCancelError('Ride not found. Please refresh and try again.');
+      return;
+    }
+
+    await _runCancelTransaction(orderId: orderId, reason: reason);
   }
 
-  Future<void> cancelOrder() async {
+  Future<void> _runCancelTransaction({
+    required String orderId,
+    required String reason,
+  }) async {
+    final driverId = _driverModel?.id?.trim() ?? '';
+    if (driverId.isEmpty) {
+      _showCancelError('Driver profile missing.');
+      return;
+    }
+
+    _isCancellingRide = true;
+    playSound(false);
+    _timer?.cancel();
+    _timer = null;
+
+    if (mounted) {
+      showProgress(context, 'Cancelling Ride...'.tr(), false);
+    }
+
+    _CancelRideResult? result;
+    String? errorMessage;
+
     try {
-      if (_timer != null) {
-        _timer!.cancel();
+      result = await FirebaseFirestore.instance
+          .runTransaction<_CancelRideResult>((tx) async {
+        final orderRef =
+            FirebaseFirestore.instance.collection(RIDESORDER).doc(orderId);
+        final driverRef =
+            FirebaseFirestore.instance.collection(USERS).doc(driverId);
+
+        // ── Reads first ─────────────────────────────────────────
+        final orderSnap = await tx.get(orderRef);
+        final driverSnap = await tx.get(driverRef);
+
+        if (!orderSnap.exists) {
+          throw const _CancelRideAbortedException('Ride no longer available.');
+        }
+
+        final orderData = orderSnap.data()!;
+        final currentStatus = orderData['status'] as String?;
+
+        // Only cancellable while the driver is assigned and hasn't picked up
+        // the customer. Matches the visibility rule of the "Cancel Ride"
+        // button (only shown for SHIPPED / DRIVER_ACCEPTED).
+        const cancellableStatuses = {
+          ORDER_STATUS_DRIVER_ACCEPTED,
+          ORDER_STATUS_ACCEPTED,
+          ORDER_STATUS_SHIPPED,
+        };
+        if (!cancellableStatuses.contains(currentStatus)) {
+          throw _CancelRideAbortedException(_prettyStatus(currentStatus));
+        }
+
+        // We must still be the assigned driver.
+        final assignedDriverId = (orderData['driverID']?.toString() ??
+                orderData['driverId']?.toString() ??
+                '')
+            .trim();
+        if (assignedDriverId.isNotEmpty && assignedDriverId != driverId) {
+          throw const _CancelRideAbortedException(
+              'You are no longer assigned to this ride.');
+        }
+
+        // ── Write 1: order ──────────────────────────────────────
+        // arrayUnion for rejectedByDrivers is concurrency-safe —
+        // no read-modify-write lost update.
+        tx.update(orderRef, {
+          'status': ORDER_STATUS_DRIVER_REJECTED,
+          'driverID': FieldValue.delete(),
+          'driverId': FieldValue.delete(),
+          'driver': FieldValue.delete(),
+          'rejectedByDrivers': FieldValue.arrayUnion([driverId]),
+          'cancellationReason':
+              reason.trim().isEmpty ? 'Driver cancelled' : reason.trim(),
+          'cancelledBy': 'driver',
+          'cancelledAt': FieldValue.serverTimestamp(),
+        });
+
+        // ── Write 2: driver ─────────────────────────────────────
+        final driverData = driverSnap.data() ?? {};
+        final inProgress = (driverData['deliveryInProgressOrderIds'] as List?)
+                ?.map((e) => e.toString())
+                .toList() ??
+            <String>[];
+
+        // _acceptOrderTransaction (correct):
+        final driverPatch = <String, dynamic>{
+          'ordercabRequestData': FieldValue.delete(), // ✅ correct
+          'orderCabRequestData': FieldValue.delete(), // ✅ defensive
+          'inProgressOrderID': orderId,
+        };
+
+        if (inProgress.contains(orderId)) {
+          final remaining = inProgress.where((id) => id != orderId).toList();
+          driverPatch['deliveryInProgressOrderIds'] =
+              remaining.isEmpty ? FieldValue.delete() : remaining;
+        }
+        tx.update(driverRef, driverPatch);
+
+        // Extract customer token for the post-commit notification.
+        final authorMap =
+            orderData['author'] is Map ? orderData['author'] as Map : null;
+        final customerToken =
+            (authorMap?['fcmToken'] ?? orderData['authorFcmToken'] ?? '')
+                .toString();
+
+        return _CancelRideResult(customerToken: customerToken);
+      });
+    } on _CancelRideAbortedException catch (e) {
+      errorMessage = e.reason;
+    } catch (e, st) {
+      log.log('Cancel ride failed: $e\n$st');
+      errorMessage = 'Could not cancel ride. Please retry.';
+    } finally {
+      _isCancellingRide = false;
+      if (mounted) hideProgress();
+    }
+
+    // ── Post-commit / post-failure ─────────────────────────────
+    if (result != null) {
+      // Sync local state ONLY after a successful commit.
+      _driverModel?.inProgressOrderID = null;
+      _driverModel?.orderCabRequestData = null;
+      if (_driverModel != null) Constant.userModel = _driverModel;
+      currentOrder = null;
+      previousStatus = null;
+      _markers.clear();
+      polyLines.clear();
+
+      if (mounted) {
+        setState(() {});
+        _showCancelSuccess('Ride cancelled successfully.');
       }
 
-      CabOrderModel orderModel = currentOrder!;
+      // Fire-and-forget: notify the customer. FCM failure must not
+      // affect the already-committed cancel.
+      unawaited(_notifyCustomerOfDriverCancel(
+        orderId: orderId,
+        customerToken: result.customerToken,
+        reason: reason,
+      ));
+    } else if (errorMessage != null) {
+      await _refreshCurrentOrder();
+      if (mounted) _showCancelError(errorMessage);
+    }
+  }
 
-      if (orderModel.rejectedByDrivers == null) {
-        orderModel.rejectedByDrivers = [];
-      }
-
-      orderModel.rejectedByDrivers!.add(_driverModel!.id);
-
-      orderModel.driver = null;
-      orderModel.driverId = null;
-
-      orderModel.status = ORDER_STATUS_DRIVER_REJECTED;
-
-      await FireStoreUtils.updateCabOrder(orderModel);
-
-      _driverModel!.orderCabRequestData = null;
-      _driverModel!.inProgressOrderID = null;
-
-      await FireStoreUtils.updateCurrentUser(_driverModel!);
-      Map<String, dynamic> payLoad = <String, dynamic>{
-        "type": "cab_order",
-        "orderId": currentOrder!.id
-      };
+  Future<void> _notifyCustomerOfDriverCancel({
+    required String orderId,
+    required String customerToken,
+    required String reason,
+  }) async {
+    if (customerToken.isEmpty) return;
+    try {
       await FireStoreUtils.sendFcmMessage(
         cabCancelled,
-        orderModel.author?.fcmToken ?? '',
-        payLoad,
+        customerToken,
+        {
+          'type': 'cab_order',
+          'orderId': orderId,
+          'reason': reason,
+        },
       );
-      hideProgress();
     } catch (e) {
-      log.log("Cancel error: $e");
-      hideProgress();
+      log.log('Driver cancel FCM skipped: $e');
     }
+  }
+
+  Future<void> _refreshCurrentOrder() async {
+    try {
+      final orderId = _driverModel?.inProgressOrderID?.trim() ?? '';
+      if (orderId.isEmpty) return;
+      final fresh = await FireStoreUtils.getCabOrderByOrderId(orderId);
+      if (fresh != null && mounted) {
+        setState(() {
+          currentOrder = fresh;
+        });
+      }
+    } catch (e) {
+      log.log('refreshCurrentOrder failed: $e');
+    }
+  }
+
+  void _showCancelSuccess(String message) {
+    final ctx = scaffoldMessengerKey.currentContext;
+    if (!mounted || ctx == null) return;
+    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+      content: Text(message.tr()),
+      backgroundColor: Colors.green.shade700,
+      duration: const Duration(seconds: 2),
+    ));
+  }
+
+  void _showCancelError(String message) {
+    final ctx = scaffoldMessengerKey.currentContext;
+    if (!mounted || ctx == null) return;
+    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+      content: Text(message.tr()),
+      backgroundColor: Colors.red.shade700,
+      duration: const Duration(seconds: 3),
+    ));
   }
 
   Future<Map<String, dynamic>?> getDurationDistanceWithWaypoints(
@@ -2547,7 +2884,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
           await FireStoreUtils.updateCabOrder(currentOrder!);
 
           //hideProgress();
-          setState(() {});
+          if (mounted) {
+            setState(() {});
+          }
         }
       }
     } else {
@@ -2560,7 +2899,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       await FireStoreUtils.updateCabOrder(currentOrder!);
 
       hideProgress();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -2602,7 +2943,8 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
             log.log("Distance: $distance km, Duration: $duration seconds");
             if (vehicleModel != null) {
-              if (distance > (double.tryParse(currentOrder!.distance!) ?? 0)) {
+              if (distance >
+                  (double.tryParse(currentOrder!.distance ?? '0') ?? 0)) {
                 currentOrder!.subTotal =
                     (vehicleModel!.delivery_charges_per_km! * distance)
                         .toString();
@@ -2649,7 +2991,9 @@ class _CabHomeScreenState extends State<CabHomeScreen>
       log.log("Error: $e");
     } finally {
       hideProgress();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -2797,4 +3141,30 @@ class _CabHomeScreenState extends State<CabHomeScreen>
     updateDriverOrder();
     await hideProgress();
   }
+}
+
+class _RejectAbortedException implements Exception {
+  final String reason;
+  const _RejectAbortedException(this.reason);
+  @override
+  String toString() => reason;
+}
+
+class _AcceptAbortedException implements Exception {
+  final String reason;
+  const _AcceptAbortedException(this.reason);
+  @override
+  String toString() => reason;
+}
+
+class _CancelRideAbortedException implements Exception {
+  final String reason;
+  const _CancelRideAbortedException(this.reason);
+  @override
+  String toString() => reason;
+}
+
+class _CancelRideResult {
+  final String customerToken;
+  const _CancelRideResult({required this.customerToken});
 }
