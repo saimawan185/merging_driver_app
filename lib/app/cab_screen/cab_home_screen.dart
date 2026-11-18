@@ -1117,10 +1117,30 @@ class _CabHomeScreenState extends State<CabHomeScreen>
   Future<void> _notifyCustomerOfAccept(String orderId, String? token) async {
     if (token == null || token.isEmpty) return;
     try {
+      // Make sure the vehicle info is available so we can include the car number.
+      if (vehicleModel == null && _driverModel?.vehicleId != null) {
+        try {
+          vehicleModel =
+              await FireStoreUtils.getVehicle(_driverModel!.vehicleId);
+        } catch (_) {/* ignore, body will just have an empty car line */}
+      }
+
+      final driverName =
+          '${_driverModel?.firstName ?? ''} ${_driverModel?.lastName ?? ''}'
+              .trim();
+      // ⚠️ Change `.name` to whatever field actually holds the plate/car number
+      //    on your VehicleType model (e.g. `plateNumber`, `vehicleNumber`, ...).
+      final carNumber = vehicleModel?.name ?? '';
+      final driverPhone = _driverModel?.phoneNumber ?? '';
+
+      final customBody =
+          'Ride Accepted By Driver\n$driverName\n$carNumber\n$driverPhone';
+
       await FireStoreUtils.sendFcmMessage(
         cabAccepted,
         token,
         {'type': 'cab_order', 'orderId': orderId},
+        customBody: customBody,
       );
     } catch (e) {
       log.log('Accept FCM skipped: $e');
@@ -1643,56 +1663,59 @@ class _CabHomeScreenState extends State<CabHomeScreen>
 
   getDriver() async {
     final stream = FireStoreUtils().getDriver(Constant.userModel!.id!);
-    _driverSubscription = stream.listen((event) {
-      if (!mounted) return; // <-- skip if widget is gone
+    _driverSubscription = stream.listen(
+      (event) {
+        if (!mounted) return; // <-- skip if widget is gone
 
-      playSound(false);
-      _driverModel = event;
-      if (_driverModel != null) {
-        FireStoreUtils.getVehicle(_driverModel!.vehicleId).then((value) {
+        playSound(false);
+        _driverModel = event;
+        if (_driverModel != null) {
+          FireStoreUtils.getVehicle(_driverModel!.vehicleId).then((value) {
+            if (mounted) {
+              setState(() {
+                vehicleModel = value;
+              });
+            }
+          });
+
           if (mounted) {
             setState(() {
-              vehicleModel = value;
+              Constant.userModel = _driverModel;
             });
           }
-        });
+        }
 
+        // Reset first load flag when driver data changes
+        _isFirstOrderLoad = true;
+        getDirections();
+
+        // ─── Smooth driver movement ──────────────────────────
+        _updateDriverMarkerAndCamera();
+
+        if (_driverModel!.isActive == true) {
+          if (_driverModel!.orderCabRequestData != null) {
+            playSound(true);
+            currentCabOrderID = _driverModel!.orderCabRequestData!.id!;
+          }
+        }
+        if (_driverModel!.inProgressOrderID != null &&
+            _driverModel!.inProgressOrderID!.isNotEmpty) {
+          getCurrentOrder();
+        }
+
+        if (_driverModel!.orderCabRequestData == null) {
+          playSound(false);
+          // setState(() {
+          //   _markers.clear();
+          //   polyLines.clear();
+          // });
+        }
         if (mounted) {
-          setState(() {
-            Constant.userModel = _driverModel;
-          });
+          setState(() {});
         }
-      }
-
-      // Reset first load flag when driver data changes
-      _isFirstOrderLoad = true;
-      getDirections();
-
-      // ─── Smooth driver movement ──────────────────────────
-      _updateDriverMarkerAndCamera();
-
-      if (_driverModel!.isActive == true) {
-        if (_driverModel!.orderCabRequestData != null) {
-          playSound(true);
-          currentCabOrderID = _driverModel!.orderCabRequestData!.id!;
-        }
-      }
-      if (_driverModel!.inProgressOrderID != null &&
-          _driverModel!.inProgressOrderID!.isNotEmpty) {
-        getCurrentOrder();
-      }
-
-      if (_driverModel!.orderCabRequestData == null) {
-        playSound(false);
-        // setState(() {
-        //   _markers.clear();
-        //   polyLines.clear();
-        // });
-      }
-      if (mounted) {
-        setState(() {});
-      }
-    });
+      },
+      onError: (e, st) => log.log('driverStream error: $e\n$st'),
+    );
   }
 
   Widget buildOrderActionsCard({pedding = 10, width = 60}) {

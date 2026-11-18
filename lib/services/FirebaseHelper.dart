@@ -342,16 +342,20 @@ class FireStoreUtils {
 
   Stream<UserModel> getDriver(String userId) {
     driverStreamController = StreamController();
-    // driverStreamSub =
     return firestore.collection(USERS).doc(userId).snapshots().map((onData) {
-      if (onData.data() != null) {
-        UserModel? user = UserModel.fromJson(onData.data()!);
+      if (onData.data() == null) return Constant.userModel!;
+
+      try {
+        final user = UserModel.fromJson(onData.data()!);
         driverStreamController.sink.add(user);
         return user;
+      } catch (e, st) {
+        // Don't kill the stream on a bad parse — log and fall back
+        // to the last known good user so the UI keeps working.
+        log('UserModel parse error: $e\n$st');
+        return Constant.userModel!;
       }
-      return Constant.userModel!;
     });
-    // yield* driverStreamController.stream;
   }
 
   static Future<VehicleType?> getVehicle(String? vehicleId) async {
@@ -1907,26 +1911,42 @@ class FireStoreUtils {
     yield* cabOrdersStreamController!.stream;
   }
 
-  late StreamController<ParcelOrderModel> parcelOrdersStreamController;
-  late StreamSubscription parcelOrdersStreamSub;
+  StreamController<ParcelOrderModel>? parcelOrdersStreamController;
+  StreamSubscription? parcelOrdersStreamSub;
 
   Stream<ParcelOrderModel?> getParcelOrderByID(
-    String inProgressOrderID,
-  ) async* {
-    parcelOrdersStreamController = StreamController();
-    parcelOrdersStreamSub = firestore
+      String inProgressOrderID) async* {
+    // Clean up any previous stream before starting a new one
+    await parcelOrdersStreamSub?.cancel();
+    await parcelOrdersStreamController?.close();
+
+    final controller = StreamController<ParcelOrderModel>();
+    final sub = firestore
         .collection(PARCELORDER)
         .doc(inProgressOrderID)
         .snapshots()
-        .listen((onData) async {
+        .listen((onData) {
       if (onData.data() != null) {
-        ParcelOrderModel? orderModel = ParcelOrderModel.fromJson(
-          onData.data()!,
-        );
-        parcelOrdersStreamController.sink.add(orderModel);
+        final orderModel = ParcelOrderModel.fromJson(onData.data()!);
+        if (!controller.isClosed) controller.sink.add(orderModel);
       }
     });
-    yield* parcelOrdersStreamController.stream;
+
+    parcelOrdersStreamController = controller;
+    parcelOrdersStreamSub = sub;
+
+    try {
+      yield* controller.stream;
+    } finally {
+      // Runs when the caller cancels their subscription. Without this,
+      // the Firestore snapshot listener leaks.
+      await sub.cancel();
+      await controller.close();
+      if (identical(parcelOrdersStreamController, controller)) {
+        parcelOrdersStreamController = null;
+        parcelOrdersStreamSub = null;
+      }
+    }
   }
 
   static Future updateParcelOrder(ParcelOrderModel orderModel) async {
@@ -2911,12 +2931,20 @@ class FireStoreUtils {
   static Future<bool> sendFcmMessage(
     String type,
     String token,
-    Map<String, dynamic>? payload,
-  ) async {
+    Map<String, dynamic>? payload, {
+    String? customTitle,
+    String? customBody,
+  }) async {
     try {
-      final String serverAccessToken = await getAccessToken();
+      final results = await Future.wait([
+        getAccessToken(),
+        getNotificationContent(type),
+      ]);
 
-      NotificationModel? notificationModel = await getNotificationContent(type);
+      final String serverAccessToken = results[0] as String;
+      final NotificationModel? notificationModel =
+          results[1] as NotificationModel?;
+
       var url =
           'https://fcm.googleapis.com/v1/projects/doordelights-423407/messages:send';
       var header = {
@@ -2924,12 +2952,15 @@ class FireStoreUtils {
         "Authorization": "Bearer $serverAccessToken",
       };
 
+      final String title = customTitle ?? notificationModel?.subject ?? '';
+      final String body = customBody ?? notificationModel?.message ?? '';
+
       var request = {
         "message": {
           "token": token,
           "notification": {
-            "body": notificationModel!.message ?? '',
-            "title": notificationModel.subject ?? '',
+            "body": body,
+            "title": title,
           },
           'data': payload ?? <String, dynamic>{},
           "android": {
@@ -2940,15 +2971,12 @@ class FireStoreUtils {
             "payload": {
               "aps": {
                 "alert": {
-                  "title": notificationModel.subject ?? '',
-                  "body": notificationModel.message ?? '',
+                  "title": title,
+                  "body": body,
                 },
-                "sound":
-                    notificationModel.subject.toString().toLowerCase().contains(
-                              'New'.toLowerCase(),
-                            )
-                        ? "notification_sound.wav"
-                        : "default",
+                "sound": title.toLowerCase().contains('new')
+                    ? "notification_sound.wav"
+                    : "default",
                 "badge": 1,
               },
             },

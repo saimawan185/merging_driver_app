@@ -5,7 +5,6 @@ import 'cab_order_model.dart';
 import 'order_model.dart';
 import 'subscription_plan_model.dart';
 import 'parcel_order_model.dart';
-import 'package:easy_localization/easy_localization.dart';
 
 class UserModel {
   // ── Base fields ──────────────────────────────────────────────

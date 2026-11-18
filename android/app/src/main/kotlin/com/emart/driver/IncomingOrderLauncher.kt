@@ -37,27 +37,49 @@ object IncomingOrderLauncher {
     private var lastLaunchAtMs: Long = 0L
 
     fun isIncomingOrder(data: Map<String, String>): Boolean {
-        val type = (data["type"] ?: "").lowercase()
-        val title = (data["title"] ?: "").lowercase()
-        if (type.contains("cab_order") ||
-            type.contains("vendor_order") ||
-            type.contains("parcel_order") ||
-            type.contains("rental_order") ||
-            type.contains("order_request") ||
-            type.contains("new_order")
-        ) {
-            return true
-        }
-        if (title.contains("new") &&
-            (title.contains("ride") ||
-                title.contains("order") ||
-                title.contains("parcel") ||
-                title.contains("request"))
-        ) {
-            return true
-        }
-        return (data["orderId"] ?: "").isNotEmpty() && title.contains("new")
+    val type  = (data["type"]  ?: "").lowercase()
+    val title = (data["title"] ?: "").lowercase()
+    val body  = (data["body"]  ?: "").lowercase()
+
+    // ── 1. Explicit rejects ────────────────────────────────────
+    val negativeKeywords = listOf(
+        "cancel", "canceled", "cancelled",
+        "reject", "rejected",
+        "complete", "completed",
+        "expired", "voided",
+    )
+    if (negativeKeywords.any {
+            type.contains(it) || title.contains(it) || body.contains(it)
+        }) {
+        return false
     }
+
+    // ── 2. Cancels carry `reason`, new orders don't ────────────
+    //    New-order payloads include the ride preview (amount, pickup,
+    //    destination, vehicleLabel, paymentMethod). Cancels carry only
+    //    `reason` + orderId. If we see a reason and no preview → cancel.
+    val hasReason = data["reason"].orEmpty().isNotEmpty()
+    val hasOrderDetails =
+        data["amount"].orEmpty().isNotEmpty() ||
+        data["pickup"].orEmpty().isNotEmpty() ||
+        data["destination"].orEmpty().isNotEmpty() ||
+        data["vehicleLabel"].orEmpty().isNotEmpty() ||
+        data["paymentMethod"].orEmpty().isNotEmpty()
+    if (hasReason && !hasOrderDetails) return false
+
+    // ── 3. Positive whitelist ──────────────────────────────────
+    return type == "cab_order"      ||
+           type == "vendor_order"   ||
+           type == "parcel_order"   ||
+           type == "rental_order"   ||
+           type == "order_request"  ||
+           type == "new_order"      ||
+           (title.contains("new") &&
+                (title.contains("ride")    ||
+                 title.contains("order")   ||
+                 title.contains("parcel")  ||
+                 title.contains("request")))
+}
 
     fun launch(context: Context, data: Map<String, String>) {
         try {
@@ -116,7 +138,13 @@ object IncomingOrderLauncher {
         data: Map<String, String>,
         withFullScreenIntent: Boolean,
     ) {
-        val title = data["title"].orEmpty().ifBlank { "New Order Request" }
+        val title = data["title"].orEmpty().ifBlank {
+            when {
+                data["type"].orEmpty().contains("cancel") -> "Order Cancelled"
+                data["type"].orEmpty().isNotEmpty()       -> data["type"]!!
+                else                                      -> "Notification"
+            }
+        }
         val body = data["body"].orEmpty().ifBlank { "Tap to open" }
 
         val contentIntent = Intent(context, MainActivity::class.java).apply {

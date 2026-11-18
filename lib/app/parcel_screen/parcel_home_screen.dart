@@ -288,10 +288,10 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
     _animationController?.dispose();
     _animationController = null;
 
-    // Null-safe: this throws today if no parcel order stream was ever opened,
-    // which prevents super.dispose() from completing cleanly.
-    FireStoreUtils().parcelOrdersStreamController.close();
-    FireStoreUtils().parcelOrdersStreamSub.cancel();
+    // Now: use the same instance that actually created the stream,
+    // with null-safe access.
+    fireStoreUtils.parcelOrdersStreamSub?.cancel();
+    fireStoreUtils.parcelOrdersStreamController?.close();
 
     playSound(false);
 
@@ -943,57 +943,315 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
     );
   }
 
-  // ─── Rest of the class unchanged ────────────────────────────────────
-  // (acceptOrder, rejectOrder, getDirections, etc. are exactly as before)
-  // ─── I'm keeping them identical; no changes needed ────────────────
+// ── Concurrency guards ──────────────────────────────────────────────
+  bool _isAccepting = false;
+  bool _isRejecting = false;
 
-  acceptOrder() async {
-    ParcelOrderModel orderModel = _driverModel!.orderParcelRequestData!;
+// ── Valid statuses for accept/reject ────────────────────────────────
+  static const Set<String> _acceptableStatuses = {
+    ORDER_STATUS_PLACED,
+    ORDER_STATUS_DRIVER_PENDING,
+    ORDER_STATUS_DRIVER_REJECTED,
+  };
 
-    _driverModel!.orderParcelRequestData = null;
-    _driverModel!.inProgressOrderID = orderModel.id;
+  static const Set<String> _rejectableStatuses = {
+    ORDER_STATUS_PLACED,
+    ORDER_STATUS_DRIVER_PENDING,
+    ORDER_STATUS_DRIVER_REJECTED,
+  };
 
-    Constant.userModel = _driverModel!;
+  Future<void> acceptOrder() async {
+    if (_isAccepting || _isRejecting) return;
+    _isAccepting = true;
+    _timer?.cancel();
 
-    await FireStoreUtils.updateCurrentUser(_driverModel!);
-
-    orderModel.status = ORDER_STATUS_DRIVER_ACCEPTED;
-    orderModel.driverId = _driverModel!.id;
-    orderModel.driver = _driverModel!;
-    await FireStoreUtils.updateParcelOrder(orderModel);
-
-    if (_driverModel!.inProgressOrderID != null) {
-      getCurrentOrder();
+    final driverId = (_driverModel?.id ?? '').trim();
+    final order = _driverModel?.orderParcelRequestData;
+    if (driverId.isEmpty || order?.id == null) {
+      _isAccepting = false;
+      return;
     }
-    Map<String, dynamic> payLoad = <String, dynamic>{
-      "type": "parcel_order",
-      "orderId": orderModel.id,
-    };
-    await FireStoreUtils.sendFcmMessage(
-      parcelAccepted,
-      orderModel.author!.fcmToken ?? '',
-      payLoad,
-    );
+    final orderId = order!.id!;
+    final authorToken = order.author?.fcmToken;
 
-    setState(() {
-      isShow = true;
+    try {
+      await _acceptOrderTransaction(orderId, driverId);
+
+      // Sync local state ONLY after a successful commit.
+      _driverModel!.orderParcelRequestData = null;
+      _driverModel!.inProgressOrderID = orderId;
+      Constant.userModel = _driverModel;
+
+      if (mounted) setState(() => isShow = true);
+
+      // Post-commit: set up the live order stream + send the customer
+      // notification in parallel, without blocking the caller. The UI is
+      // already updated, so showProgress()/hideProgress() in the caller
+      // returns instantly.
+      unawaited(() async {
+        try {
+          await Future.wait<void>([
+            getCurrentOrder(),
+            _notifyCustomerOfAccept(orderId, authorToken),
+          ], eagerError: false);
+        } catch (e, st) {
+          log('Post-accept tasks failed: $e\n$st');
+        }
+      }());
+    } on _AcceptAbortedException catch (e) {
+      log('Accept aborted: ${e.reason}');
+
+      _driverModel?.orderParcelRequestData = null;
+      await _clearDriverPendingRequestInFirestore(driverId);
+
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.reason)),
+        );
+      }
+    } catch (e, st) {
+      log('Accept failed: $e\n$st');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not accept order. Please retry.'.tr())),
+        );
+      }
+    } finally {
+      _isAccepting = false;
+    }
+  }
+
+  /// Atomic accept: order + driver updated in one transaction.
+  Future<void> _acceptOrderTransaction(String orderId, String driverId) async {
+    await FirebaseFirestore.instance.runTransaction((tx) async {
+      final orderRef =
+          FirebaseFirestore.instance.collection(PARCELORDER).doc(orderId);
+      final driverRef =
+          FirebaseFirestore.instance.collection(USERS).doc(driverId);
+
+      // ── Reads first (transaction requires all reads before writes) ──
+      final orderSnap = await tx.get(orderRef);
+      final driverSnap = await tx.get(driverRef);
+
+      if (!orderSnap.exists) {
+        throw const _AcceptAbortedException('Order no longer available.');
+      }
+      if (!driverSnap.exists) {
+        throw const _AcceptAbortedException('Driver profile missing.');
+      }
+
+      // Driver must not already be on a different order.
+      final driverData = driverSnap.data()!;
+      final existingInProgress =
+          driverData['inProgressOrderID']?.toString() ?? '';
+      if (existingInProgress.isNotEmpty && existingInProgress != orderId) {
+        throw const _AcceptAbortedException(
+            'You already have an active order.');
+      }
+
+      // Order must still be acceptable + not taken by another driver.
+      final orderData = orderSnap.data()!;
+      final currentStatus = orderData['status'] as String?;
+      if (!_acceptableStatuses.contains(currentStatus)) {
+        throw _AcceptAbortedException(
+            'Order already ${_prettyStatus(currentStatus)}.');
+      }
+
+      final existingDriverId = orderData['driverId']?.toString() ?? '';
+      if (existingDriverId.isNotEmpty && existingDriverId != driverId) {
+        throw const _AcceptAbortedException(
+            'Another driver already accepted this order.');
+      }
+
+      // ── Writes ──────────────────────────────────────────────────────
+      // Embed driver snapshot on the order so chat / display has it
+      // immediately (matches the previous `orderModel.driver = ...`).
+      final driverSnapshot = Map<String, dynamic>.from(driverData)
+        ..remove('orderParcelRequestData')
+        ..remove('orderCabRequestData')
+        ..['inProgressOrderID'] = orderId;
+
+      final orderPatch = <String, dynamic>{
+        'status': ORDER_STATUS_DRIVER_ACCEPTED,
+        'driverId': driverId,
+        'driver': driverSnapshot,
+      };
+
+      // Delete both spellings defensively; FieldValue.delete() is a no-op
+      // if the field doesn't exist.
+      final driverPatch = <String, dynamic>{
+        'orderParcelRequestData': FieldValue.delete(),
+        'ordercabRequestData': FieldValue.delete(),
+        'inProgressOrderID': orderId,
+      };
+
+      tx.update(orderRef, orderPatch);
+      tx.update(driverRef, driverPatch);
     });
   }
 
-  rejectOrder() async {
-    if (_timer != null) {
-      _timer!.cancel();
-    }
-    ParcelOrderModel orderModel = _driverModel!.orderParcelRequestData!;
-    if (orderModel.rejectedByDrivers == null) {
-      orderModel.rejectedByDrivers = [];
-    }
-    orderModel.rejectedByDrivers!.add(_driverModel!.id);
-    orderModel.status = ORDER_STATUS_DRIVER_REJECTED;
-    await FireStoreUtils.updateParcelOrder(orderModel);
-    _driverModel!.orderParcelRequestData = null;
+  /// Builds and sends the "Order Accepted" notification with driver data.
+  Future<void> _notifyCustomerOfAccept(String orderId, String? token) async {
+    if (token == null || token.isEmpty) return;
+    try {
+      // Best-effort vehicle lookup — never blocks the notification.
+      String carNumber = '';
+      final vehicleId = _driverModel?.vehicleId;
+      if (vehicleId != null && vehicleId.isNotEmpty) {
+        try {
+          final vehicle = await FireStoreUtils.getVehicle(vehicleId);
+          carNumber = vehicle?.name ?? '';
+        } catch (_) {}
+      }
 
-    await FireStoreUtils.updateCurrentUser(_driverModel!);
+      final driverName =
+          '${_driverModel?.firstName ?? ''} ${_driverModel?.lastName ?? ''}'
+              .trim();
+      final driverPhone = _driverModel?.phoneNumber ?? '';
+
+      // Requested body format:
+      //   Order Accepted By Driver {orderId}
+      //   {driverName}
+      //   {carNumber}
+      //   {driverPhone}
+      final customBody =
+          'Order Accepted By Driver\n$driverName\n$carNumber\n$driverPhone';
+
+      await FireStoreUtils.sendFcmMessage(
+        parcelAccepted,
+        token,
+        {'type': 'parcel_order', 'orderId': orderId},
+        customBody: customBody,
+      );
+    } catch (e) {
+      log('Accept FCM skipped: $e');
+    }
+  }
+
+  Future<void> rejectOrder() async {
+    if (_isRejecting || _isAccepting) return;
+    _isRejecting = true;
+    _timer?.cancel();
+
+    final driverId = (_driverModel?.id ?? '').trim();
+    final order = _driverModel?.orderParcelRequestData;
+    if (driverId.isEmpty || order?.id == null) {
+      _isRejecting = false;
+      return;
+    }
+    final orderId = order!.id!;
+
+    try {
+      await _rejectOrderTransaction(orderId, driverId);
+
+      _driverModel?.orderParcelRequestData = null;
+
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Order rejected'.tr())),
+        );
+      }
+    } on _RejectAbortedException catch (e) {
+      log('Reject aborted: ${e.reason}');
+
+      _driverModel?.orderParcelRequestData = null;
+      await _clearDriverPendingRequestInFirestore(driverId);
+
+      if (mounted) {
+        setState(() {});
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.reason)),
+        );
+      }
+    } catch (e, st) {
+      log('Reject failed: $e\n$st');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not reject order. Please retry.'.tr())),
+        );
+      }
+    } finally {
+      _isRejecting = false;
+    }
+  }
+
+  /// Atomic reject: `rejectedByDrivers` array-union + driver cleanup.
+  Future<void> _rejectOrderTransaction(String orderId, String driverId) async {
+    await FirebaseFirestore.instance.runTransaction((tx) async {
+      final orderRef =
+          FirebaseFirestore.instance.collection(PARCELORDER).doc(orderId);
+      final driverRef =
+          FirebaseFirestore.instance.collection(USERS).doc(driverId);
+
+      final orderSnap = await tx.get(orderRef);
+      final driverSnap = await tx.get(driverRef);
+
+      if (!orderSnap.exists) {
+        throw const _RejectAbortedException('Order no longer available.');
+      }
+
+      final data = orderSnap.data()!;
+      final currentStatus = data['status'] as String?;
+      final rejected = (data['rejectedByDrivers'] as List?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          const <String>[];
+
+      // Idempotent: allow a repeat reject even if the order status has
+      // already moved on, as long as we haven't been recorded yet.
+      final alreadyRejectedByUs = rejected.contains(driverId);
+      if (!alreadyRejectedByUs &&
+          !_rejectableStatuses.contains(currentStatus)) {
+        throw _RejectAbortedException(
+            'Order already ${_prettyStatus(currentStatus)}.');
+      }
+
+      if (!alreadyRejectedByUs) {
+        // arrayUnion is concurrency-safe — no read-modify-write lost update.
+        tx.update(orderRef, {
+          'rejectedByDrivers': FieldValue.arrayUnion([driverId]),
+        });
+      }
+
+      if (driverSnap.exists) {
+        tx.update(driverRef, {
+          'orderParcelRequestData': FieldValue.delete(),
+          'ordercabRequestData': FieldValue.delete(),
+        });
+      }
+    });
+  }
+
+  Future<void> _clearDriverPendingRequestInFirestore(String driverId) async {
+    if (driverId.isEmpty) return;
+    try {
+      await FirebaseFirestore.instance.collection(USERS).doc(driverId).update({
+        'orderParcelRequestData': FieldValue.delete(),
+        'ordercabRequestData': FieldValue.delete(),
+      });
+    } catch (e) {
+      log('Failed to clear driver pending request: $e');
+    }
+  }
+
+  String _prettyStatus(String? s) {
+    switch (s) {
+      case ORDER_STATUS_ACCEPTED:
+      case ORDER_STATUS_DRIVER_ACCEPTED:
+        return 'accepted';
+      case ORDER_STATUS_CANCELLED:
+      case ORDER_STATUS_REJECTED:
+        return 'cancelled';
+      case ORDER_STATUS_COMPLETED:
+        return 'completed';
+      case ORDER_STATUS_IN_TRANSIT:
+      case ORDER_STATUS_SHIPPED:
+        return 'in progress';
+      default:
+        return s ?? 'updated';
+    }
   }
 
   String? _lastRouteOrigin;
@@ -1197,7 +1455,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
   Future<void> getCurrentOrder() async {
     await _orderSubscription?.cancel();
 
-    ordersFuture = FireStoreUtils().getParcelOrderByID(
+    ordersFuture = fireStoreUtils.getParcelOrderByID(
       Constant.userModel!.inProgressOrderID.toString(),
     );
 
@@ -1226,7 +1484,7 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
   getDriver() async {
     await _driverSubscription?.cancel();
 
-    driverStream = FireStoreUtils().getDriver(FireStoreUtils.getCurrentUid());
+    driverStream = fireStoreUtils.getDriver(FireStoreUtils.getCurrentUid());
 
     _driverSubscription = driverStream.listen((event) {
       if (!mounted) return;
@@ -2159,4 +2417,18 @@ class _ParcelHomeScreenState extends State<ParcelHomeScreen>
       ),
     );
   }
+}
+
+class _AcceptAbortedException implements Exception {
+  final String reason;
+  const _AcceptAbortedException(this.reason);
+  @override
+  String toString() => reason;
+}
+
+class _RejectAbortedException implements Exception {
+  final String reason;
+  const _RejectAbortedException(this.reason);
+  @override
+  String toString() => reason;
 }
